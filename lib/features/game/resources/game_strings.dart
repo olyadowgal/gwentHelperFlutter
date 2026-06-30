@@ -14,4 +14,7 @@ abstract class GameStrings {
   static const frost = 'Frost';
   static const fog = 'Fog';
   static const rain = 'Rain';
+  static const roundPrefix = 'Round ';
+  static const wins = 'wins!';
+  static const tie = "It's a tie!";
 }

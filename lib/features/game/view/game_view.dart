@@ -25,14 +25,12 @@ class GameView extends StatelessWidget {
     this.player2PhotoPath,
   });
 
-  String _winnerMessage(BuildContext context, Winner winner) {
-    final state = context.read<GameCubit>().state;
-    return switch (winner) {
-      Winner.first => '${state.gameData.firstPlayerData.name} wins!',
-      Winner.second => '${state.gameData.secondPlayerData.name} wins!',
-      Winner.tie => "It's a tie!",
-    };
-  }
+  String _winnerMessage(Winner winner, String player1Name, String player2Name) =>
+      switch (winner) {
+        Winner.first => '$player1Name ${GameStrings.wins}',
+        Winner.second => '$player2Name ${GameStrings.wins}',
+        Winner.tie => GameStrings.tie,
+      };
 
   @override
   Widget build(BuildContext context) =>
@@ -64,12 +62,17 @@ class GameView extends StatelessWidget {
               });
 
             case ShowGameOverDialog(:final winner):
+              final state = context.read<GameCubit>().state;
               showDialog<void>(
                 context: context,
                 barrierDismissible: false,
                 builder: (dialogContext) => AlertDialog(
                   title: const Text(GameStrings.gameOverTitle),
-                  content: Text(_winnerMessage(context, winner)),
+                  content: Text(_winnerMessage(
+                    winner,
+                    state.gameData.firstPlayerData.name,
+                    state.gameData.secondPlayerData.name,
+                  )),
                   actions: [
                     ElevatedButton(
                       onPressed: () {
@@ -95,13 +98,13 @@ class GameView extends StatelessWidget {
 
             return Scaffold(
               appBar: AppBar(
-                title: Text('Round ${state.roundCounter + 1}'),
+                title: Text('${GameStrings.roundPrefix}${state.roundCounter + 1}'),
                 actions: [
                   TextButton(
                     onPressed: cubit.onEndRoundTapped,
-                    child: const Text(
+                    child: Text(
                       GameStrings.endRound,
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
                     ),
                   ),
                 ],
