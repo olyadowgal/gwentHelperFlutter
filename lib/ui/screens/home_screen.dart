@@ -34,6 +34,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
     );
     if (cropped == null) return;
+    if (!mounted) return;
 
     final notifier = ref.read(homeProvider.notifier);
     if (isPlayer1) {
@@ -87,6 +88,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(height: 16),
             IconButton(
               icon: const Icon(Icons.leaderboard),
+              tooltip: 'Leaderboard',
               onPressed: () => context.push('/scores'),
             ),
           ],
