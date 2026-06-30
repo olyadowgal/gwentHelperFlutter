@@ -54,7 +54,6 @@ class CardsRowWidget extends StatelessWidget {
                   ...row.cards.map((card) => CardChip(
                         card: card,
                         displayPoints: row.pointsOf(card),
-                        onTap: () {},
                         onLongPress: () => onCardLongPress(row, card),
                       )),
                   IconButton(

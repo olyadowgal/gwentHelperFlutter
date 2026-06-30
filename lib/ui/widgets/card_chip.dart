@@ -5,14 +5,14 @@ import '../../domain/models/ability.dart';
 class CardChip extends StatelessWidget {
   final Card card;
   final int displayPoints;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final VoidCallback onLongPress;
 
   const CardChip({
     super.key,
     required this.card,
     required this.displayPoints,
-    required this.onTap,
+    this.onTap,
     required this.onLongPress,
   });
 
@@ -39,7 +39,7 @@ class CardChip extends StatelessWidget {
             ),
             if (card.abilities.isNotEmpty)
               Text(
-                card.abilities.map((a) => a.displayName[0]).join(''),
+                card.abilities.map((a) => a.shortName).join(' '),
                 style: const TextStyle(fontSize: 10),
               ),
           ],
