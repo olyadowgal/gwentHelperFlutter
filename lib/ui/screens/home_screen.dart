@@ -31,7 +31,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     final cropped = await ImageCropper().cropImage(
       sourcePath: picked.path,
-      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+      uiSettings: [
+        AndroidUiSettings(aspectRatioPresets: [CropAspectRatioPreset.square]),
+        IOSUiSettings(aspectRatioPresets: [CropAspectRatioPreset.square]),
+      ],
     );
     if (cropped == null) return;
     if (!mounted) return;
