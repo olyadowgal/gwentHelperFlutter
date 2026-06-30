@@ -57,6 +57,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       context: context,
       builder: (_) => AddCardDialog(rowType: rowType),
     );
+    if (!mounted) return;
     if (card != null) {
       _notifier.addCard(rowType, card);
     }
@@ -67,6 +68,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       context: context,
       builder: (_) => EditCardDialog(card: card),
     );
+    if (!mounted) return;
     if (result == null) return;
     switch (result) {
       case EditCardSave(:final card):
@@ -101,8 +103,8 @@ class _GameScreenState extends ConsumerState<GameScreen> {
             onPressed: () async {
               await _notifier.saveGame();
               if (mounted) {
-                Navigator.of(context).pop();
-                context.pop();
+                context.pop(); // dismisses dialog
+                context.pop(); // returns to previous screen
               }
             },
             child: const Text('OK'),
@@ -141,7 +143,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                   lives: p1.lives,
                   photoPath: widget.player1PhotoPath,
                   isSelected: _state.selectedPlayer == SelectedPlayer.first,
-                  isWinning: p1.totalPoints >= p2.totalPoints,
+                  isWinning: p1.totalPoints > p2.totalPoints,
                   onTap: () => _notifier.selectPlayer(SelectedPlayer.first),
                 ),
               ),
@@ -152,7 +154,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                   lives: p2.lives,
                   photoPath: widget.player2PhotoPath,
                   isSelected: _state.selectedPlayer == SelectedPlayer.second,
-                  isWinning: p2.totalPoints >= p1.totalPoints,
+                  isWinning: p2.totalPoints > p1.totalPoints,
                   onTap: () => _notifier.selectPlayer(SelectedPlayer.second),
                 ),
               ),
