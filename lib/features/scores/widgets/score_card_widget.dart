@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../../domain/models/game_score.dart';
+import 'package:gwent_helper_flutter/domain/models/game_score.dart';
 import '../resources/scores_strings.dart';
 
 class ScoreCardWidget extends StatelessWidget {
@@ -8,7 +8,7 @@ class ScoreCardWidget extends StatelessWidget {
 
   const ScoreCardWidget({super.key, required this.score});
 
-  String _pts(int? v) => v?.toString() ?? '—';
+  static String _pts(int? v) => v?.toString() ?? '—';
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +30,7 @@ class ScoreCardWidget extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
-                const Text('vs'),
+                const Text(ScoresStrings.vs),
                 Expanded(
                   child: Text(
                     score.secondPlayer,
@@ -42,7 +42,7 @@ class ScoreCardWidget extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'Winner: ${score.winner}',
+              '${ScoresStrings.winner}${score.winner}',
               style: Theme.of(context)
                   .textTheme
                   .bodyMedium
@@ -57,17 +57,17 @@ class ScoreCardWidget extends StatelessWidget {
                   _HeaderCell(score.secondPlayer),
                 ]),
                 TableRow(children: [
-                  const _Cell('1'),
+                  const _Cell(ScoresStrings.round1),
                   _Cell(_pts(score.firstRoundFirstPlayerPoints)),
                   _Cell(_pts(score.firstRoundSecondPlayerPoints)),
                 ]),
                 TableRow(children: [
-                  const _Cell('2'),
+                  const _Cell(ScoresStrings.round2),
                   _Cell(_pts(score.secondRoundFirstPlayerPoints)),
                   _Cell(_pts(score.secondRoundSecondPlayerPoints)),
                 ]),
                 TableRow(children: [
-                  const _Cell('3'),
+                  const _Cell(ScoresStrings.round3),
                   _Cell(_pts(score.thirdRoundFirstPlayerPoints)),
                   _Cell(_pts(score.thirdRoundSecondPlayerPoints)),
                 ]),

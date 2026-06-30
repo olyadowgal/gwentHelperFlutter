@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../data/gwent_repository.dart';
+import 'package:gwent_helper_flutter/data/gwent_repository.dart';
 import 'scores_side_effect.dart';
 import 'scores_state.dart';
 

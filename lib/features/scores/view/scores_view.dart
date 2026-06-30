@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../arch/bloc_side_effect_handler.dart';
+import 'package:gwent_helper_flutter/arch/bloc_side_effect_handler.dart';
 import '../cubit/scores_cubit.dart';
 import '../cubit/scores_side_effect.dart';
 import '../cubit/scores_state.dart';
@@ -55,7 +55,7 @@ class ScoresView extends StatelessWidget {
               ScoresState(isLoading: true) =>
                 const Center(child: CircularProgressIndicator()),
               ScoresState(errorMessage: final msg) when msg != null =>
-                Center(child: Text('Error: $msg')),
+                Center(child: Text('${ScoresStrings.errorPrefix}$msg')),
               ScoresState(scores: final scores) when scores.isEmpty =>
                 const Center(child: Text(ScoresStrings.empty)),
               ScoresState(scores: final scores) => ListView.builder(

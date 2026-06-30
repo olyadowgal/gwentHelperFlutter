@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import '../../../arch/side_effect.dart';
-import '../../../domain/models/game_score.dart';
+import 'package:gwent_helper_flutter/arch/side_effect.dart';
+import 'package:gwent_helper_flutter/domain/models/game_score.dart';
 import 'scores_side_effect.dart';
 
 final class ScoresState extends Equatable

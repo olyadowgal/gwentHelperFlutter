@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../data/gwent_repository.dart';
+import 'package:gwent_helper_flutter/data/gwent_repository.dart';
 import '../cubit/scores_cubit.dart';
 import 'scores_view.dart';
 
