@@ -19,6 +19,12 @@ import '../widgets/user_widget.dart';
 import '../widgets/weather_widget.dart';
 
 class GameView extends StatefulWidget {
+  static const _sidebarWidth = 90.0;
+  static const _buttonIconSize = 20.0;
+  static const _buttonLabelSize = 10.0;
+  static const _buttonPadding = 8.0;
+  static const _dividerWidth = 1.0;
+
   final String? player1PhotoPath;
   final String? player2PhotoPath;
 
@@ -148,38 +154,16 @@ class _GameViewState extends State<GameView> {
                 children: [
                   // Zone 1: Sidebar
                   Container(
-                    width: 90,
+                    width: GameView._sidebarWidth,
                     color: colorScheme.surface,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         // Exit button
-                        GestureDetector(
+                        _SidebarButton(
+                          iconAsset: 'assets/icons/ic_exit.svg',
+                          label: GameStrings.exit,
                           onTap: () => _showExitDialog(context),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                SvgPicture.asset(
-                                  'assets/icons/ic_exit.svg',
-                                  width: 20,
-                                  height: 20,
-                                  colorFilter: ColorFilter.mode(
-                                    colorScheme.outline,
-                                    BlendMode.srcIn,
-                                  ),
-                                ),
-                                Text(
-                                  GameStrings.exit,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: colorScheme.outline,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
                         ),
                         // Player 1
                         UserWidget(
@@ -222,32 +206,11 @@ class _GameViewState extends State<GameView> {
                               cubit.onPlayerSelected(SelectedPlayer.second),
                         ),
                         // Pass button (long-press to end round)
-                        GestureDetector(
+                        _SidebarButton(
+                          iconAsset: 'assets/icons/ic_reset.svg',
+                          label: GameStrings.pass,
                           onLongPress: cubit.onEndRoundTapped,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                SvgPicture.asset(
-                                  'assets/icons/ic_reset.svg',
-                                  width: 20,
-                                  height: 20,
-                                  colorFilter: ColorFilter.mode(
-                                    colorScheme.outline,
-                                    BlendMode.srcIn,
-                                  ),
-                                ),
-                                Text(
-                                  GameStrings.pass,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: colorScheme.outline,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                          tooltip: 'Long-press to end round',
                         ),
                       ],
                     ),
@@ -259,8 +222,8 @@ class _GameViewState extends State<GameView> {
                   ),
                   // Zone 3: Divider
                   Container(
-                    width: 1,
-                    color: Colors.white24,
+                    width: GameView._dividerWidth,
+                    color: colorScheme.outline.withValues(alpha: 0.24),
                   ),
                   // Zone 4: Card rows
                   Expanded(
@@ -283,4 +246,54 @@ class _GameViewState extends State<GameView> {
           },
         ),
       );
+}
+
+class _SidebarButton extends StatelessWidget {
+  final String iconAsset;
+  final String label;
+  final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
+  final String? tooltip;
+
+  const _SidebarButton({
+    required this.iconAsset,
+    required this.label,
+    this.onTap,
+    this.onLongPress,
+    this.tooltip,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final button = GestureDetector(
+      onTap: onTap,
+      onLongPress: onLongPress,
+      child: Padding(
+        padding: const EdgeInsets.all(GameView._buttonPadding),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SvgPicture.asset(
+              iconAsset,
+              width: GameView._buttonIconSize,
+              height: GameView._buttonIconSize,
+              colorFilter: ColorFilter.mode(
+                colorScheme.outline,
+                BlendMode.srcIn,
+              ),
+            ),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: GameView._buttonLabelSize,
+                color: colorScheme.outline,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    return tooltip != null ? Tooltip(message: tooltip!, child: button) : button;
+  }
 }

@@ -9,15 +9,12 @@ class CardsRowWidget extends StatelessWidget {
   final CardsRow row;
   final void Function(CardsRowType) onAddCard;
   final void Function(CardsRow, Card) onCardLongPress;
-  // Horn moved to StatsColumnWidget; kept optional so old GameView compiles until Task 7
-  final void Function(CardsRowType, bool)? onHornChanged;
 
   const CardsRowWidget({
     super.key,
     required this.row,
     required this.onAddCard,
     required this.onCardLongPress,
-    this.onHornChanged,
   });
 
   @override
