@@ -34,9 +34,9 @@ class CardChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final isHero = card.abilities.contains(Ability.hero);
     final iconPath = _abilityIcon();
-    // CardChip always sits on a white or hero (secondary) background, both
-    // light. onSecondary is theme-confirmed to equal 0xFF263238 (Task 2),
-    // matching the dark text/icon color needed for contrast on either.
+    // onSecondary (0xFF263238) is the real theme-paired contrast color for
+    // the hero/secondary background; it's reused for the white background
+    // too since it's dark enough to stay readable there as well.
     final contentColor = Theme.of(context).colorScheme.onSecondary;
     return GestureDetector(
       onLongPress: onLongPress,
