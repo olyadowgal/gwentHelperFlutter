@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class UserWidget extends StatelessWidget {
   final String name;
@@ -15,58 +16,106 @@ class UserWidget extends StatelessWidget {
     required this.name,
     required this.totalPoints,
     required this.lives,
+    this.photoPath,
     required this.isSelected,
     required this.isWinning,
     required this.onTap,
-    this.photoPath,
   });
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            border: isSelected
-                ? Border.all(
-                    color: Theme.of(context).colorScheme.primary,
-                    width: 2,
-                  )
-                : null,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Column(
-            children: [
-              CircleAvatar(
-                radius: 28,
-                backgroundImage:
-                    photoPath != null ? FileImage(File(photoPath!)) : null,
-                child: photoPath == null ? const Icon(Icons.person) : null,
-              ),
-              const SizedBox(height: 4),
-              Text(name,
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
-              Text(
-                '$totalPoints',
-                style: TextStyle(
-                  fontSize: 20,
-                  color: isWinning ? Theme.of(context).colorScheme.tertiary : Theme.of(context).colorScheme.error,
-                  fontWeight: FontWeight.bold,
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: isSelected
+            ? BoxDecoration(
+                border: Border.all(
+                  color: colorScheme.primaryContainer,
+                  width: 2,
                 ),
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: List.generate(
-                  2,
-                  (i) => Icon(
-                    Icons.favorite,
-                    size: 16,
-                    color: i < lives ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.outline,
+              )
+            : null,
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 56,
+              height: 56,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: colorScheme.surface,
+                    backgroundImage: photoPath != null
+                        ? FileImage(File(photoPath!)) as ImageProvider
+                        : null,
+                    child: photoPath == null
+                        ? const Icon(
+                            Icons.person,
+                            size: 28,
+                            color: Colors.white,
+                          )
+                        : null,
                   ),
-                ),
+                  SvgPicture.asset(
+                    'assets/icons/ic_ring.svg',
+                    width: 56,
+                    height: 56,
+                    colorFilter: ColorFilter.mode(
+                      colorScheme.primary,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              name,
+              style: TextStyle(
+                fontSize: 12,
+                color: colorScheme.onSurface,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text(
+              '$totalPoints',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: isWinning
+                    ? colorScheme.secondary
+                    : colorScheme.onSurface,
+              ),
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(2, (i) {
+                final active = i < lives;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  child: SvgPicture.asset(
+                    active
+                        ? 'assets/icons/ic_jewel_activated.svg'
+                        : 'assets/icons/ic_jewel_deactivated.svg',
+                    width: 14,
+                    height: 14,
+                    colorFilter: ColorFilter.mode(
+                      active
+                          ? colorScheme.secondaryContainer
+                          : const Color(0xFF263238),
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ],
         ),
-      );
+      ),
+    );
+  }
 }
