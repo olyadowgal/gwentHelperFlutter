@@ -50,13 +50,13 @@ class UserWidget extends StatelessWidget {
                     radius: 24,
                     backgroundColor: colorScheme.surface,
                     backgroundImage: photoPath != null
-                        ? FileImage(File(photoPath!)) as ImageProvider
+                        ? FileImage(File(photoPath!))
                         : null,
                     child: photoPath == null
-                        ? const Icon(
+                        ? Icon(
                             Icons.person,
                             size: 28,
-                            color: Colors.white,
+                            color: colorScheme.onSurface,
                           )
                         : null,
                   ),
@@ -75,10 +75,7 @@ class UserWidget extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               name,
-              style: TextStyle(
-                fontSize: 12,
-                color: colorScheme.onSurface,
-              ),
+              style: TextStyle(fontSize: 12, color: colorScheme.onSurface),
               overflow: TextOverflow.ellipsis,
             ),
             Text(
