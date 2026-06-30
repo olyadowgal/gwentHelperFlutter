@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -8,6 +9,7 @@ import '../cubit/home_cubit.dart';
 import '../cubit/home_side_effect.dart';
 import '../cubit/home_state.dart';
 import '../resources/home_strings.dart';
+import '../widgets/background_touch_button.dart';
 import '../widgets/player_input_widget.dart';
 
 class HomeView extends StatefulWidget {
@@ -22,36 +24,51 @@ class _HomeViewState extends State<HomeView> {
   final _p2Controller = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+    _p1Controller.addListener(
+      () => context.read<HomeCubit>().onPlayer1NameChanged(_p1Controller.text),
+    );
+    _p2Controller.addListener(
+      () => context.read<HomeCubit>().onPlayer2NameChanged(_p2Controller.text),
+    );
+  }
+
+  @override
   void dispose() {
+    SystemChrome.setPreferredOrientations(DeviceOrientation.values);
     _p1Controller.dispose();
     _p2Controller.dispose();
     super.dispose();
   }
 
-  Future<void> _pickPhoto(BuildContext context, bool isPlayer1) async {
+  Future<void> _pickPhoto(bool isPlayer1) async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery);
     if (picked == null) return;
-
     final cropped = await ImageCropper().cropImage(
       sourcePath: picked.path,
+      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
       uiSettings: [
         AndroidUiSettings(
-          aspectRatioPresets: [CropAspectRatioPreset.square],
+          toolbarTitle: 'Crop Photo',
+          lockAspectRatio: true,
         ),
         IOSUiSettings(
-          aspectRatioPresets: [CropAspectRatioPreset.square],
+          title: 'Crop Photo',
+          aspectRatioLockEnabled: true,
         ),
       ],
     );
-    if (cropped == null) return;
-    if (!context.mounted) return;
-
-    final cubit = context.read<HomeCubit>();
+    if (cropped == null || !mounted) return;
     if (isPlayer1) {
-      cubit.onPlayer1PhotoPicked(cropped.path);
+      context.read<HomeCubit>().onPlayer1PhotoPicked(cropped.path);
     } else {
-      cubit.onPlayer2PhotoPicked(cropped.path);
+      context.read<HomeCubit>().onPlayer2PhotoPicked(cropped.path);
     }
   }
 
@@ -61,11 +78,11 @@ class _HomeViewState extends State<HomeView> {
         listener: (context, sideEffect) {
           switch (sideEffect) {
             case NavigateToGame(
-                :final player1Name,
-                :final player2Name,
-                :final player1PhotoPath,
-                :final player2PhotoPath,
-              ):
+              :final player1Name,
+              :final player2Name,
+              :final player1PhotoPath,
+              :final player2PhotoPath,
+            ):
               context.push('/game', extra: {
                 'player1Name': player1Name,
                 'player2Name': player2Name,
@@ -78,51 +95,48 @@ class _HomeViewState extends State<HomeView> {
         },
         child: BlocBuilder<HomeCubit, HomeState>(
           builder: (context, state) => Scaffold(
-            appBar: AppBar(title: const Text(HomeStrings.appTitle)),
-            body: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      PlayerInputWidget(
-                        label: HomeStrings.player1,
-                        controller: _p1Controller,
-                        photoPath: state.player1PhotoPath,
-                        onPhotoTap: () => _pickPhoto(context, true),
-                        onNameChanged:
-                            context.read<HomeCubit>().onPlayer1NameChanged,
-                      ),
-                      Text(
-                        HomeStrings.vs,
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                      PlayerInputWidget(
-                        label: HomeStrings.player2,
-                        controller: _p2Controller,
-                        photoPath: state.player2PhotoPath,
-                        onPhotoTap: () => _pickPhoto(context, false),
-                        onNameChanged:
-                            context.read<HomeCubit>().onPlayer2NameChanged,
-                      ),
-                    ],
+            body: Row(
+              children: [
+                BackgroundTouchButton(
+                  label: HomeStrings.scoresTooltip,
+                  color: Theme.of(context).colorScheme.secondary,
+                  side: ChevronSide.right,
+                  onTap: context.read<HomeCubit>().onScoresTapped,
+                ),
+                Expanded(
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        PlayerInputWidget(
+                          hint: HomeStrings.player1,
+                          controller: _p1Controller,
+                          photoPath: state.player1PhotoPath,
+                          onPhotoTap: () => _pickPhoto(true),
+                        ),
+                        const SizedBox(width: 32),
+                        Text(
+                          HomeStrings.vs,
+                          style: Theme.of(context).textTheme.displayLarge,
+                        ),
+                        const SizedBox(width: 32),
+                        PlayerInputWidget(
+                          hint: HomeStrings.player2,
+                          controller: _p2Controller,
+                          photoPath: state.player2PhotoPath,
+                          onPhotoTap: () => _pickPhoto(false),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 32),
-                  ElevatedButton(
-                    onPressed: context.read<HomeCubit>().onPlayTapped,
-                    child: const Text(HomeStrings.play),
-                  ),
-                  const SizedBox(height: 16),
-                  IconButton(
-                    icon: const Icon(Icons.leaderboard),
-                    tooltip: HomeStrings.scoresTooltip,
-                    onPressed: context.read<HomeCubit>().onScoresTapped,
-                  ),
-                ],
-              ),
+                ),
+                BackgroundTouchButton(
+                  label: HomeStrings.play,
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  side: ChevronSide.left,
+                  onTap: context.read<HomeCubit>().onPlayTapped,
+                ),
+              ],
             ),
           ),
         ),
