@@ -19,6 +19,8 @@ class CardChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isHero = card.abilities.contains(Ability.hero);
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return GestureDetector(
       onTap: onTap,
       onLongPress: onLongPress,
@@ -26,21 +28,21 @@ class CardChip extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 4),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: isHero ? Colors.amber : Theme.of(context).colorScheme.primaryContainer,
+          color: isHero ? colorScheme.primaryContainer : colorScheme.primaryContainer,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.brown),
+          border: Border.all(color: colorScheme.secondaryContainer),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               '$displayPoints',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             if (card.abilities.isNotEmpty)
               Text(
                 card.abilities.map((a) => a.shortName).join(' '),
-                style: const TextStyle(fontSize: 10),
+                style: textTheme.bodySmall,
               ),
           ],
         ),

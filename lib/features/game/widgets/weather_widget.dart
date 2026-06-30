@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gwent_helper_flutter/domain/models/cards_row_type.dart';
+import '../resources/game_strings.dart';
 
 class WeatherWidget extends StatelessWidget {
   final bool frostActive;
@@ -20,19 +21,19 @@ class WeatherWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _WeatherToggle(
-            label: 'Frost',
+            label: GameStrings.frost,
             icon: Icons.ac_unit,
             active: frostActive,
             onChanged: (v) => onChanged(CardsRowType.closeCombat, v),
           ),
           _WeatherToggle(
-            label: 'Fog',
+            label: GameStrings.fog,
             icon: Icons.cloud,
             active: fogActive,
             onChanged: (v) => onChanged(CardsRowType.longRange, v),
           ),
           _WeatherToggle(
-            label: 'Rain',
+            label: GameStrings.rain,
             icon: Icons.umbrella,
             active: rainActive,
             onChanged: (v) => onChanged(CardsRowType.siege, v),
@@ -59,8 +60,8 @@ class _WeatherToggle extends StatelessWidget {
         onTap: () => onChanged(!active),
         child: Column(
           children: [
-            Icon(icon, color: active ? Colors.blue : Colors.grey),
-            Text(label, style: TextStyle(color: active ? Colors.blue : Colors.grey)),
+            Icon(icon, color: active ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outline),
+            Text(label, style: TextStyle(color: active ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outline)),
           ],
         ),
       );

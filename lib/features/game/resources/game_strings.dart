@@ -11,4 +11,7 @@ abstract class GameStrings {
   static const save = 'SAVE';
   static const delete = 'DELETE';
   static const horn = 'Horn';
+  static const frost = 'Frost';
+  static const fog = 'Fog';
+  static const rain = 'Rain';
 }

@@ -28,8 +28,10 @@ class CardsRowWidget extends StatelessWidget {
               width: 80,
               child: Column(
                 children: [
-                  Text(row.type.displayName,
-                      style: const TextStyle(fontSize: 10)),
+                  Text(
+                    row.type.displayName,
+                    style: const TextStyle(fontSize: 10),
+                  ),
                   Text(
                     '${row.totalPoints}',
                     style: const TextStyle(

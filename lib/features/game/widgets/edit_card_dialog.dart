@@ -3,14 +3,18 @@ import 'package:gwent_helper_flutter/domain/models/ability.dart';
 import 'package:gwent_helper_flutter/domain/models/card.dart';
 import '../resources/game_strings.dart';
 
-sealed class EditCardResult {}
+sealed class EditCardResult {
+  const EditCardResult();
+}
 
 class EditCardSave extends EditCardResult {
   final Card card;
   EditCardSave(this.card);
 }
 
-class EditCardDelete extends EditCardResult {}
+class EditCardDelete extends EditCardResult {
+  const EditCardDelete();
+}
 
 class EditCardDialog extends StatefulWidget {
   final Card card;
@@ -75,7 +79,7 @@ class _EditCardDialogState extends State<EditCardDialog> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(EditCardDelete()),
+            onPressed: () => Navigator.of(context).pop(const EditCardDelete()),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text(GameStrings.delete),
           ),

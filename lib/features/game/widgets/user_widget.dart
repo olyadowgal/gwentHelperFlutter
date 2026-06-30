@@ -50,7 +50,7 @@ class UserWidget extends StatelessWidget {
                 '$totalPoints',
                 style: TextStyle(
                   fontSize: 20,
-                  color: isWinning ? Colors.green : Colors.red,
+                  color: isWinning ? Theme.of(context).colorScheme.tertiary : Theme.of(context).colorScheme.error,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -61,7 +61,7 @@ class UserWidget extends StatelessWidget {
                   (i) => Icon(
                     Icons.favorite,
                     size: 16,
-                    color: i < lives ? Colors.red : Colors.grey,
+                    color: i < lives ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.outline,
                   ),
                 ),
               ),
