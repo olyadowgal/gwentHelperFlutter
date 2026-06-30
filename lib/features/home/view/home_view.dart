@@ -37,8 +37,11 @@ class _HomeViewState extends State<HomeView> {
       sourcePath: picked.path,
       uiSettings: [
         AndroidUiSettings(
-            aspectRatioPresets: [CropAspectRatioPreset.square]),
-        IOSUiSettings(aspectRatioPresets: [CropAspectRatioPreset.square]),
+          aspectRatioPresets: [CropAspectRatioPreset.square],
+        ),
+        IOSUiSettings(
+          aspectRatioPresets: [CropAspectRatioPreset.square],
+        ),
       ],
     );
     if (cropped == null) return;
@@ -91,10 +94,11 @@ class _HomeViewState extends State<HomeView> {
                         onNameChanged:
                             context.read<HomeCubit>().onPlayer1NameChanged,
                       ),
-                      const Text(
+                      Text(
                         HomeStrings.vs,
-                        style: TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.bold),
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                       PlayerInputWidget(
                         label: HomeStrings.player2,
