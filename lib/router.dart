@@ -12,7 +12,7 @@ final router = GoRouter(
     GoRoute(
       path: '/game',
       builder: (context, state) {
-        final extra = state.extra as Map<String, String?>;
+        final extra = (state.extra as Map<String, String?>?) ?? {};
         return GameScreen(
           player1Name: extra['player1Name'] ?? 'Player 1',
           player2Name: extra['player2Name'] ?? 'Player 2',
