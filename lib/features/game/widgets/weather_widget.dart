@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gwent_helper_flutter/domain/models/cards_row_type.dart';
 import '../resources/game_strings.dart';
 
@@ -17,52 +18,63 @@ class WeatherWidget extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  Widget build(BuildContext context) => Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           _WeatherToggle(
+            icon: 'assets/icons/ic_frost.svg',
             label: GameStrings.frost,
-            icon: Icons.ac_unit,
             active: frostActive,
-            onChanged: (v) => onChanged(CardsRowType.closeCombat, v),
+            onTap: () => onChanged(CardsRowType.closeCombat, !frostActive),
           ),
           _WeatherToggle(
+            icon: 'assets/icons/ic_fog.svg',
             label: GameStrings.fog,
-            icon: Icons.cloud,
             active: fogActive,
-            onChanged: (v) => onChanged(CardsRowType.longRange, v),
+            onTap: () => onChanged(CardsRowType.longRange, !fogActive),
           ),
           _WeatherToggle(
+            icon: 'assets/icons/ic_rain.svg',
             label: GameStrings.rain,
-            icon: Icons.umbrella,
             active: rainActive,
-            onChanged: (v) => onChanged(CardsRowType.siege, v),
+            onTap: () => onChanged(CardsRowType.siege, !rainActive),
           ),
         ],
       );
 }
 
 class _WeatherToggle extends StatelessWidget {
+  final String icon;
   final String label;
-  final IconData icon;
   final bool active;
-  final ValueChanged<bool> onChanged;
+  final VoidCallback onTap;
 
   const _WeatherToggle({
-    required this.label,
     required this.icon,
+    required this.label,
     required this.active,
-    required this.onChanged,
+    required this.onTap,
   });
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-        onTap: () => onChanged(!active),
-        child: Column(
-          children: [
-            Icon(icon, color: active ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outline),
-            Text(label, style: TextStyle(color: active ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outline)),
-          ],
+  Widget build(BuildContext context) {
+    final color = active
+        ? Theme.of(context).colorScheme.primaryContainer
+        : Theme.of(context).colorScheme.outline;
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Tooltip(
+          message: label,
+          child: SvgPicture.asset(
+            icon,
+            width: 28,
+            height: 28,
+            colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+          ),
         ),
-      );
+      ),
+    );
+  }
 }
