@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gwent_helper_flutter/arch/bloc_side_effect_handler.dart';
 import '../cubit/scores_cubit.dart';
 import '../cubit/scores_side_effect.dart';
@@ -42,12 +44,35 @@ class ScoresView extends StatelessWidget {
         child: BlocBuilder<ScoresCubit, ScoresState>(
           builder: (context, state) => Scaffold(
             appBar: AppBar(
-              title: const Text(ScoresStrings.title),
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              leading: IconButton(
+                icon: SvgPicture.asset(
+                  'assets/icons/ic_baseline_arrow_back.svg',
+                  width: 24,
+                  height: 24,
+                  colorFilter: const ColorFilter.mode(
+                    Color(0xFFC4C5C5),
+                    BlendMode.srcIn,
+                  ),
+                ),
+                onPressed: () => context.pop(),
+              ),
               actions: [
-                IconButton(
-                  icon: const Icon(Icons.delete_sweep),
-                  tooltip: ScoresStrings.clearAll,
-                  onPressed: context.read<ScoresCubit>().onClearAllTapped,
+                GestureDetector(
+                  onLongPress: () =>
+                      context.read<ScoresCubit>().onClearAllTapped(),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: SvgPicture.asset(
+                      'assets/icons/ic_trash.svg',
+                      width: 24,
+                      height: 24,
+                      colorFilter: const ColorFilter.mode(
+                        Color(0xFFC4C5C5),
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

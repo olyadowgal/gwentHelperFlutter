@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:gwent_helper_flutter/domain/models/game_score.dart';
 import '../resources/scores_strings.dart';
@@ -25,17 +26,52 @@ class ScoreCardWidget extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: Text(
-                    score.firstPlayer,
-                    style: Theme.of(context).textTheme.titleMedium,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SvgPicture.asset(
+                        'assets/icons/ic_crown.svg',
+                        width: 24,
+                        height: 24,
+                        colorFilter: ColorFilter.mode(
+                          score.winner == score.firstPlayer
+                              ? Theme.of(context).colorScheme.secondaryContainer
+                              : Theme.of(context).colorScheme.onPrimaryContainer,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        score.firstPlayer,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ],
                   ),
                 ),
                 const Text(ScoresStrings.vs),
                 Expanded(
-                  child: Text(
-                    score.secondPlayer,
-                    textAlign: TextAlign.end,
-                    style: Theme.of(context).textTheme.titleMedium,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      SvgPicture.asset(
+                        'assets/icons/ic_crown.svg',
+                        width: 24,
+                        height: 24,
+                        colorFilter: ColorFilter.mode(
+                          score.winner == score.secondPlayer
+                              ? Theme.of(context).colorScheme.secondaryContainer
+                              : Theme.of(context).colorScheme.onPrimaryContainer,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        score.secondPlayer,
+                        textAlign: TextAlign.end,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ],
                   ),
                 ),
               ],
