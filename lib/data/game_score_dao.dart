@@ -10,7 +10,7 @@ class GameScoreDao {
     await db.insert(
       'game_score',
       score.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      conflictAlgorithm: ConflictAlgorithm.fail,
     );
   }
 
