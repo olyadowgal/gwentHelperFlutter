@@ -12,9 +12,9 @@ class GwentHelperApp extends StatelessWidget {
   Widget build(BuildContext context) => RepositoryProvider(
         create: (_) => GwentRepository(),
         child: MaterialApp.router(
+          title: 'GwentHelper',
           routerConfig: appRouter,
           theme: ThemeData(
-            brightness: Brightness.dark,
             scaffoldBackgroundColor: const Color(0xFF263238),
             colorScheme: const ColorScheme.dark(
               primary: Color(0xFF1FAA83),
