@@ -40,8 +40,10 @@ class CardsRowWidget extends StatelessWidget {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text(GameStrings.horn,
-                          style: TextStyle(fontSize: 10)),
+                      const Text(
+                        GameStrings.horn,
+                        style: TextStyle(fontSize: 10),
+                      ),
                       Checkbox(
                         value: row.horn,
                         onChanged: (v) => onHornChanged(row.type, v ?? false),
