@@ -36,7 +36,7 @@ class PlayerData {
     return copyWith(
       cardsRows: {
         for (final entry in cardsRows.entries)
-          entry.key: entry.value.copyWith(cards: [])
+          entry.key: entry.value.copyWith(cards: [], horn: false, badWeather: false)
       },
     );
   }

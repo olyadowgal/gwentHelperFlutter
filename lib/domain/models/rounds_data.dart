@@ -41,7 +41,7 @@ class RoundsData {
           thirdRoundFirst: firstPoints,
           thirdRoundSecond: secondPoints,
         ),
-      _ => this,
+      _ => throw ArgumentError('Invalid round number: $roundNumber. Must be 1, 2, or 3.'),
     };
   }
 }
