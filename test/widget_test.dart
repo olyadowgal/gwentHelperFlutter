@@ -7,6 +7,6 @@ void main() {
   testWidgets('App smoke test', (WidgetTester tester) async {
     await tester.pumpWidget(const ProviderScope(child: GwentHelperApp()));
     await tester.pumpAndSettle();
-    expect(find.text('Home — TODO'), findsOneWidget);
+    expect(find.text('GwentHelper'), findsOneWidget);
   });
 }
