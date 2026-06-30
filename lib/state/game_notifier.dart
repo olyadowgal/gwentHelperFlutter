@@ -50,6 +50,7 @@ class GameNotifier {
   GameState _state;
   final GwentRepository _repository;
   void Function(GameState)? onStateChanged;
+  bool _saved = false;
 
   GameNotifier(String player1Name, String player2Name, this._repository)
       : _state = GameState(
@@ -133,6 +134,7 @@ class GameNotifier {
   }
 
   void endRound() {
+    if (_state.gameOver != null) return;
     var data = _state.gameData;
     final roundCounter = _state.roundCounter + 1;
     final roundsData = _state.roundsData.withRound(
@@ -185,7 +187,8 @@ class GameNotifier {
     final data = _state.gameData;
     final rounds = _state.roundsData;
     final gameOver = _state.gameOver;
-    if (gameOver == null) return;
+    if (gameOver == null || _saved) return;
+    _saved = true;
 
     final score = GameScore(
       date: DateTime.now(),
@@ -200,6 +203,10 @@ class GameNotifier {
       thirdRoundSecondPlayerPoints: rounds.thirdRoundSecond,
     );
     await _repository.addGame(score);
+  }
+
+  void dispose() {
+    onStateChanged = null;
   }
 
   GameData _updateSelectedPlayer(PlayerData Function(PlayerData) update) {

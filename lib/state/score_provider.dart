@@ -3,6 +3,6 @@ import '../domain/models/game_score.dart';
 import 'game_provider.dart';
 
 final scoresProvider = FutureProvider<List<GameScore>>((ref) async {
-  final repo = ref.read(gwentRepositoryProvider);
+  final repo = ref.watch(gwentRepositoryProvider);
   return repo.getGames();
 });
