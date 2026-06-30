@@ -5,6 +5,7 @@ enum ChevronSide { left, right }
 class BackgroundTouchButton extends StatelessWidget {
   final String label;
   final Color color;
+  final Color textColor;
   final ChevronSide side;
   final VoidCallback onTap;
 
@@ -12,6 +13,7 @@ class BackgroundTouchButton extends StatelessWidget {
     super.key,
     required this.label,
     required this.color,
+    required this.textColor,
     required this.side,
     required this.onTap,
   });
@@ -31,7 +33,7 @@ class BackgroundTouchButton extends StatelessWidget {
                 label,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontSize: 20,
-                      color: Theme.of(context).colorScheme.onSecondary,
+                      color: textColor,
                       fontWeight: FontWeight.w700,
                     ),
               ),

@@ -96,10 +96,12 @@ class _HomeViewState extends State<HomeView> {
         child: BlocBuilder<HomeCubit, HomeState>(
           builder: (context, state) => Scaffold(
             body: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 BackgroundTouchButton(
                   label: HomeStrings.scoresTooltip,
                   color: Theme.of(context).colorScheme.secondary,
+                  textColor: Theme.of(context).colorScheme.onSecondary,
                   side: ChevronSide.right,
                   onTap: context.read<HomeCubit>().onScoresTapped,
                 ),
@@ -133,6 +135,7 @@ class _HomeViewState extends State<HomeView> {
                 BackgroundTouchButton(
                   label: HomeStrings.play,
                   color: Theme.of(context).colorScheme.primaryContainer,
+                  textColor: Theme.of(context).colorScheme.onPrimaryContainer,
                   side: ChevronSide.left,
                   onTap: context.read<HomeCubit>().onPlayTapped,
                 ),

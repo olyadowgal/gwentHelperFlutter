@@ -1,5 +1,4 @@
 abstract class HomeStrings {
-  static const appTitle = 'GwentHelper';
   static const vs = 'VS';
   static const play = 'PLAY';
   static const player1 = 'Player 1';
