@@ -27,10 +27,10 @@ class StatsColumnWidget extends StatelessWidget {
             children: [
               Text(
                 '${row.cards.length}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: colorScheme.onSurface,
                 ),
               ),
               GestureDetector(
@@ -40,7 +40,9 @@ class StatsColumnWidget extends StatelessWidget {
                   width: 28,
                   height: 28,
                   colorFilter: ColorFilter.mode(
-                    row.horn ? colorScheme.primaryContainer : Colors.white,
+                    row.horn
+                        ? colorScheme.primaryContainer
+                        : colorScheme.onSurface,
                     BlendMode.srcIn,
                   ),
                 ),
