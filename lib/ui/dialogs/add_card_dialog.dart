@@ -13,7 +13,7 @@ class AddCardDialog extends StatefulWidget {
 }
 
 class _AddCardDialogState extends State<AddCardDialog> {
-  int _points = 1;
+  int _points = 0;
   final List<Ability> _selectedAbilities = [];
 
   @override

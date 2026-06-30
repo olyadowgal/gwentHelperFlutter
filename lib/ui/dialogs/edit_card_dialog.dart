@@ -2,6 +2,15 @@ import 'package:flutter/material.dart' hide Card;
 import '../../domain/models/card.dart';
 import '../../domain/models/ability.dart';
 
+sealed class EditCardResult {}
+
+class EditCardSave extends EditCardResult {
+  final Card card;
+  EditCardSave(this.card);
+}
+
+class EditCardDelete extends EditCardResult {}
+
 class EditCardDialog extends StatefulWidget {
   final Card card;
 
@@ -64,7 +73,7 @@ class _EditCardDialogState extends State<EditCardDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop({'action': 'delete'}),
+          onPressed: () => Navigator.of(context).pop(EditCardDelete()),
           style: TextButton.styleFrom(foregroundColor: Colors.red),
           child: const Text('DELETE'),
         ),
@@ -73,13 +82,7 @@ class _EditCardDialogState extends State<EditCardDialog> {
           child: const Text('CANCEL'),
         ),
         ElevatedButton(
-          onPressed: () => Navigator.of(context).pop({
-            'action': 'save',
-            'card': widget.card.copyWith(
-              points: _points,
-              abilities: List.from(_selectedAbilities),
-            ),
-          }),
+          onPressed: () => Navigator.of(context).pop(EditCardSave(widget.card.copyWith(points: _points, abilities: List.from(_selectedAbilities)))),
           child: const Text('SAVE'),
         ),
       ],
