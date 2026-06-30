@@ -17,4 +17,8 @@ abstract class GameStrings {
   static const roundPrefix = 'Round ';
   static const wins = 'wins!';
   static const tie = "It's a tie!";
+  static const exit = 'Exit';
+  static const pass = 'Pass';
+  static const exitTitle = 'Exit game?';
+  static const exitContent = 'Progress will not be saved.';
 }
