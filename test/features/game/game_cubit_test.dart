@@ -166,6 +166,28 @@ void main() {
       expect(cubit.state.gameData.secondPlayerData.lives, 1);
     });
 
+    test('first player loses a life when second player wins the round', () {
+      cubit.onPlayerSelected(SelectedPlayer.second);
+      cubit.onCardAdded(CardsRowType.closeCombat, card(5)); // Alice 0, Bob 5
+      cubit.onEndRoundTapped();
+      expect(cubit.state.gameData.firstPlayerData.lives, 1);
+      expect(cubit.state.gameData.secondPlayerData.lives, 2);
+    });
+
+    test('game over is Winner.second when first player runs out of lives',
+        () {
+      cubit.onPlayerSelected(SelectedPlayer.second);
+      cubit.onCardAdded(CardsRowType.closeCombat, card(5));
+      cubit.onEndRoundTapped(); // Alice 2→1
+      cubit.onCardAdded(CardsRowType.closeCombat, card(5));
+      cubit.onEndRoundTapped(); // Alice 1→0 → game over
+      expect(cubit.state.gameOver, Winner.second);
+      expect(
+        cubit.state.sideEffects,
+        [const ShowGameOverDialog(Winner.second)],
+      );
+    });
+
     test('cards cleared and round recorded after non-fatal round', () {
       cubit.onCardAdded(CardsRowType.closeCombat, card(5));
       cubit.onPlayerSelected(SelectedPlayer.second);
