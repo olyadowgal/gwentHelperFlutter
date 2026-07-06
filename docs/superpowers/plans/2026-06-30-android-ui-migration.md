@@ -1443,11 +1443,7 @@ class _GameViewState extends State<GameView> {
 }
 ```
 
-- [ ] **Step 4: Add exitTitle and exitContent to GameStrings**
-
-Read `lib/features/game/resources/game_strings.dart`. Add:
-```dart
-- [ ] **Step 5: flutter analyze**
+- [ ] **Step 4: flutter analyze**
 
 ```bash
 flutter analyze
