@@ -1,0 +1,63 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Vollkorn:wght@400;700&display=swap');
+</style>
+
+<h2>Typography — Vollkorn Font</h2>
+<p class="subtitle">The Android app uses Vollkorn (serif) for the VS label, triangular button text, and app title. Should Flutter use it too?</p>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">With Vollkorn</div>
+    <div class="mockup-body" style="background:#263238;padding:20px;display:flex;flex-direction:column;align-items:center;gap:16px;">
+      <!-- Home screen VS -->
+      <div style="color:#5FDCB3;font-family:'Vollkorn',serif;font-size:36px;font-weight:700;letter-spacing:2px;">VS</div>
+      <!-- Triangular button text preview -->
+      <div style="display:flex;gap:12px;align-items:center;">
+        <div style="background:#FFCA28;padding:8px 16px;border-radius:4px;">
+          <span style="font-family:'Vollkorn',serif;font-size:16px;font-weight:700;color:#263238;">Scores</span>
+        </div>
+        <div style="background:#5FDCB3;padding:8px 16px;border-radius:4px;">
+          <span style="font-family:'Vollkorn',serif;font-size:16px;font-weight:700;color:#263238;">Play</span>
+        </div>
+      </div>
+      <!-- App title -->
+      <div style="color:#5FDCB3;font-family:'Vollkorn',serif;font-size:20px;font-weight:700;letter-spacing:3px;text-transform:uppercase;">Gwent Helper</div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">Without Vollkorn (system font)</div>
+    <div class="mockup-body" style="background:#263238;padding:20px;display:flex;flex-direction:column;align-items:center;gap:16px;">
+      <!-- Home screen VS -->
+      <div style="color:#5FDCB3;font-size:36px;font-weight:900;letter-spacing:2px;">VS</div>
+      <!-- Triangular button text preview -->
+      <div style="display:flex;gap:12px;align-items:center;">
+        <div style="background:#FFCA28;padding:8px 16px;border-radius:4px;">
+          <span style="font-size:16px;font-weight:700;color:#263238;">Scores</span>
+        </div>
+        <div style="background:#5FDCB3;padding:8px 16px;border-radius:4px;">
+          <span style="font-size:16px;font-weight:700;color:#263238;">Play</span>
+        </div>
+      </div>
+      <!-- App title -->
+      <div style="color:#5FDCB3;font-size:20px;font-weight:700;letter-spacing:3px;text-transform:uppercase;">Gwent Helper</div>
+    </div>
+  </div>
+</div>
+
+<div class="options" style="margin-top:20px;">
+  <div class="option" data-choice="vollkorn" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Use Vollkorn</h3>
+      <p>Add Vollkorn TTF from the Android project to Flutter assets. Apply to VS label, button text, and app title. Matches Android exactly.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="system" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>System font only</h3>
+      <p>Use Flutter's default font. Simpler setup, still gets the colors and layout right. Slightly less authentic feel.</p>
+    </div>
+  </div>
+</div>

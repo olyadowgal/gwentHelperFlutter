@@ -1,0 +1,82 @@
+<h2>Home Screen — How faithful to Android?</h2>
+<p class="subtitle">The Android home screen is landscape-first with dramatic triangular nav buttons. How closely should Flutter match it?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="A" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#263238;padding:12px;min-height:220px;display:flex;align-items:stretch;gap:0;overflow:hidden;border-radius:6px;">
+      <!-- Triangular Scores button -->
+      <div style="width:60px;background:#FFCA28;clip-path:polygon(0 0,100% 10%,100% 90%,0 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <span style="font-size:9px;font-weight:bold;color:#263238;writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:1px;">SCORES</span>
+      </div>
+      <!-- Player cards -->
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:12px;padding:8px;">
+        <div style="background:white;border-radius:4px;padding:10px;text-align:center;width:72px;">
+          <div style="width:44px;height:44px;border-radius:50%;background:#e0e0e0;margin:0 auto 6px;"></div>
+          <div style="width:60px;height:12px;background:#ddd;border-radius:2px;"></div>
+        </div>
+        <div style="color:#5FDCB3;font-size:20px;font-weight:bold;">VS</div>
+        <div style="background:white;border-radius:4px;padding:10px;text-align:center;width:72px;">
+          <div style="width:44px;height:44px;border-radius:50%;background:#e0e0e0;margin:0 auto 6px;"></div>
+          <div style="width:60px;height:12px;background:#ddd;border-radius:2px;"></div>
+        </div>
+      </div>
+      <!-- Triangular Play button -->
+      <div style="width:60px;background:#5FDCB3;clip-path:polygon(0 10%,100% 0,100% 100%,0 90%);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <span style="font-size:9px;font-weight:bold;color:#263238;writing-mode:vertical-rl;letter-spacing:1px;">PLAY</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Faithful reproduction</h3>
+      <p>Triangular chevron buttons, landscape layout, oxford blue background. Matches Android exactly. Requires custom ClipPath widgets.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="B" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#263238;padding:16px;min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;border-radius:6px;">
+      <div style="color:#5FDCB3;font-size:13px;font-weight:bold;letter-spacing:2px;">GWENT HELPER</div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="background:white;border-radius:8px;padding:10px;text-align:center;width:72px;">
+          <div style="width:44px;height:44px;border-radius:50%;background:#e0e0e0;margin:0 auto 6px;"></div>
+          <div style="width:60px;height:12px;background:#ddd;border-radius:2px;"></div>
+        </div>
+        <div style="color:#5FDCB3;font-size:20px;font-weight:bold;">VS</div>
+        <div style="background:white;border-radius:8px;padding:10px;text-align:center;width:72px;">
+          <div style="width:44px;height:44px;border-radius:50%;background:#e0e0e0;margin:0 auto 6px;"></div>
+          <div style="width:60px;height:12px;background:#ddd;border-radius:2px;"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;">
+        <div style="background:#5FDCB3;border-radius:6px;padding:8px 20px;color:#263238;font-size:11px;font-weight:bold;">▶ PLAY</div>
+        <div style="background:#FFCA28;border-radius:6px;padding:8px 16px;color:#263238;font-size:11px;font-weight:bold;">🏆 SCORES</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Same palette, portrait-first</h3>
+      <p>Oxford blue background, teal + sunglow colors, Vollkorn font — but standard Flutter buttons and vertical layout. Gwent feel without the landscape constraint.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="C" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#1B2A4A;padding:16px;min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;border-radius:6px;">
+      <div style="color:#90CAF9;font-size:11px;letter-spacing:3px;text-transform:uppercase;">Gwent Helper</div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:10px;text-align:center;width:72px;backdrop-filter:blur(4px);">
+          <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.2);margin:0 auto 6px;"></div>
+          <div style="width:60px;height:12px;background:rgba(255,255,255,0.2);border-radius:2px;"></div>
+        </div>
+        <div style="color:white;font-size:20px;font-weight:bold;">VS</div>
+        <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:10px;text-align:center;width:72px;">
+          <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.2);margin:0 auto 6px;"></div>
+          <div style="width:60px;height:12px;background:rgba(255,255,255,0.2);border-radius:2px;"></div>
+        </div>
+      </div>
+      <div style="background:#2979FF;border-radius:24px;padding:10px 32px;color:white;font-size:11px;font-weight:bold;letter-spacing:1px;">PLAY</div>
+    </div>
+    <div class="card-body">
+      <h3>C — Modern Material3 dark</h3>
+      <p>Navy background, Material3 dark theme, standard components. Clean and modern but departs from the original Gwent aesthetic.</p>
+    </div>
+  </div>
+
+</div>
