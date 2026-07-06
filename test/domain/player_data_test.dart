@@ -5,8 +5,8 @@ import 'package:gwent_helper_flutter/domain/models/cards_row_type.dart';
 import 'package:gwent_helper_flutter/domain/models/player_data.dart';
 
 void main() {
-  group('PlayerData defaults', () {
-    test('starts with 2 lives and all row types present and empty', () {
+  group('`PlayerData` defaults', () {
+    test('starts with 2 `lives` and all row types present and empty', () {
       final player = PlayerData(name: 'Alice');
       expect(player.lives, 2);
       expect(player.cardsRows.keys.toSet(), CardsRowType.values.toSet());
@@ -18,7 +18,7 @@ void main() {
     });
   });
 
-  group('totalPoints', () {
+  group('`totalPoints`', () {
     test('sums points across all rows', () {
       final player = PlayerData(
         cardsRows: {
@@ -37,8 +37,8 @@ void main() {
     });
   });
 
-  group('minusLife', () {
-    test('decrements lives', () {
+  group('`minusLife`', () {
+    test('decrements `lives`', () {
       expect(PlayerData().minusLife().lives, 1);
     });
 
@@ -48,30 +48,32 @@ void main() {
     });
   });
 
-  group('clearCards', () {
-    test('empties cards and resets horn/badWeather, keeps name and lives',
-        () {
-      final player = PlayerData(
-        name: 'Alice',
-        lives: 1,
-        cardsRows: {
-          for (final t in CardsRowType.values)
-            t: CardsRow(
-              type: t,
-              cards: [Card(points: 4, abilities: const [])],
-              horn: true,
-              badWeather: true,
-            ),
-        },
-      );
-      final cleared = player.clearCards();
-      expect(cleared.name, 'Alice');
-      expect(cleared.lives, 1);
-      for (final row in cleared.cardsRows.values) {
-        expect(row.cards, isEmpty);
-        expect(row.horn, isFalse);
-        expect(row.badWeather, isFalse);
-      }
-    });
+  group('`clearCards`', () {
+    test(
+      'empties `cards` and resets `horn`/`badWeather`, keeps `name` and `lives`',
+      () {
+        final player = PlayerData(
+          name: 'Alice',
+          lives: 1,
+          cardsRows: {
+            for (final t in CardsRowType.values)
+              t: CardsRow(
+                type: t,
+                cards: [Card(points: 4, abilities: const [])],
+                horn: true,
+                badWeather: true,
+              ),
+          },
+        );
+        final cleared = player.clearCards();
+        expect(cleared.name, 'Alice');
+        expect(cleared.lives, 1);
+        for (final row in cleared.cardsRows.values) {
+          expect(row.cards, isEmpty);
+          expect(row.horn, isFalse);
+          expect(row.badWeather, isFalse);
+        }
+      },
+    );
   });
 }

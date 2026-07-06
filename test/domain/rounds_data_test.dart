@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gwent_helper_flutter/domain/models/rounds_data.dart';
 
 void main() {
-  group('withRound', () {
+  group('`withRound`', () {
     test('round 1 sets first-round slots, others stay null', () {
       final data = const RoundsData().withRound(1, 10, 20);
       expect(data.firstRoundFirst, 10);
@@ -26,15 +26,9 @@ void main() {
       expect(data.thirdRoundSecond, 60);
     });
 
-    test('invalid round number throws ArgumentError', () {
-      expect(
-        () => const RoundsData().withRound(4, 1, 2),
-        throwsArgumentError,
-      );
-      expect(
-        () => const RoundsData().withRound(0, 1, 2),
-        throwsArgumentError,
-      );
+    test('invalid round number throws `ArgumentError`', () {
+      expect(() => const RoundsData().withRound(4, 1, 2), throwsArgumentError);
+      expect(() => const RoundsData().withRound(0, 1, 2), throwsArgumentError);
     });
   });
 }

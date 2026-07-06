@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gwent_helper_flutter/arch/json_extensions.dart';
 
 void main() {
-  group('parseObject', () {
+  group('`parseObject`', () {
     test('parses present key', () {
       final map = <String, dynamic>{
         'user': <String, dynamic>{'name': 'Bob'},
@@ -17,7 +17,7 @@ void main() {
     });
   });
 
-  group('parseEnum', () {
+  group('`parseEnum`', () {
     test('parses present string value', () {
       final map = <String, dynamic>{'kind': 'two'};
       final value = map.parseEnum('kind', (v) => v == 'two' ? 2 : null);
@@ -30,7 +30,7 @@ void main() {
     });
   });
 
-  group('parseObjectsList', () {
+  group('`parseObjectsList`', () {
     test('parses list and skips entries where parser returns null', () {
       final map = <String, dynamic>{
         'items': [
@@ -49,7 +49,7 @@ void main() {
     });
   });
 
-  group('parseStringsList', () {
+  group('`parseStringsList`', () {
     test('parses list of strings', () {
       final map = <String, dynamic>{
         'tags': ['a', 'b'],
@@ -62,7 +62,7 @@ void main() {
     });
   });
 
-  group('parseBoolInt', () {
+  group('`parseBoolInt`', () {
     test('passes through booleans', () {
       expect(<String, dynamic>{'f': true}.parseBoolInt('f'), isTrue);
       expect(<String, dynamic>{'f': false}.parseBoolInt('f'), isFalse);
@@ -78,7 +78,7 @@ void main() {
     });
   });
 
-  group('parseNum', () {
+  group('`parseNum`', () {
     test('passes through num', () {
       expect(<String, dynamic>{'n': 5}.parseNum('n'), 5);
       expect(<String, dynamic>{'n': 4.5}.parseNum('n'), 4.5);
@@ -93,7 +93,7 @@ void main() {
     });
   });
 
-  group('getFirstKeyExists', () {
+  group('`getFirstKeyExists`', () {
     test('returns first present key', () {
       final map = <String, dynamic>{'b': 1, 'c': 2};
       expect(map.getFirstKeyExists(['a', 'b', 'c']), 'b');

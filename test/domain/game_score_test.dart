@@ -4,7 +4,7 @@ import 'package:gwent_helper_flutter/domain/models/game_score.dart';
 void main() {
   final date = DateTime(2026, 7, 6, 12, 30);
 
-  group('toMap / fromMap round-trip', () {
+  group('`toMap` / `fromMap` round-trip', () {
     test('all fields survive with all round points set', () {
       final score = GameScore(
         date: date,
@@ -43,7 +43,7 @@ void main() {
       expect(restored.thirdRoundSecondPlayerPoints, isNull);
     });
 
-    test('toMap stores date as millisecondsSinceEpoch', () {
+    test('`toMap` stores `date` as `millisecondsSinceEpoch`', () {
       final score = GameScore(
         date: date,
         firstPlayer: 'A',

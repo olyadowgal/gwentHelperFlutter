@@ -20,48 +20,41 @@ class _ConsumedAwareCubit extends Cubit<HomeState>
 }
 
 void main() {
-  group('WithSideEffects', () {
-    test('+ appends the effect and produces an unequal state', () {
+  group('`WithSideEffects`', () {
+    test('`+` appends the effect and produces an unequal state', () {
       const initial = HomeState();
       final withEffect = initial + const NavigateToScores();
       expect(withEffect.sideEffects, [const NavigateToScores()]);
       expect(withEffect, isNot(equals(initial)));
     });
 
-    test('- removes the effect', () {
+    test('`+` preserves existing effects', () {
+      const gameEffect = NavigateToGame(player1Name: 'A', player2Name: 'B');
+      final state = (const HomeState() + const NavigateToScores()) + gameEffect;
+      expect(state.sideEffects, [const NavigateToScores(), gameEffect]);
+    });
+
+    test('`-` removes the effect', () {
       final withEffect = const HomeState() + const NavigateToScores();
       final consumed = withEffect - const NavigateToScores();
       expect(consumed.sideEffects, isEmpty);
     });
-
-    test('+ preserves existing effects', () {
-      const gameEffect = NavigateToGame(
-        player1Name: 'A',
-        player2Name: 'B',
-      );
-      final state =
-          (const HomeState() + const NavigateToScores()) + gameEffect;
-      expect(
-        state.sideEffects,
-        [const NavigateToScores(), gameEffect],
-      );
-    });
   });
 
-  group('SideEffectConsumedAware', () {
-    test('fires onSideEffectConsumed when one effect is consumed', () {
+  group('`SideEffectConsumedAware`', () {
+    test('fires `onSideEffectConsumed` when one effect is consumed', () {
       final cubit = _ConsumedAwareCubit();
+      addTearDown(cubit.close);
       cubit.addEffect(const NavigateToScores());
       cubit.consumeEffect(const NavigateToScores());
       expect(cubit.consumed, [const NavigateToScores()]);
-      cubit.close();
     });
 
-    test('does not fire when an effect is added', () {
+    test('does not fire `onSideEffectConsumed` when an effect is added', () {
       final cubit = _ConsumedAwareCubit();
+      addTearDown(cubit.close);
       cubit.addEffect(const NavigateToScores());
       expect(cubit.consumed, isEmpty);
-      cubit.close();
     });
   });
 }

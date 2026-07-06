@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gwent_helper_flutter/arch/list_extensions.dart';
 
 void main() {
-  group('operator -', () {
+  group('`operator -`', () {
     test('removes matching elements and returns a new list', () {
       final original = [1, 2, 3, 2];
       final result = original - [2];
@@ -15,7 +15,7 @@ void main() {
     });
   });
 
-  group('sorted', () {
+  group('`sorted`', () {
     test('returns sorted copy without mutating original', () {
       final original = [3, 1, 2];
       final result = original.sorted;

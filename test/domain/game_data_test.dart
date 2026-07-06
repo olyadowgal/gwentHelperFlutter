@@ -7,7 +7,7 @@ import 'package:gwent_helper_flutter/domain/models/player_data.dart';
 import 'package:gwent_helper_flutter/domain/models/winner.dart';
 
 void main() {
-  group('GameData.winner', () {
+  group('`GameData.winner`', () {
     PlayerData playerWithPoints(int points) {
       final card = Card(points: points, abilities: []);
       final row = CardsRow(type: CardsRowType.closeCombat, cards: [card]);
