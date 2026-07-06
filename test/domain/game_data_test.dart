@@ -20,7 +20,9 @@ void main() {
       );
     }
 
-    test('first player wins', () {
+    test('Given the first player has more points\n'
+        'When `winner` is read\n'
+        'Then it is `Winner.first`', () {
       final game = GameData(
         firstPlayerData: playerWithPoints(10),
         secondPlayerData: playerWithPoints(5),
@@ -28,7 +30,9 @@ void main() {
       expect(game.winner, Winner.first);
     });
 
-    test('second player wins', () {
+    test('Given the second player has more points\n'
+        'When `winner` is read\n'
+        'Then it is `Winner.second`', () {
       final game = GameData(
         firstPlayerData: playerWithPoints(3),
         secondPlayerData: playerWithPoints(8),
@@ -36,7 +40,9 @@ void main() {
       expect(game.winner, Winner.second);
     });
 
-    test('tie when equal', () {
+    test('Given equal points\n'
+        'When `winner` is read\n'
+        'Then it is `Winner.tie`', () {
       final game = GameData(
         firstPlayerData: playerWithPoints(7),
         secondPlayerData: playerWithPoints(7),

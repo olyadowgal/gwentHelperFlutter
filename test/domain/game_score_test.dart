@@ -5,7 +5,9 @@ void main() {
   final date = DateTime(2026, 7, 6, 12, 30);
 
   group('`toMap` / `fromMap` round-trip', () {
-    test('all fields survive with all round points set', () {
+    test('Given a fully populated `GameScore`\n'
+        'When `toMap` then `fromMap` are called\n'
+        'Then all fields survive', () {
       final score = GameScore(
         date: date,
         firstPlayer: 'Alice',
@@ -31,7 +33,9 @@ void main() {
       expect(restored.thirdRoundSecondPlayerPoints, 31);
     });
 
-    test('null round points are preserved', () {
+    test('Given null round points\n'
+        'When round-tripped through `toMap`/`fromMap`\n'
+        'Then nulls are preserved', () {
       final score = GameScore(
         date: date,
         firstPlayer: 'Alice',
@@ -43,7 +47,9 @@ void main() {
       expect(restored.thirdRoundSecondPlayerPoints, isNull);
     });
 
-    test('`toMap` stores `date` as `millisecondsSinceEpoch`', () {
+    test('Given a `GameScore`\n'
+        'When `toMap` is called\n'
+        'Then `date` is stored as `millisecondsSinceEpoch`', () {
       final score = GameScore(
         date: date,
         firstPlayer: 'A',

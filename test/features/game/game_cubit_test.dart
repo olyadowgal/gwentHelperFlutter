@@ -58,22 +58,29 @@ void main() {
   });
 
   group('initial state', () {
-    test('players named, 2 lives, empty rows, first selected, round 0', () {
-      final state = cubit.state;
-      expect(state.gameData.firstPlayerData.name, 'Alice');
-      expect(state.gameData.secondPlayerData.name, 'Bob');
-      expect(state.gameData.firstPlayerData.lives, 2);
-      expect(state.gameData.secondPlayerData.lives, 2);
-      expect(state.gameData.firstPlayerData.totalPoints, 0);
-      expect(state.selectedPlayer, SelectedPlayer.first);
-      expect(state.roundCounter, 0);
-      expect(state.gameOver, isNull);
-      expect(state.sideEffects, isEmpty);
-    });
+    test(
+      'Given player names\n'
+      'When `GameCubit` is created\n'
+      'Then players are named with 2 lives, empty rows, first selected, round 0',
+      () {
+        final state = cubit.state;
+        expect(state.gameData.firstPlayerData.name, 'Alice');
+        expect(state.gameData.secondPlayerData.name, 'Bob');
+        expect(state.gameData.firstPlayerData.lives, 2);
+        expect(state.gameData.secondPlayerData.lives, 2);
+        expect(state.gameData.firstPlayerData.totalPoints, 0);
+        expect(state.selectedPlayer, SelectedPlayer.first);
+        expect(state.roundCounter, 0);
+        expect(state.gameOver, isNull);
+        expect(state.sideEffects, isEmpty);
+      },
+    );
   });
 
   group('`onPlayerSelected`', () {
-    test('switches `selectedPlayer` and `selectedPlayerData` follows', () {
+    test('Given the first player is selected\n'
+        'When `onPlayerSelected` is called with the second player\n'
+        'Then `selectedPlayer` switches and `selectedPlayerData` follows', () {
       cubit.onPlayerSelected(SelectedPlayer.second);
       expect(cubit.state.selectedPlayer, SelectedPlayer.second);
       expect(cubit.state.selectedPlayerData.name, 'Bob');
@@ -81,7 +88,9 @@ void main() {
   });
 
   group('`onAddCardRequested`', () {
-    test('emits `ShowAddCardDialog`', () async {
+    test('Given a fresh game\n'
+        'When `onAddCardRequested` is called\n'
+        'Then `ShowAddCardDialog` is emitted', () async {
       cubit.onAddCardRequested(CardsRowType.siege);
       await Future<void>.delayed(Duration.zero);
       verify(
@@ -92,7 +101,9 @@ void main() {
   });
 
   group('`onCardAdded`', () {
-    test('appends to selected player row only', () {
+    test('Given the first player is selected\n'
+        'When `onCardAdded` is called\n'
+        'Then the card is appended to the selected player row only', () {
       cubit.onCardAdded(CardsRowType.closeCombat, card(5));
       final p1Row = cubit
           .state
@@ -108,7 +119,9 @@ void main() {
       expect(p2Row.cards, isEmpty);
     });
 
-    test('adds to second player when selected', () {
+    test('Given the second player is selected\n'
+        'When `onCardAdded` is called\n'
+        'Then the card goes to the second player row', () {
       cubit.onPlayerSelected(SelectedPlayer.second);
       cubit.onCardAdded(CardsRowType.longRange, card(3));
       final p1Row = cubit
@@ -127,7 +140,9 @@ void main() {
   });
 
   group('`onEditCardRequested`', () {
-    test('emits `ShowEditCardDialog`', () async {
+    test('Given a card in a row\n'
+        'When `onEditCardRequested` is called\n'
+        'Then `ShowEditCardDialog` is emitted', () async {
       final c = card(5);
       cubit.onCardAdded(CardsRowType.closeCombat, c);
       final row = cubit
@@ -144,7 +159,9 @@ void main() {
   });
 
   group('`onCardEdited`', () {
-    test('replaces card with matching `cardId`, leaves others', () {
+    test('Given two cards in a row\n'
+        'When `onCardEdited` is called\n'
+        'Then only the card with matching `cardId` is replaced', () {
       cubit.onCardAdded(CardsRowType.closeCombat, card(5, id: 'c1'));
       cubit.onCardAdded(CardsRowType.closeCombat, card(3, id: 'c2'));
       cubit.onCardEdited(CardsRowType.closeCombat, card(9, id: 'c1'));
@@ -160,7 +177,9 @@ void main() {
   });
 
   group('`onCardDeleted`', () {
-    test('removes card with matching `cardId`', () {
+    test('Given two cards in a row\n'
+        'When `onCardDeleted` is called\n'
+        'Then only the card with matching `cardId` is removed', () {
       cubit.onCardAdded(CardsRowType.siege, card(5, id: 'c1'));
       cubit.onCardAdded(CardsRowType.siege, card(3, id: 'c2'));
       cubit.onCardDeleted(CardsRowType.siege, card(5, id: 'c1'));
@@ -175,7 +194,9 @@ void main() {
   });
 
   group('`onHornChanged`', () {
-    test('sets `horn` on the selected player specified row only', () {
+    test('Given a fresh game\n'
+        'When `onHornChanged` is called\n'
+        'Then `horn` is set on the selected player specified row only', () {
       cubit.onHornChanged(CardsRowType.longRange, true);
       final p1 = cubit.state.gameData.firstPlayerData;
       final p2 = cubit.state.gameData.secondPlayerData;
@@ -186,7 +207,9 @@ void main() {
   });
 
   group('`onWeatherChanged`', () {
-    test('sets `badWeather` on the same row for BOTH players', () {
+    test('Given a fresh game\n'
+        'When `onWeatherChanged` is called\n'
+        'Then `badWeather` is set on the same row for both players', () {
       cubit.onWeatherChanged(CardsRowType.closeCombat, true);
       final p1 = cubit.state.gameData.firstPlayerData;
       final p2 = cubit.state.gameData.secondPlayerData;
@@ -197,20 +220,26 @@ void main() {
   });
 
   group('`onEndRoundTapped`', () {
-    test('loser loses a life, winner keeps lives', () {
+    test('Given the first player has more points\n'
+        'When `onEndRoundTapped` is called\n'
+        'Then the loser loses a life and the winner keeps lives', () {
       cubit.onCardAdded(CardsRowType.closeCombat, card(5)); // Alice 5, Bob 0
       cubit.onEndRoundTapped();
       expect(cubit.state.gameData.firstPlayerData.lives, 2);
       expect(cubit.state.gameData.secondPlayerData.lives, 1);
     });
 
-    test('tie: both players lose a life', () {
+    test('Given equal points\n'
+        'When `onEndRoundTapped` is called\n'
+        'Then both players lose a life', () {
       cubit.onEndRoundTapped(); // 0 : 0 → tie
       expect(cubit.state.gameData.firstPlayerData.lives, 1);
       expect(cubit.state.gameData.secondPlayerData.lives, 1);
     });
 
-    test('first player loses a life when second player wins the round', () {
+    test('Given the second player has more points\n'
+        'When `onEndRoundTapped` is called\n'
+        'Then the first player loses a life', () {
       cubit.onPlayerSelected(SelectedPlayer.second);
       cubit.onCardAdded(CardsRowType.closeCombat, card(5)); // Alice 0, Bob 5
       cubit.onEndRoundTapped();
@@ -218,60 +247,64 @@ void main() {
       expect(cubit.state.gameData.secondPlayerData.lives, 2);
     });
 
-    test(
-      'cards cleared and round recorded in `roundsData` after non-fatal round',
-      () {
-        cubit.onCardAdded(CardsRowType.closeCombat, card(5));
-        cubit.onPlayerSelected(SelectedPlayer.second);
-        cubit.onCardAdded(CardsRowType.siege, card(2));
-        cubit.onEndRoundTapped();
-
-        final state = cubit.state;
-        expect(state.roundCounter, 1);
-        expect(state.roundsData.firstRoundFirst, 5);
-        expect(state.roundsData.firstRoundSecond, 2);
-        expect(state.gameData.firstPlayerData.totalPoints, 0);
-        expect(state.gameData.secondPlayerData.totalPoints, 0);
-        expect(state.gameOver, isNull);
-      },
-    );
-
-    test('emits `ShowGameOverDialog` when a player runs out of lives; '
-        'cards NOT cleared', () async {
-      // Round 1: Alice wins, Bob 2→1
+    test('Given a non-fatal round\n'
+        'When `onEndRoundTapped` is called\n'
+        'Then cards are cleared and the round is recorded in `roundsData`', () {
       cubit.onCardAdded(CardsRowType.closeCombat, card(5));
+      cubit.onPlayerSelected(SelectedPlayer.second);
+      cubit.onCardAdded(CardsRowType.siege, card(2));
       cubit.onEndRoundTapped();
-      // Round 2: Alice wins again, Bob 1→0 → game over
-      cubit.onCardAdded(CardsRowType.closeCombat, card(5));
-      cubit.onEndRoundTapped();
-      await Future<void>.delayed(Duration.zero);
 
-      expect(cubit.state.gameOver, Winner.first);
-      verify(
-        () => sideEffectHandler.call(const ShowGameOverDialog(Winner.first)),
-      ).called(1);
-      // On game over the final board is preserved (not cleared).
-      expect(cubit.state.gameData.firstPlayerData.totalPoints, 5);
+      final state = cubit.state;
+      expect(state.roundCounter, 1);
+      expect(state.roundsData.firstRoundFirst, 5);
+      expect(state.roundsData.firstRoundSecond, 2);
+      expect(state.gameData.firstPlayerData.totalPoints, 0);
+      expect(state.gameData.secondPlayerData.totalPoints, 0);
+      expect(state.gameOver, isNull);
     });
 
     test(
-      '`gameOver` is `Winner.second` when first player runs out of lives',
+      'Given the losing player has one life left\n'
+      'When `onEndRoundTapped` is called\n'
+      'Then `ShowGameOverDialog` is emitted and the board is not cleared',
       () async {
-        cubit.onPlayerSelected(SelectedPlayer.second);
+        // Round 1: Alice wins, Bob 2→1
         cubit.onCardAdded(CardsRowType.closeCombat, card(5));
-        cubit.onEndRoundTapped(); // Alice 2→1
+        cubit.onEndRoundTapped();
+        // Round 2: Alice wins again, Bob 1→0 → game over
         cubit.onCardAdded(CardsRowType.closeCombat, card(5));
-        cubit.onEndRoundTapped(); // Alice 1→0 → game over
+        cubit.onEndRoundTapped();
         await Future<void>.delayed(Duration.zero);
 
-        expect(cubit.state.gameOver, Winner.second);
+        expect(cubit.state.gameOver, Winner.first);
         verify(
-          () => sideEffectHandler.call(const ShowGameOverDialog(Winner.second)),
+          () => sideEffectHandler.call(const ShowGameOverDialog(Winner.first)),
         ).called(1);
+        // On game over the final board is preserved (not cleared).
+        expect(cubit.state.gameData.firstPlayerData.totalPoints, 5);
       },
     );
 
-    test('double game over (both at 0) is a tie', () async {
+    test('Given the first player has one life left and loses\n'
+        'When `onEndRoundTapped` is called\n'
+        'Then `gameOver` is `Winner.second`', () async {
+      cubit.onPlayerSelected(SelectedPlayer.second);
+      cubit.onCardAdded(CardsRowType.closeCombat, card(5));
+      cubit.onEndRoundTapped(); // Alice 2→1
+      cubit.onCardAdded(CardsRowType.closeCombat, card(5));
+      cubit.onEndRoundTapped(); // Alice 1→0 → game over
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cubit.state.gameOver, Winner.second);
+      verify(
+        () => sideEffectHandler.call(const ShowGameOverDialog(Winner.second)),
+      ).called(1);
+    });
+
+    test('Given both players have one life left\n'
+        'When a tie round ends\n'
+        'Then `gameOver` is `Winner.tie`', () async {
       cubit.onEndRoundTapped(); // tie: both 2→1
       cubit.onEndRoundTapped(); // tie: both 1→0 → game over tie
       await Future<void>.delayed(Duration.zero);
@@ -282,7 +315,9 @@ void main() {
       ).called(1);
     });
 
-    test('is a no-op after game over', () {
+    test('Given the game is over\n'
+        'When `onEndRoundTapped` is called again\n'
+        'Then nothing changes', () {
       cubit.onEndRoundTapped();
       cubit.onEndRoundTapped(); // game over (tie)
       final roundsBefore = cubit.state.roundCounter;
@@ -300,7 +335,9 @@ void main() {
       await Future<void>.delayed(Duration.zero);
     }
 
-    test('saves the score once and emits `NavigateBack`', () async {
+    test('Given the game is over\n'
+        'When `onGameOverConfirmed` is called\n'
+        'Then the score is saved once and `NavigateBack` is emitted', () async {
       await playToGameOver();
       await cubit.onGameOverConfirmed();
       await Future<void>.delayed(Duration.zero);
@@ -319,14 +356,18 @@ void main() {
       verify(() => sideEffectHandler.call(const NavigateBack())).called(1);
     });
 
-    test('second call does not save again', () async {
+    test('Given the score was already saved\n'
+        'When `onGameOverConfirmed` is called again\n'
+        'Then it does not save again', () async {
       await playToGameOver();
       await cubit.onGameOverConfirmed();
       await cubit.onGameOverConfirmed();
       verify(() => repository.addGame(any())).called(1);
     });
 
-    test('is a no-op when game is not over', () async {
+    test('Given the game is not over\n'
+        'When `onGameOverConfirmed` is called\n'
+        'Then nothing happens', () async {
       await cubit.onGameOverConfirmed();
       await Future<void>.delayed(Duration.zero);
       verifyZeroInteractions(repository);

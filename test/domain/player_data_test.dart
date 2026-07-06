@@ -6,20 +6,27 @@ import 'package:gwent_helper_flutter/domain/models/player_data.dart';
 
 void main() {
   group('`PlayerData` defaults', () {
-    test('starts with 2 `lives` and all row types present and empty', () {
-      final player = PlayerData(name: 'Alice');
-      expect(player.lives, 2);
-      expect(player.cardsRows.keys.toSet(), CardsRowType.values.toSet());
-      for (final row in player.cardsRows.values) {
-        expect(row.cards, isEmpty);
-        expect(row.horn, isFalse);
-        expect(row.badWeather, isFalse);
-      }
-    });
+    test(
+      'Given no arguments\n'
+      'When `PlayerData` is created\n'
+      'Then it starts with 2 `lives` and all row types present and empty',
+      () {
+        final player = PlayerData(name: 'Alice');
+        expect(player.lives, 2);
+        expect(player.cardsRows.keys.toSet(), CardsRowType.values.toSet());
+        for (final row in player.cardsRows.values) {
+          expect(row.cards, isEmpty);
+          expect(row.horn, isFalse);
+          expect(row.badWeather, isFalse);
+        }
+      },
+    );
   });
 
   group('`totalPoints`', () {
-    test('sums points across all rows', () {
+    test('Given cards in multiple rows\n'
+        'When `totalPoints` is read\n'
+        'Then it sums points across all rows', () {
       final player = PlayerData(
         cardsRows: {
           CardsRowType.closeCombat: CardsRow(
@@ -38,11 +45,15 @@ void main() {
   });
 
   group('`minusLife`', () {
-    test('decrements `lives`', () {
+    test('Given 2 `lives`\n'
+        'When `minusLife` is called\n'
+        'Then `lives` becomes 1', () {
       expect(PlayerData().minusLife().lives, 1);
     });
 
-    test('clamps at 0', () {
+    test('Given 0 `lives`\n'
+        'When `minusLife` is called\n'
+        'Then `lives` stays 0', () {
       final dead = PlayerData(lives: 0).minusLife();
       expect(dead.lives, 0);
     });
@@ -50,7 +61,9 @@ void main() {
 
   group('`clearCards`', () {
     test(
-      'empties `cards` and resets `horn`/`badWeather`, keeps `name` and `lives`',
+      'Given rows with cards, horn and weather set\n'
+      'When `clearCards` is called\n'
+      'Then `cards`/`horn`/`badWeather` reset and `name`/`lives` are kept',
       () {
         final player = PlayerData(
           name: 'Alice',

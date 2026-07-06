@@ -22,7 +22,9 @@ void main() {
     return cubit;
   }
 
-  test('initial state is empty `HomeState`', () async {
+  test('Given a new `HomeCubit`\n'
+      'When no method is called\n'
+      'Then state is an empty `HomeState`', () async {
     final cubit = HomeCubit();
     expect(cubit.state, const HomeState());
     await cubit.close();
@@ -30,7 +32,9 @@ void main() {
 
   group('`onPlayer1NameChanged`', () {
     blocTest<HomeCubit, HomeState>(
-      'updates `player1Name`',
+      'Given a new cubit\n'
+      'When `onPlayer1NameChanged` is called\n'
+      'Then `player1Name` is updated',
       build: HomeCubit.new,
       act: (c) => c.onPlayer1NameChanged('Alice'),
       expect: () => [const HomeState(player1Name: 'Alice')],
@@ -39,7 +43,9 @@ void main() {
 
   group('`onPlayer2NameChanged`', () {
     blocTest<HomeCubit, HomeState>(
-      'updates `player2Name`',
+      'Given a new cubit\n'
+      'When `onPlayer2NameChanged` is called\n'
+      'Then `player2Name` is updated',
       build: HomeCubit.new,
       act: (c) => c.onPlayer2NameChanged('Bob'),
       expect: () => [const HomeState(player2Name: 'Bob')],
@@ -48,7 +54,9 @@ void main() {
 
   group('`onPlayer1PhotoPicked` and `onPlayer2PhotoPicked`', () {
     blocTest<HomeCubit, HomeState>(
-      'update `player1PhotoPath` and `player2PhotoPath`',
+      'Given a new cubit\n'
+      'When photos are picked for both players\n'
+      'Then `player1PhotoPath` and `player2PhotoPath` are updated',
       build: HomeCubit.new,
       act: (c) => c
         ..onPlayer1PhotoPicked('/p1.jpg')
@@ -64,24 +72,25 @@ void main() {
   });
 
   group('`onPlayTapped`', () {
-    test(
-      'emits `NavigateToGame` with default names when names are empty',
-      () async {
-        final cubit = buildCubitWithHandler();
-        cubit.onPlayTapped();
-        await Future<void>.delayed(Duration.zero);
-        verify(
-          () => sideEffectHandler.call(
-            const NavigateToGame(
-              player1Name: 'Player 1',
-              player2Name: 'Player 2',
-            ),
+    test('Given empty player names\n'
+        'When `onPlayTapped` is called\n'
+        'Then `NavigateToGame` is emitted with default names', () async {
+      final cubit = buildCubitWithHandler();
+      cubit.onPlayTapped();
+      await Future<void>.delayed(Duration.zero);
+      verify(
+        () => sideEffectHandler.call(
+          const NavigateToGame(
+            player1Name: 'Player 1',
+            player2Name: 'Player 2',
           ),
-        ).called(1);
-      },
-    );
+        ),
+      ).called(1);
+    });
 
-    test('carries entered names and photos into `NavigateToGame`', () async {
+    test('Given entered names and photos\n'
+        'When `onPlayTapped` is called\n'
+        'Then `NavigateToGame` carries them through', () async {
       final cubit = buildCubitWithHandler();
       cubit
         ..onPlayer1NameChanged('Alice')
@@ -104,7 +113,9 @@ void main() {
   });
 
   group('`onScoresTapped`', () {
-    test('emits `NavigateToScores`', () async {
+    test('Given a new cubit\n'
+        'When `onScoresTapped` is called\n'
+        'Then `NavigateToScores` is emitted', () async {
       final cubit = buildCubitWithHandler();
       cubit.onScoresTapped();
       await Future<void>.delayed(Duration.zero);

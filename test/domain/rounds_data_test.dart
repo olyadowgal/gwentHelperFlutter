@@ -3,7 +3,9 @@ import 'package:gwent_helper_flutter/domain/models/rounds_data.dart';
 
 void main() {
   group('`withRound`', () {
-    test('round 1 sets first-round slots, others stay null', () {
+    test('Given empty `RoundsData`\n'
+        'When `withRound` is called for round 1\n'
+        'Then first-round slots are set and others stay null', () {
       final data = const RoundsData().withRound(1, 10, 20);
       expect(data.firstRoundFirst, 10);
       expect(data.firstRoundSecond, 20);
@@ -13,7 +15,9 @@ void main() {
       expect(data.thirdRoundSecond, isNull);
     });
 
-    test('rounds accumulate without overwriting earlier rounds', () {
+    test('Given recorded earlier rounds\n'
+        'When `withRound` is called for later rounds\n'
+        'Then earlier rounds are not overwritten', () {
       final data = const RoundsData()
           .withRound(1, 10, 20)
           .withRound(2, 30, 40)
@@ -26,7 +30,9 @@ void main() {
       expect(data.thirdRoundSecond, 60);
     });
 
-    test('invalid round number throws `ArgumentError`', () {
+    test('Given an invalid round number\n'
+        'When `withRound` is called\n'
+        'Then it throws `ArgumentError`', () {
       expect(() => const RoundsData().withRound(4, 1, 2), throwsArgumentError);
       expect(() => const RoundsData().withRound(0, 1, 2), throwsArgumentError);
     });

@@ -36,7 +36,9 @@ void main() {
   }
 
   group('`onScreenOpened`', () {
-    test('loads scores on construction', () async {
+    test('Given the repository returns scores\n'
+        'When the cubit is constructed\n'
+        'Then scores are loaded into state', () async {
       when(() => repository.getGames()).thenAnswer((_) async => [score]);
       final cubit = await buildCubitWithHandler();
       expect(cubit.state.isLoading, isFalse);
@@ -44,7 +46,9 @@ void main() {
       expect(cubit.state.errorMessage, isNull);
     });
 
-    test('repository error surfaces as `errorMessage`', () async {
+    test('Given the repository throws\n'
+        'When the cubit is constructed\n'
+        'Then the error surfaces as `errorMessage`', () async {
       when(() => repository.getGames()).thenThrow(Exception('db fail'));
       final cubit = await buildCubitWithHandler();
       expect(cubit.state.isLoading, isFalse);
@@ -53,7 +57,9 @@ void main() {
   });
 
   group('`onClearAllTapped`', () {
-    test('emits `ShowClearConfirmDialog`', () async {
+    test('Given loaded scores\n'
+        'When `onClearAllTapped` is called\n'
+        'Then `ShowClearConfirmDialog` is emitted', () async {
       when(() => repository.getGames()).thenAnswer((_) async => [score]);
       final cubit = await buildCubitWithHandler();
       cubit.onClearAllTapped();
@@ -65,7 +71,9 @@ void main() {
   });
 
   group('`onClearConfirmed`', () {
-    test('clears repository and empties `scores`', () async {
+    test('Given loaded scores\n'
+        'When `onClearConfirmed` is called\n'
+        'Then the repository is cleared and `scores` is empty', () async {
       when(() => repository.getGames()).thenAnswer((_) async => [score]);
       when(() => repository.clearGames()).thenAnswer((_) async {});
       final cubit = await buildCubitWithHandler();
