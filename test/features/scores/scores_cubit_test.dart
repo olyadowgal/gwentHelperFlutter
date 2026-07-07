@@ -7,7 +7,9 @@ import 'package:mocktail/mocktail.dart';
 
 import '../../helpers/mock_side_effect_handler.dart';
 
+// region Mocks
 class MockGwentRepository extends Mock implements GwentRepository {}
+// endregion
 
 void main() {
   late MockGwentRepository repository;
@@ -35,51 +37,93 @@ void main() {
     return cubit;
   }
 
-  group('`onScreenOpened`', () {
-    test('Given the repository returns scores\n'
-        'When the cubit is constructed\n'
-        'Then scores are loaded into state', () async {
-      when(() => repository.getGames()).thenAnswer((_) async => [score]);
-      final cubit = await buildCubitWithHandler();
-      expect(cubit.state.isLoading, isFalse);
-      expect(cubit.state.scores, [score]);
-      expect(cubit.state.errorMessage, isNull);
+  group('ScoresCubit', () {
+    group('`onScreenOpened`', () {
+      test(
+        '''
+      Given the repository returns scores
+      When the cubit is constructed
+      Then scores are loaded into state
+      ''',
+        () async {
+          // Given
+          when(() => repository.getGames()).thenAnswer((_) async => [score]);
+
+          // When
+          final cubit = await buildCubitWithHandler();
+
+          // Then
+          expect(cubit.state.isLoading, isFalse);
+          expect(cubit.state.scores, [score]);
+          expect(cubit.state.errorMessage, isNull);
+        },
+      );
+
+      test(
+        '''
+      Given the repository throws
+      When the cubit is constructed
+      Then the error surfaces as `errorMessage`
+      ''',
+        () async {
+          // Given
+          when(() => repository.getGames()).thenThrow(Exception('db fail'));
+
+          // When
+          final cubit = await buildCubitWithHandler();
+
+          // Then
+          expect(cubit.state.isLoading, isFalse);
+          expect(cubit.state.errorMessage, contains('db fail'));
+        },
+      );
     });
 
-    test('Given the repository throws\n'
-        'When the cubit is constructed\n'
-        'Then the error surfaces as `errorMessage`', () async {
-      when(() => repository.getGames()).thenThrow(Exception('db fail'));
-      final cubit = await buildCubitWithHandler();
-      expect(cubit.state.isLoading, isFalse);
-      expect(cubit.state.errorMessage, contains('db fail'));
-    });
-  });
+    group('`onClearAllTapped`', () {
+      test(
+        '''
+      Given loaded scores
+      When `onClearAllTapped` is called
+      Then `ShowClearConfirmDialog` is emitted
+      ''',
+        () async {
+          // Given
+          when(() => repository.getGames()).thenAnswer((_) async => [score]);
+          final cubit = await buildCubitWithHandler();
 
-  group('`onClearAllTapped`', () {
-    test('Given loaded scores\n'
-        'When `onClearAllTapped` is called\n'
-        'Then `ShowClearConfirmDialog` is emitted', () async {
-      when(() => repository.getGames()).thenAnswer((_) async => [score]);
-      final cubit = await buildCubitWithHandler();
-      cubit.onClearAllTapped();
-      await Future<void>.delayed(Duration.zero);
-      verify(
-        () => sideEffectHandler.call(const ShowClearConfirmDialog()),
-      ).called(1);
-    });
-  });
+          // When
+          cubit.onClearAllTapped();
+          await Future<void>.delayed(Duration.zero);
 
-  group('`onClearConfirmed`', () {
-    test('Given loaded scores\n'
-        'When `onClearConfirmed` is called\n'
-        'Then the repository is cleared and `scores` is empty', () async {
-      when(() => repository.getGames()).thenAnswer((_) async => [score]);
-      when(() => repository.clearGames()).thenAnswer((_) async {});
-      final cubit = await buildCubitWithHandler();
-      await cubit.onClearConfirmed();
-      verify(() => repository.clearGames()).called(1);
-      expect(cubit.state.scores, isEmpty);
+          // Then
+          verify(
+            () => sideEffectHandler.call(const ShowClearConfirmDialog()),
+          ).called(1);
+        },
+      );
+    });
+
+    group('`onClearConfirmed`', () {
+      test(
+        '''
+      Given loaded scores
+      When `onClearConfirmed` is called
+      Then the repository is cleared and `scores` is empty
+      ''',
+        () async {
+          // Given
+          when(() => repository.getGames()).thenAnswer((_) async => [score]);
+          when(() => repository.clearGames()).thenAnswer((_) async {});
+          final cubit = await buildCubitWithHandler();
+
+          // When
+          await cubit.onClearConfirmed();
+
+          // Then
+          verify(() => repository.clearGames()).called(1);
+          expect(cubit.state.scores, isEmpty);
+        },
+      );
     });
   });
 }
