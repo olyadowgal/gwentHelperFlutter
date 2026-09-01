@@ -8,6 +8,8 @@ abstract class ScoresStrings {
   static const clear = 'Clear';
   static const empty = 'No games recorded yet.';
   static const round = 'Round';
+  static const player1 = 'Player 1';
+  static const player2 = 'Player 2';
   static const vs = 'vs';
   static const winner = 'Winner: ';
   static const tie = 'Tie';

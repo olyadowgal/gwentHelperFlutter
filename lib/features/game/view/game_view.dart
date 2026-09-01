@@ -20,9 +20,9 @@ import '../widgets/weather_widget.dart';
 
 class GameView extends StatefulWidget {
   static const _sidebarWidth = 90.0;
-  static const _buttonIconSize = 20.0;
+  static const _buttonIconSize = 18.0;
   static const _buttonLabelSize = 10.0;
-  static const _buttonPadding = 8.0;
+  static const _buttonPadding = 6.0;
   static const _dividerWidth = 1.0;
 
   final String? player1PhotoPath;
@@ -155,97 +155,117 @@ class _GameViewState extends State<GameView> {
         final colorScheme = Theme.of(context).colorScheme;
 
         return Scaffold(
-          body: Row(
-            children: [
-              // Zone 1: Sidebar
-              Container(
-                width: GameView._sidebarWidth,
-                color: colorScheme.surface,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Exit button
-                    _SidebarButton(
-                      iconAsset: 'assets/icons/ic_exit.svg',
-                      label: GameStrings.exit,
-                      onTap: () => _showExitDialog(context),
-                    ),
-                    // Player 1
-                    UserWidget(
-                      name: p1.name,
-                      totalPoints: p1.totalPoints,
-                      lives: p1.lives,
-                      photoPath: widget.player1PhotoPath,
-                      isSelected: state.selectedPlayer == SelectedPlayer.first,
-                      isWinning: p1.totalPoints > p2.totalPoints,
-                      onTap: () => cubit.onPlayerSelected(SelectedPlayer.first),
-                    ),
-                    // Weather
-                    WeatherWidget(
-                      frostActive:
-                          selectedData
-                              .cardsRows[CardsRowType.closeCombat]
-                              ?.badWeather ??
-                          false,
-                      fogActive:
-                          selectedData
-                              .cardsRows[CardsRowType.longRange]
-                              ?.badWeather ??
-                          false,
-                      rainActive:
-                          selectedData
-                              .cardsRows[CardsRowType.siege]
-                              ?.badWeather ??
-                          false,
-                      onChanged: cubit.onWeatherChanged,
-                    ),
-                    // Player 2
-                    UserWidget(
-                      name: p2.name,
-                      totalPoints: p2.totalPoints,
-                      lives: p2.lives,
-                      photoPath: widget.player2PhotoPath,
-                      isSelected: state.selectedPlayer == SelectedPlayer.second,
-                      isWinning: p2.totalPoints > p1.totalPoints,
-                      onTap: () =>
-                          cubit.onPlayerSelected(SelectedPlayer.second),
-                    ),
-                    // Pass button (long-press to end round)
-                    _SidebarButton(
-                      iconAsset: 'assets/icons/ic_reset.svg',
-                      label: GameStrings.pass,
-                      onLongPress: cubit.onEndRoundTapped,
-                      tooltip: 'Long-press to end round',
-                    ),
-                  ],
-                ),
-              ),
-              // Zone 2: Stats column
-              StatsColumnWidget(
-                cardsRows: selectedData.cardsRows,
-                onHornChanged: cubit.onHornChanged,
-              ),
-              // Zone 3: Divider
-              Container(
-                width: GameView._dividerWidth,
-                color: colorScheme.outline.withValues(alpha: 0.24),
-              ),
-              // Zone 4: Card rows
-              Expanded(
-                child: Column(
-                  children: CardsRowType.values.map((rowType) {
-                    final row = selectedData.cardsRows[rowType]!;
-                    return Expanded(
-                      child: CardsRowWidget(
-                        row: row,
-                        onAddCard: cubit.onAddCardRequested,
-                        onCardLongPress: cubit.onEditCardRequested,
+          body: SafeArea(
+            child: Row(
+              children: [
+                // Zone 1: Sidebar
+                Container(
+                  width: GameView._sidebarWidth,
+                  color: colorScheme.surface,
+                  child: Column(
+                    children: [
+                      // Exit button
+                      _SidebarButton(
+                        iconAsset: 'assets/icons/ic_exit.svg',
+                        label: GameStrings.exit,
+                        onTap: () => _showExitDialog(context),
                       ),
-                    );
-                  }).toList(),
+                      // Players and weather shrink to fit so that the exit and
+                      // pass buttons always stay on screen.
+                      Expanded(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Player 1
+                              UserWidget(
+                                name: p1.name,
+                                totalPoints: p1.totalPoints,
+                                lives: p1.lives,
+                                photoPath: widget.player1PhotoPath,
+                                isSelected:
+                                    state.selectedPlayer ==
+                                    SelectedPlayer.first,
+                                isWinning: p1.totalPoints > p2.totalPoints,
+                                onTap: () => cubit.onPlayerSelected(
+                                  SelectedPlayer.first,
+                                ),
+                              ),
+                              // Weather
+                              WeatherWidget(
+                                frostActive:
+                                    selectedData
+                                        .cardsRows[CardsRowType.closeCombat]
+                                        ?.badWeather ??
+                                    false,
+                                fogActive:
+                                    selectedData
+                                        .cardsRows[CardsRowType.longRange]
+                                        ?.badWeather ??
+                                    false,
+                                rainActive:
+                                    selectedData
+                                        .cardsRows[CardsRowType.siege]
+                                        ?.badWeather ??
+                                    false,
+                                onChanged: cubit.onWeatherChanged,
+                              ),
+                              // Player 2
+                              UserWidget(
+                                name: p2.name,
+                                totalPoints: p2.totalPoints,
+                                lives: p2.lives,
+                                photoPath: widget.player2PhotoPath,
+                                isSelected:
+                                    state.selectedPlayer ==
+                                    SelectedPlayer.second,
+                                isWinning: p2.totalPoints > p1.totalPoints,
+                                onTap: () => cubit.onPlayerSelected(
+                                  SelectedPlayer.second,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // Pass button (long-press to end round)
+                      _SidebarButton(
+                        iconAsset: 'assets/icons/ic_reset.svg',
+                        label: GameStrings.pass,
+                        onLongPress: cubit.onEndRoundTapped,
+                        tooltip: GameStrings.passHint,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                // Zone 2: Stats column
+                StatsColumnWidget(
+                  cardsRows: selectedData.cardsRows,
+                  onHornChanged: cubit.onHornChanged,
+                ),
+                // Zone 3: Divider
+                Container(
+                  width: GameView._dividerWidth,
+                  color: colorScheme.outline.withValues(alpha: 0.24),
+                ),
+                // Zone 4: Card rows
+                Expanded(
+                  child: Column(
+                    children: CardsRowType.values.map((rowType) {
+                      final row = selectedData.cardsRows[rowType]!;
+                      return Expanded(
+                        child: CardsRowWidget(
+                          row: row,
+                          onAddCard: cubit.onAddCardRequested,
+                          onCardLongPress: cubit.onEditCardRequested,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -272,6 +292,7 @@ class _SidebarButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final button = GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       onLongPress: onLongPress,
       child: Padding(
@@ -299,6 +320,14 @@ class _SidebarButton extends StatelessWidget {
         ),
       ),
     );
-    return tooltip != null ? Tooltip(message: tooltip!, child: button) : button;
+    // A tap-triggered tooltip keeps the hint discoverable without competing
+    // with the long-press that actually ends the round.
+    return tooltip != null
+        ? Tooltip(
+            message: tooltip!,
+            triggerMode: TooltipTriggerMode.tap,
+            child: button,
+          )
+        : button;
   }
 }

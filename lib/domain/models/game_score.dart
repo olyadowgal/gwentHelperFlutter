@@ -43,10 +43,31 @@ class GameScore {
       _parsedWinner == Winner.second ||
       (_parsedWinner == null && winner == secondPlayer);
 
-  String displayedWinner({required String tieLabel}) {
-    if (firstPlayerWon) return firstPlayer;
-    if (secondPlayerWon) return secondPlayer;
+  /// Games can be saved before a name was ever typed in, so displaying a name
+  /// always falls back to a placeholder.
+  String displayedFirstPlayer({required String fallback}) =>
+      _nameOr(firstPlayer, fallback);
+
+  String displayedSecondPlayer({required String fallback}) =>
+      _nameOr(secondPlayer, fallback);
+
+  String displayedWinner({
+    required String tieLabel,
+    required String firstPlayerFallback,
+    required String secondPlayerFallback,
+  }) {
+    if (firstPlayerWon) {
+      return displayedFirstPlayer(fallback: firstPlayerFallback);
+    }
+    if (secondPlayerWon) {
+      return displayedSecondPlayer(fallback: secondPlayerFallback);
+    }
     return tieLabel;
+  }
+
+  static String _nameOr(String name, String fallback) {
+    final trimmed = name.trim();
+    return trimmed.isEmpty ? fallback : trimmed;
   }
 
   Map<String, dynamic> toMap() => {

@@ -54,14 +54,8 @@ class _HomeViewState extends State<HomeView> {
       sourcePath: picked.path,
       aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
       uiSettings: [
-        AndroidUiSettings(
-          toolbarTitle: 'Crop Photo',
-          lockAspectRatio: true,
-        ),
-        IOSUiSettings(
-          title: 'Crop Photo',
-          aspectRatioLockEnabled: true,
-        ),
+        AndroidUiSettings(toolbarTitle: 'Crop Photo', lockAspectRatio: true),
+        IOSUiSettings(title: 'Crop Photo', aspectRatioLockEnabled: true),
       ],
     );
     if (cropped == null || !mounted) return;
@@ -83,12 +77,15 @@ class _HomeViewState extends State<HomeView> {
               :final player1PhotoPath,
               :final player2PhotoPath,
             ):
-              context.push('/game', extra: {
-                'player1Name': player1Name,
-                'player2Name': player2Name,
-                'player1PhotoPath': player1PhotoPath,
-                'player2PhotoPath': player2PhotoPath,
-              });
+              context.push(
+                '/game',
+                extra: {
+                  'player1Name': player1Name,
+                  'player2Name': player2Name,
+                  'player1PhotoPath': player1PhotoPath,
+                  'player2PhotoPath': player2PhotoPath,
+                },
+              );
             case NavigateToScores():
               context.push('/scores');
           }
@@ -107,28 +104,33 @@ class _HomeViewState extends State<HomeView> {
                 ),
                 Expanded(
                   child: Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        PlayerInputWidget(
-                          hint: HomeStrings.player1,
-                          controller: _p1Controller,
-                          photoPath: state.player1PhotoPath,
-                          onPhotoTap: () => _pickPhoto(true),
-                        ),
-                        const SizedBox(width: 32),
-                        Text(
-                          HomeStrings.vs,
-                          style: Theme.of(context).textTheme.displayLarge,
-                        ),
-                        const SizedBox(width: 32),
-                        PlayerInputWidget(
-                          hint: HomeStrings.player2,
-                          controller: _p2Controller,
-                          photoPath: state.player2PhotoPath,
-                          onPhotoTap: () => _pickPhoto(false),
-                        ),
-                      ],
+                    // The screen is locked to landscape, but the first frames
+                    // can still be portrait, where the inputs do not fit.
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          PlayerInputWidget(
+                            hint: HomeStrings.player1,
+                            controller: _p1Controller,
+                            photoPath: state.player1PhotoPath,
+                            onPhotoTap: () => _pickPhoto(true),
+                          ),
+                          const SizedBox(width: 32),
+                          Text(
+                            HomeStrings.vs,
+                            style: Theme.of(context).textTheme.displayLarge,
+                          ),
+                          const SizedBox(width: 32),
+                          PlayerInputWidget(
+                            hint: HomeStrings.player2,
+                            controller: _p2Controller,
+                            photoPath: state.player2PhotoPath,
+                            onPhotoTap: () => _pickPhoto(false),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

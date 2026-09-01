@@ -19,28 +19,28 @@ class WeatherWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _WeatherToggle(
-            icon: 'assets/icons/ic_frost.svg',
-            label: GameStrings.frost,
-            active: frostActive,
-            onTap: () => onChanged(CardsRowType.closeCombat, !frostActive),
-          ),
-          _WeatherToggle(
-            icon: 'assets/icons/ic_fog.svg',
-            label: GameStrings.fog,
-            active: fogActive,
-            onTap: () => onChanged(CardsRowType.longRange, !fogActive),
-          ),
-          _WeatherToggle(
-            icon: 'assets/icons/ic_rain.svg',
-            label: GameStrings.rain,
-            active: rainActive,
-            onTap: () => onChanged(CardsRowType.siege, !rainActive),
-          ),
-        ],
-      );
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      _WeatherToggle(
+        icon: 'assets/icons/ic_frost.svg',
+        label: GameStrings.frost,
+        active: frostActive,
+        onTap: () => onChanged(CardsRowType.closeCombat, !frostActive),
+      ),
+      _WeatherToggle(
+        icon: 'assets/icons/ic_fog.svg',
+        label: GameStrings.fog,
+        active: fogActive,
+        onTap: () => onChanged(CardsRowType.longRange, !fogActive),
+      ),
+      _WeatherToggle(
+        icon: 'assets/icons/ic_rain.svg',
+        label: GameStrings.rain,
+        active: rainActive,
+        onTap: () => onChanged(CardsRowType.siege, !rainActive),
+      ),
+    ],
+  );
 }
 
 class _WeatherToggle extends StatelessWidget {
@@ -62,15 +62,16 @@ class _WeatherToggle extends StatelessWidget {
         ? Theme.of(context).colorScheme.primaryContainer
         : Theme.of(context).colorScheme.outline;
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
         child: Tooltip(
           message: label,
           child: SvgPicture.asset(
             icon,
-            width: 28,
-            height: 28,
+            width: 24,
+            height: 24,
             colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
           ),
         ),

@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../resources/home_strings.dart';
 import 'home_side_effect.dart';
 import 'home_state.dart';
 
@@ -21,10 +22,8 @@ class HomeCubit extends Cubit<HomeState> {
     emit(
       state +
           NavigateToGame(
-            player1Name:
-                state.player1Name.isEmpty ? 'Player 1' : state.player1Name,
-            player2Name:
-                state.player2Name.isEmpty ? 'Player 2' : state.player2Name,
+            player1Name: _nameOr(state.player1Name, HomeStrings.player1),
+            player2Name: _nameOr(state.player2Name, HomeStrings.player2),
             player1PhotoPath: state.player1PhotoPath,
             player2PhotoPath: state.player2PhotoPath,
           ),
@@ -32,4 +31,9 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   void onScoresTapped() => emit(state + const NavigateToScores());
+
+  static String _nameOr(String name, String fallback) {
+    final trimmed = name.trim();
+    return trimmed.isEmpty ? fallback : trimmed;
+  }
 }

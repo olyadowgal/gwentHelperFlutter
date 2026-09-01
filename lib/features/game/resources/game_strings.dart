@@ -19,6 +19,7 @@ abstract class GameStrings {
   static const tie = "It's a tie!";
   static const exit = 'Exit';
   static const pass = 'Pass';
+  static const passHint = 'Hold to end the round';
   static const exitTitle = 'Exit game?';
   static const exitContent = 'Progress will not be saved.';
   static const saveFailed = 'Could not save the game. Try again.';

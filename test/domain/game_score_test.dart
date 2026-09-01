@@ -135,7 +135,14 @@ void main() {
           // Then
           expect(score.firstPlayerWon, isTrue);
           expect(score.secondPlayerWon, isFalse);
-          expect(score.displayedWinner(tieLabel: 'Tie'), 'Alice');
+          expect(
+            score.displayedWinner(
+              tieLabel: 'Tie',
+              firstPlayerFallback: 'Player 1',
+              secondPlayerFallback: 'Player 2',
+            ),
+            'Alice',
+          );
         },
       );
 
@@ -152,7 +159,14 @@ void main() {
           // Then
           expect(score.firstPlayerWon, isFalse);
           expect(score.secondPlayerWon, isTrue);
-          expect(score.displayedWinner(tieLabel: 'Tie'), 'Bob');
+          expect(
+            score.displayedWinner(
+              tieLabel: 'Tie',
+              firstPlayerFallback: 'Player 1',
+              secondPlayerFallback: 'Player 2',
+            ),
+            'Bob',
+          );
         },
       );
 
@@ -169,7 +183,14 @@ void main() {
           // Then
           expect(score.firstPlayerWon, isFalse);
           expect(score.secondPlayerWon, isFalse);
-          expect(score.displayedWinner(tieLabel: 'Tie'), 'Tie');
+          expect(
+            score.displayedWinner(
+              tieLabel: 'Tie',
+              firstPlayerFallback: 'Player 1',
+              secondPlayerFallback: 'Player 2',
+            ),
+            'Tie',
+          );
         },
       );
 
@@ -186,7 +207,14 @@ void main() {
           // Then
           expect(score.firstPlayerWon, isTrue);
           expect(score.secondPlayerWon, isFalse);
-          expect(score.displayedWinner(tieLabel: 'Tie'), 'Alice');
+          expect(
+            score.displayedWinner(
+              tieLabel: 'Tie',
+              firstPlayerFallback: 'Player 1',
+              secondPlayerFallback: 'Player 2',
+            ),
+            'Alice',
+          );
         },
       );
 
@@ -208,7 +236,88 @@ void main() {
           // Then
           expect(score.firstPlayerWon, isFalse);
           expect(score.secondPlayerWon, isTrue);
-          expect(score.displayedWinner(tieLabel: 'Tie'), 'Bob');
+          expect(
+            score.displayedWinner(
+              tieLabel: 'Tie',
+              firstPlayerFallback: 'Player 1',
+              secondPlayerFallback: 'Player 2',
+            ),
+            'Bob',
+          );
+        },
+      );
+    });
+
+    group('blank name display', () {
+      GameScore scoreWith({
+        required String firstPlayer,
+        required String secondPlayer,
+        String? winner,
+      }) => GameScore(
+        date: date,
+        firstPlayer: firstPlayer,
+        secondPlayer: secondPlayer,
+        winner: winner ?? Winner.first.name,
+      );
+
+      test(
+        '''
+      Given players saved without names
+      When displayed names are read
+      Then the fallbacks are returned
+      ''',
+        () {
+          // Given
+          final score = scoreWith(firstPlayer: '', secondPlayer: '   ');
+
+          // Then
+          expect(score.displayedFirstPlayer(fallback: 'Player 1'), 'Player 1');
+          expect(score.displayedSecondPlayer(fallback: 'Player 2'), 'Player 2');
+        },
+      );
+
+      test(
+        '''
+      Given players saved with padded names
+      When displayed names are read
+      Then the trimmed names are returned
+      ''',
+        () {
+          // Given
+          final score = scoreWith(
+            firstPlayer: '  Alice ',
+            secondPlayer: ' Bob',
+          );
+
+          // Then
+          expect(score.displayedFirstPlayer(fallback: 'Player 1'), 'Alice');
+          expect(score.displayedSecondPlayer(fallback: 'Player 2'), 'Bob');
+        },
+      );
+
+      test(
+        '''
+      Given the winning player has no name
+      When the displayed winner is read
+      Then the fallback is returned
+      ''',
+        () {
+          // Given
+          final score = scoreWith(
+            firstPlayer: '',
+            secondPlayer: 'Bob',
+            winner: Winner.first.name,
+          );
+
+          // Then
+          expect(
+            score.displayedWinner(
+              tieLabel: 'Tie',
+              firstPlayerFallback: 'Player 1',
+              secondPlayerFallback: 'Player 2',
+            ),
+            'Player 1',
+          );
         },
       );
     });

@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class UserWidget extends StatelessWidget {
+  static const _avatarSize = 44.0;
+  static const _nameWidth = 72.0;
+
   final String name;
   final int totalPoints;
   final int lives;
@@ -36,18 +39,18 @@ class UserWidget extends StatelessWidget {
                 ),
               )
             : null,
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
-              width: 56,
-              height: 56,
+              width: _avatarSize,
+              height: _avatarSize,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
                   CircleAvatar(
-                    radius: 24,
+                    radius: _avatarSize / 2,
                     backgroundColor: colorScheme.surface,
                     backgroundImage: photoPath != null
                         ? FileImage(File(photoPath!))
@@ -55,15 +58,15 @@ class UserWidget extends StatelessWidget {
                     child: photoPath == null
                         ? Icon(
                             Icons.person,
-                            size: 28,
+                            size: 22,
                             color: colorScheme.onSurface,
                           )
                         : null,
                   ),
                   SvgPicture.asset(
                     'assets/icons/ic_ring.svg',
-                    width: 56,
-                    height: 56,
+                    width: _avatarSize,
+                    height: _avatarSize,
                     colorFilter: ColorFilter.mode(
                       colorScheme.primary,
                       BlendMode.srcIn,
@@ -72,16 +75,21 @@ class UserWidget extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              name,
-              style: TextStyle(fontSize: 12, color: colorScheme.onSurface),
-              overflow: TextOverflow.ellipsis,
+            const SizedBox(height: 2),
+            SizedBox(
+              width: _nameWidth,
+              child: Text(
+                name,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 11, color: colorScheme.onSurface),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
             Text(
               '$totalPoints',
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: isWinning
                     ? colorScheme.secondary
@@ -98,8 +106,8 @@ class UserWidget extends StatelessWidget {
                     active
                         ? 'assets/icons/ic_jewel_activated.svg'
                         : 'assets/icons/ic_jewel_deactivated.svg',
-                    width: 14,
-                    height: 14,
+                    width: 11,
+                    height: 11,
                     colorFilter: ColorFilter.mode(
                       active
                           ? colorScheme.secondaryContainer
