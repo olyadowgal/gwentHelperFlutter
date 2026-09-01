@@ -28,11 +28,7 @@ class GameView extends StatefulWidget {
   final String? player1PhotoPath;
   final String? player2PhotoPath;
 
-  const GameView({
-    super.key,
-    this.player1PhotoPath,
-    this.player2PhotoPath,
-  });
+  const GameView({super.key, this.player1PhotoPath, this.player2PhotoPath});
 
   @override
   State<GameView> createState() => _GameViewState();
@@ -54,12 +50,15 @@ class _GameViewState extends State<GameView> {
     super.dispose();
   }
 
-  String _winnerMessage(Winner winner, String player1Name, String player2Name) =>
-      switch (winner) {
-        Winner.first => '$player1Name ${GameStrings.wins}',
-        Winner.second => '$player2Name ${GameStrings.wins}',
-        Winner.tie => GameStrings.tie,
-      };
+  String _winnerMessage(
+    Winner winner,
+    String player1Name,
+    String player2Name,
+  ) => switch (winner) {
+    Winner.first => '$player1Name ${GameStrings.wins}',
+    Winner.second => '$player2Name ${GameStrings.wins}',
+    Winner.tie => GameStrings.tie,
+  };
 
   void _showExitDialog(BuildContext context) {
     showDialog<void>(
@@ -85,167 +84,173 @@ class _GameViewState extends State<GameView> {
   }
 
   @override
-  Widget build(BuildContext context) =>
-      BlocSideEffectHandler<GameCubit, GameState, GameSideEffect>(
-        listener: (context, sideEffect) {
-          switch (sideEffect) {
-            case ShowAddCardDialog(:final rowType):
-              showDialog<Card>(
-                context: context,
-                builder: (_) => AddCardDialog(rowType: rowType),
-              ).then((card) {
-                if (card != null && context.mounted) {
-                  context.read<GameCubit>().onCardAdded(rowType, card);
-                }
-              });
+  Widget build(
+    BuildContext context,
+  ) => BlocSideEffectHandler<GameCubit, GameState, GameSideEffect>(
+    listener: (context, sideEffect) {
+      switch (sideEffect) {
+        case ShowAddCardDialog(:final rowType):
+          showDialog<Card>(
+            context: context,
+            builder: (_) => AddCardDialog(rowType: rowType),
+          ).then((card) {
+            if (card != null && context.mounted) {
+              context.read<GameCubit>().onCardAdded(rowType, card);
+            }
+          });
 
-            case ShowEditCardDialog(:final row, :final card):
-              showDialog<EditCardResult>(
-                context: context,
-                builder: (_) => EditCardDialog(card: card),
-              ).then((result) {
-                if (result == null || !context.mounted) return;
-                switch (result) {
-                  case EditCardSave(:final card):
-                    context.read<GameCubit>().onCardEdited(row.type, card);
-                  case EditCardDelete():
-                    context.read<GameCubit>().onCardDeleted(row.type, card);
-                }
-              });
+        case ShowEditCardDialog(:final row, :final card):
+          showDialog<EditCardResult>(
+            context: context,
+            builder: (_) => EditCardDialog(card: card),
+          ).then((result) {
+            if (result == null || !context.mounted) return;
+            switch (result) {
+              case EditCardSave(:final card):
+                context.read<GameCubit>().onCardEdited(row.type, card);
+              case EditCardDelete():
+                context.read<GameCubit>().onCardDeleted(row.type, card);
+            }
+          });
 
-            case ShowGameOverDialog(:final winner):
-              final state = context.read<GameCubit>().state;
-              showDialog<void>(
-                context: context,
-                barrierDismissible: false,
-                builder: (dialogContext) => AlertDialog(
-                  title: const Text(GameStrings.gameOverTitle),
-                  content: Text(_winnerMessage(
-                    winner,
-                    state.gameData.firstPlayerData.name,
-                    state.gameData.secondPlayerData.name,
-                  )),
-                  actions: [
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(dialogContext).pop();
-                        context.read<GameCubit>().onGameOverConfirmed();
-                      },
-                      child: const Text(GameStrings.ok),
+        case ShowGameOverDialog(:final winner):
+          final state = context.read<GameCubit>().state;
+          showDialog<void>(
+            context: context,
+            barrierDismissible: false,
+            builder: (dialogContext) => AlertDialog(
+              title: const Text(GameStrings.gameOverTitle),
+              content: Text(
+                _winnerMessage(
+                  winner,
+                  state.gameData.firstPlayerData.name,
+                  state.gameData.secondPlayerData.name,
+                ),
+              ),
+              actions: [
+                ElevatedButton(
+                  onPressed: () {
+                    context.read<GameCubit>().onGameOverConfirmed();
+                  },
+                  child: const Text(GameStrings.ok),
+                ),
+              ],
+            ),
+          );
+
+        case NavigateBack():
+          context.go('/');
+        case ShowSaveFailed():
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text(GameStrings.saveFailed)));
+      }
+    },
+    child: BlocBuilder<GameCubit, GameState>(
+      builder: (context, state) {
+        final p1 = state.gameData.firstPlayerData;
+        final p2 = state.gameData.secondPlayerData;
+        final selectedData = state.selectedPlayerData;
+        final cubit = context.read<GameCubit>();
+        final colorScheme = Theme.of(context).colorScheme;
+
+        return Scaffold(
+          body: Row(
+            children: [
+              // Zone 1: Sidebar
+              Container(
+                width: GameView._sidebarWidth,
+                color: colorScheme.surface,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Exit button
+                    _SidebarButton(
+                      iconAsset: 'assets/icons/ic_exit.svg',
+                      label: GameStrings.exit,
+                      onTap: () => _showExitDialog(context),
+                    ),
+                    // Player 1
+                    UserWidget(
+                      name: p1.name,
+                      totalPoints: p1.totalPoints,
+                      lives: p1.lives,
+                      photoPath: widget.player1PhotoPath,
+                      isSelected: state.selectedPlayer == SelectedPlayer.first,
+                      isWinning: p1.totalPoints > p2.totalPoints,
+                      onTap: () => cubit.onPlayerSelected(SelectedPlayer.first),
+                    ),
+                    // Weather
+                    WeatherWidget(
+                      frostActive:
+                          selectedData
+                              .cardsRows[CardsRowType.closeCombat]
+                              ?.badWeather ??
+                          false,
+                      fogActive:
+                          selectedData
+                              .cardsRows[CardsRowType.longRange]
+                              ?.badWeather ??
+                          false,
+                      rainActive:
+                          selectedData
+                              .cardsRows[CardsRowType.siege]
+                              ?.badWeather ??
+                          false,
+                      onChanged: cubit.onWeatherChanged,
+                    ),
+                    // Player 2
+                    UserWidget(
+                      name: p2.name,
+                      totalPoints: p2.totalPoints,
+                      lives: p2.lives,
+                      photoPath: widget.player2PhotoPath,
+                      isSelected: state.selectedPlayer == SelectedPlayer.second,
+                      isWinning: p2.totalPoints > p1.totalPoints,
+                      onTap: () =>
+                          cubit.onPlayerSelected(SelectedPlayer.second),
+                    ),
+                    // Pass button (long-press to end round)
+                    _SidebarButton(
+                      iconAsset: 'assets/icons/ic_reset.svg',
+                      label: GameStrings.pass,
+                      onLongPress: cubit.onEndRoundTapped,
+                      tooltip: 'Long-press to end round',
                     ),
                   ],
                 ),
-              );
-
-            case NavigateBack():
-              context.pop();
-          }
-        },
-        child: BlocBuilder<GameCubit, GameState>(
-          builder: (context, state) {
-            final p1 = state.gameData.firstPlayerData;
-            final p2 = state.gameData.secondPlayerData;
-            final selectedData = state.selectedPlayerData;
-            final cubit = context.read<GameCubit>();
-            final colorScheme = Theme.of(context).colorScheme;
-
-            return Scaffold(
-              body: Row(
-                children: [
-                  // Zone 1: Sidebar
-                  Container(
-                    width: GameView._sidebarWidth,
-                    color: colorScheme.surface,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Exit button
-                        _SidebarButton(
-                          iconAsset: 'assets/icons/ic_exit.svg',
-                          label: GameStrings.exit,
-                          onTap: () => _showExitDialog(context),
-                        ),
-                        // Player 1
-                        UserWidget(
-                          name: p1.name,
-                          totalPoints: p1.totalPoints,
-                          lives: p1.lives,
-                          photoPath: widget.player1PhotoPath,
-                          isSelected:
-                              state.selectedPlayer == SelectedPlayer.first,
-                          isWinning: p1.totalPoints > p2.totalPoints,
-                          onTap: () =>
-                              cubit.onPlayerSelected(SelectedPlayer.first),
-                        ),
-                        // Weather
-                        WeatherWidget(
-                          frostActive: selectedData
-                                  .cardsRows[CardsRowType.closeCombat]
-                                  ?.badWeather ??
-                              false,
-                          fogActive: selectedData
-                                  .cardsRows[CardsRowType.longRange]
-                                  ?.badWeather ??
-                              false,
-                          rainActive: selectedData
-                                  .cardsRows[CardsRowType.siege]
-                                  ?.badWeather ??
-                              false,
-                          onChanged: cubit.onWeatherChanged,
-                        ),
-                        // Player 2
-                        UserWidget(
-                          name: p2.name,
-                          totalPoints: p2.totalPoints,
-                          lives: p2.lives,
-                          photoPath: widget.player2PhotoPath,
-                          isSelected:
-                              state.selectedPlayer == SelectedPlayer.second,
-                          isWinning: p2.totalPoints > p1.totalPoints,
-                          onTap: () =>
-                              cubit.onPlayerSelected(SelectedPlayer.second),
-                        ),
-                        // Pass button (long-press to end round)
-                        _SidebarButton(
-                          iconAsset: 'assets/icons/ic_reset.svg',
-                          label: GameStrings.pass,
-                          onLongPress: cubit.onEndRoundTapped,
-                          tooltip: 'Long-press to end round',
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Zone 2: Stats column
-                  StatsColumnWidget(
-                    cardsRows: selectedData.cardsRows,
-                    onHornChanged: cubit.onHornChanged,
-                  ),
-                  // Zone 3: Divider
-                  Container(
-                    width: GameView._dividerWidth,
-                    color: colorScheme.outline.withValues(alpha: 0.24),
-                  ),
-                  // Zone 4: Card rows
-                  Expanded(
-                    child: Column(
-                      children: CardsRowType.values.map((rowType) {
-                        final row = selectedData.cardsRows[rowType]!;
-                        return Expanded(
-                          child: CardsRowWidget(
-                            row: row,
-                            onAddCard: cubit.onAddCardRequested,
-                            onCardLongPress: cubit.onEditCardRequested,
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ],
               ),
-            );
-          },
-        ),
-      );
+              // Zone 2: Stats column
+              StatsColumnWidget(
+                cardsRows: selectedData.cardsRows,
+                onHornChanged: cubit.onHornChanged,
+              ),
+              // Zone 3: Divider
+              Container(
+                width: GameView._dividerWidth,
+                color: colorScheme.outline.withValues(alpha: 0.24),
+              ),
+              // Zone 4: Card rows
+              Expanded(
+                child: Column(
+                  children: CardsRowType.values.map((rowType) {
+                    final row = selectedData.cardsRows[rowType]!;
+                    return Expanded(
+                      child: CardsRowWidget(
+                        row: row,
+                        onAddCard: cubit.onAddCardRequested,
+                        onCardLongPress: cubit.onEditCardRequested,
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    ),
+  );
 }
 
 class _SidebarButton extends StatelessWidget {

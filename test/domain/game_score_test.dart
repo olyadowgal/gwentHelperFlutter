@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gwent_helper_flutter/domain/models/game_score.dart';
+import 'package:gwent_helper_flutter/domain/models/winner.dart';
 
 void main() {
   final date = DateTime(2026, 7, 6, 12, 30);
@@ -41,6 +42,30 @@ void main() {
           expect(restored.firstRoundSecondPlayerPoints, 11);
           expect(restored.secondRoundSecondPlayerPoints, 21);
           expect(restored.thirdRoundSecondPlayerPoints, 31);
+          expect(restored.id, score.id);
+        },
+      );
+
+      test(
+        '''
+      Given a map without `id`
+      When `fromMap` is called
+      Then a legacy id is derived from `date`
+      ''',
+        () {
+          // Given
+          final map = {
+            'date': date.millisecondsSinceEpoch,
+            'first_player': 'Alice',
+            'second_player': 'Bob',
+            'winner': 'first',
+          };
+
+          // When
+          final restored = GameScore.fromMap(map);
+
+          // Then
+          expect(restored.id, 'legacy-${date.millisecondsSinceEpoch}');
         },
       );
 
@@ -85,6 +110,105 @@ void main() {
 
           // When / Then
           expect(score.toMap()['date'], date.millisecondsSinceEpoch);
+        },
+      );
+    });
+
+    group('winner display', () {
+      GameScore scoreWith({required String winner}) => GameScore(
+        date: date,
+        firstPlayer: 'Alice',
+        secondPlayer: 'Bob',
+        winner: winner,
+      );
+
+      test(
+        '''
+      Given winner stored as `Winner.first` name
+      When display helpers are read
+      Then first player won and the label is Alice
+      ''',
+        () {
+          // Given
+          final score = scoreWith(winner: Winner.first.name);
+
+          // Then
+          expect(score.firstPlayerWon, isTrue);
+          expect(score.secondPlayerWon, isFalse);
+          expect(score.displayedWinner(tieLabel: 'Tie'), 'Alice');
+        },
+      );
+
+      test(
+        '''
+      Given winner stored as `Winner.second` name
+      When display helpers are read
+      Then second player won and the label is Bob
+      ''',
+        () {
+          // Given
+          final score = scoreWith(winner: Winner.second.name);
+
+          // Then
+          expect(score.firstPlayerWon, isFalse);
+          expect(score.secondPlayerWon, isTrue);
+          expect(score.displayedWinner(tieLabel: 'Tie'), 'Bob');
+        },
+      );
+
+      test(
+        '''
+      Given winner stored as `Winner.tie` name
+      When display helpers are read
+      Then neither player won and the label is the tie label
+      ''',
+        () {
+          // Given
+          final score = scoreWith(winner: Winner.tie.name);
+
+          // Then
+          expect(score.firstPlayerWon, isFalse);
+          expect(score.secondPlayerWon, isFalse);
+          expect(score.displayedWinner(tieLabel: 'Tie'), 'Tie');
+        },
+      );
+
+      test(
+        '''
+      Given winner stored as the first player's name
+      When display helpers are read
+      Then first player won
+      ''',
+        () {
+          // Given
+          final score = scoreWith(winner: 'Alice');
+
+          // Then
+          expect(score.firstPlayerWon, isTrue);
+          expect(score.secondPlayerWon, isFalse);
+          expect(score.displayedWinner(tieLabel: 'Tie'), 'Alice');
+        },
+      );
+
+      test(
+        '''
+      Given a player named first who lost
+      When winner is `Winner.second` name
+      Then the first player is not treated as winner
+      ''',
+        () {
+          // Given
+          final score = GameScore(
+            date: date,
+            firstPlayer: 'first',
+            secondPlayer: 'Bob',
+            winner: Winner.second.name,
+          );
+
+          // Then
+          expect(score.firstPlayerWon, isFalse);
+          expect(score.secondPlayerWon, isTrue);
+          expect(score.displayedWinner(tieLabel: 'Tie'), 'Bob');
         },
       );
     });

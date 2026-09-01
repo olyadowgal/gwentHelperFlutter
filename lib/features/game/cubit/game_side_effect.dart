@@ -43,3 +43,12 @@ class ShowGameOverDialog extends GameSideEffect {
 class NavigateBack extends GameSideEffect {
   const NavigateBack();
 }
+
+class ShowSaveFailed extends GameSideEffect {
+  final String message;
+
+  const ShowSaveFailed(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}

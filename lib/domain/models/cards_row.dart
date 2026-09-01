@@ -41,18 +41,19 @@ class CardsRow {
       points *= bondCount;
     }
 
+    final moraleCount =
+        cards.where((c) => c.abilities.contains(Ability.moraleBoost)).length;
+    points += moraleCount;
+    if (card.abilities.contains(Ability.moraleBoost)) {
+      points--;
+    }
+
     final effectiveHorns =
         card.abilities.contains(Ability.horn) ? _hornsCount - 1 : _hornsCount;
     if (effectiveHorns > 0) {
       for (var i = 0; i < effectiveHorns; i++) {
         points *= 2;
       }
-    }
-
-    final moraleCount = cards.where((c) => c.abilities.contains(Ability.moraleBoost)).length;
-    points += moraleCount;
-    if (card.abilities.contains(Ability.moraleBoost)) {
-      points--;
     }
 
     return points;

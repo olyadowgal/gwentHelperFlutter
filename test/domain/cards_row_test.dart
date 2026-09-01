@@ -139,6 +139,50 @@ void main() {
           expect(row.pointsOf(booster), 1); // 1 + 1 morale - 1 self = 1
         },
       );
+
+      test(
+        '''
+      Given morale boost and a horn on the row
+      When `pointsOf` is called
+      Then morale is applied before the horn doubles
+      ''',
+        () {
+          // Given
+          final booster = Card(points: 1, abilities: [Ability.moraleBoost]);
+          final target = Card(points: 5, abilities: []);
+          final row = CardsRow(
+            type: CardsRowType.closeCombat,
+            cards: [booster, target],
+            horn: true,
+          );
+
+          // Then
+          expect(row.pointsOf(target), 12); // (5 + 1) * 2
+          expect(row.pointsOf(booster), 2); // (1 + 1 - 1) * 2
+        },
+      );
+
+      test(
+        '''
+      Given weather, morale boost and a horn
+      When `pointsOf` is called
+      Then order is weather, morale, then horn
+      ''',
+        () {
+          // Given
+          final booster = Card(points: 1, abilities: [Ability.moraleBoost]);
+          final target = Card(points: 4, abilities: []);
+          final row = CardsRow(
+            type: CardsRowType.closeCombat,
+            cards: [booster, target],
+            horn: true,
+            badWeather: true,
+          );
+
+          // Then
+          expect(row.pointsOf(target), 4); // (min(4, 1) + 1) * 2
+        },
+      );
     });
   });
 }

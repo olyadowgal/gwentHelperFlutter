@@ -36,6 +36,7 @@ void main() {
         winner: '',
       ),
     );
+    registerFallbackValue(const NavigateBack());
   });
 
   setUp(() {
@@ -560,6 +561,58 @@ void main() {
           // Then
           verifyZeroInteractions(repository);
           verifyZeroInteractions(sideEffectHandler);
+        },
+      );
+
+      test(
+        '''
+      Given `addGame` throws
+      When `onGameOverConfirmed` is called
+      Then the score is not marked saved and `ShowSaveFailed` is emitted
+      ''',
+        () async {
+          // Given
+          await playToGameOver();
+          when(
+            () => repository.addGame(any()),
+          ).thenThrow(Exception('disk full'));
+
+          // When
+          await cubit.onGameOverConfirmed();
+          await Future<void>.delayed(Duration.zero);
+
+          // Then
+          verify(() => repository.addGame(any())).called(1);
+          verifyNever(() => sideEffectHandler.call(const NavigateBack()));
+          verify(
+            () => sideEffectHandler.call(any(that: isA<ShowSaveFailed>())),
+          ).called(1);
+        },
+      );
+
+      test(
+        '''
+      Given a previous save failed
+      When `onGameOverConfirmed` is called again and save succeeds
+      Then the score is saved and `NavigateBack` is emitted
+      ''',
+        () async {
+          // Given
+          await playToGameOver();
+          when(
+            () => repository.addGame(any()),
+          ).thenThrow(Exception('disk full'));
+          await cubit.onGameOverConfirmed();
+          await Future<void>.delayed(Duration.zero);
+          when(() => repository.addGame(any())).thenAnswer((_) async {});
+
+          // When
+          await cubit.onGameOverConfirmed();
+          await Future<void>.delayed(Duration.zero);
+
+          // Then
+          verify(() => repository.addGame(any())).called(2);
+          verify(() => sideEffectHandler.call(const NavigateBack())).called(1);
         },
       );
     });

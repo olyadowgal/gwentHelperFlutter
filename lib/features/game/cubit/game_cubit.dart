@@ -18,15 +18,15 @@ class GameCubit extends Cubit<GameState> {
     required String player1Name,
     required String player2Name,
     required GwentRepository repository,
-  })  : _repository = repository,
-        super(
-          GameState(
-            gameData: GameData(
-              firstPlayerData: PlayerData(name: player1Name),
-              secondPlayerData: PlayerData(name: player2Name),
-            ),
-          ),
-        );
+  }) : _repository = repository,
+       super(
+         GameState(
+           gameData: GameData(
+             firstPlayerData: PlayerData(name: player1Name),
+             secondPlayerData: PlayerData(name: player2Name),
+           ),
+         ),
+       );
 
   void onPlayerSelected(SelectedPlayer player) =>
       emit(state.copyWith(selectedPlayer: player));
@@ -73,9 +73,7 @@ class GameCubit extends Cubit<GameState> {
         cardsRows: {
           ...p.cardsRows,
           rowType: row.copyWith(
-            cards: row.cards
-                .where((c) => c.cardId != card.cardId)
-                .toList(),
+            cards: row.cards.where((c) => c.cardId != card.cardId).toList(),
           ),
         },
       );
@@ -129,10 +127,10 @@ class GameCubit extends Cubit<GameState> {
     switch (data.winner) {
       case Winner.first:
         data = data.copyWith(
-            secondPlayerData: data.secondPlayerData.minusLife());
+          secondPlayerData: data.secondPlayerData.minusLife(),
+        );
       case Winner.second:
-        data = data.copyWith(
-            firstPlayerData: data.firstPlayerData.minusLife());
+        data = data.copyWith(firstPlayerData: data.firstPlayerData.minusLife());
       case Winner.tie:
         data = data.copyWith(
           firstPlayerData: data.firstPlayerData.minusLife(),
@@ -147,26 +145,29 @@ class GameCubit extends Cubit<GameState> {
       final gameOver = (p1Dead && p2Dead)
           ? Winner.tie
           : p1Dead
-              ? Winner.second
-              : Winner.first;
+          ? Winner.second
+          : Winner.first;
       emit(
         state.copyWith(
-          gameData: data,
-          roundCounter: roundCounter,
-          roundsData: roundsData,
-          gameOver: gameOver,
-        ) + ShowGameOverDialog(gameOver),
+              gameData: data,
+              roundCounter: roundCounter,
+              roundsData: roundsData,
+              gameOver: gameOver,
+            ) +
+            ShowGameOverDialog(gameOver),
       );
     } else {
       data = data.copyWith(
         firstPlayerData: data.firstPlayerData.clearCards(),
         secondPlayerData: data.secondPlayerData.clearCards(),
       );
-      emit(state.copyWith(
-        gameData: data,
-        roundCounter: roundCounter,
-        roundsData: roundsData,
-      ));
+      emit(
+        state.copyWith(
+          gameData: data,
+          roundCounter: roundCounter,
+          roundsData: roundsData,
+        ),
+      );
     }
   }
 
@@ -175,7 +176,6 @@ class GameCubit extends Cubit<GameState> {
     final rounds = state.roundsData;
     final gameOver = state.gameOver;
     if (gameOver == null || _saved) return;
-    _saved = true;
 
     final score = GameScore(
       date: DateTime.now(),
@@ -189,8 +189,13 @@ class GameCubit extends Cubit<GameState> {
       secondRoundSecondPlayerPoints: rounds.secondRoundSecond,
       thirdRoundSecondPlayerPoints: rounds.thirdRoundSecond,
     );
-    await _repository.addGame(score);
-    emit(state + const NavigateBack());
+    try {
+      await _repository.addGame(score);
+      _saved = true;
+      emit(state + const NavigateBack());
+    } catch (e) {
+      emit(state + ShowSaveFailed(e.toString()));
+    }
   }
 
   GameData _updateSelectedPlayer(PlayerData Function(PlayerData) update) {

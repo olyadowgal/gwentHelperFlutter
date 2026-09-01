@@ -10,6 +10,7 @@ abstract class ScoresStrings {
   static const round = 'Round';
   static const vs = 'vs';
   static const winner = 'Winner: ';
+  static const tie = 'Tie';
   static const errorPrefix = 'Error: ';
   static const round1 = '1';
   static const round2 = '2';

@@ -21,4 +21,5 @@ abstract class GameStrings {
   static const pass = 'Pass';
   static const exitTitle = 'Exit game?';
   static const exitContent = 'Progress will not be saved.';
+  static const saveFailed = 'Could not save the game. Try again.';
 }

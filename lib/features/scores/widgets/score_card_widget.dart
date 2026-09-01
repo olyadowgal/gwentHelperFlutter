@@ -34,9 +34,11 @@ class ScoreCardWidget extends StatelessWidget {
                         width: 24,
                         height: 24,
                         colorFilter: ColorFilter.mode(
-                          score.winner == score.firstPlayer
+                          score.firstPlayerWon
                               ? Theme.of(context).colorScheme.secondaryContainer
-                              : Theme.of(context).colorScheme.onPrimaryContainer,
+                              : Theme.of(
+                                  context,
+                                ).colorScheme.onPrimaryContainer,
                           BlendMode.srcIn,
                         ),
                       ),
@@ -59,9 +61,11 @@ class ScoreCardWidget extends StatelessWidget {
                         width: 24,
                         height: 24,
                         colorFilter: ColorFilter.mode(
-                          score.winner == score.secondPlayer
+                          score.secondPlayerWon
                               ? Theme.of(context).colorScheme.secondaryContainer
-                              : Theme.of(context).colorScheme.onPrimaryContainer,
+                              : Theme.of(
+                                  context,
+                                ).colorScheme.onPrimaryContainer,
                           BlendMode.srcIn,
                         ),
                       ),
@@ -78,35 +82,42 @@ class ScoreCardWidget extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              '${ScoresStrings.winner}${score.winner}',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              '${ScoresStrings.winner}${score.displayedWinner(tieLabel: ScoresStrings.tie)}',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Table(
               children: [
-                TableRow(children: [
-                  _HeaderCell(ScoresStrings.round),
-                  _HeaderCell(score.firstPlayer),
-                  _HeaderCell(score.secondPlayer),
-                ]),
-                TableRow(children: [
-                  const _Cell(ScoresStrings.round1),
-                  _Cell(_pts(score.firstRoundFirstPlayerPoints)),
-                  _Cell(_pts(score.firstRoundSecondPlayerPoints)),
-                ]),
-                TableRow(children: [
-                  const _Cell(ScoresStrings.round2),
-                  _Cell(_pts(score.secondRoundFirstPlayerPoints)),
-                  _Cell(_pts(score.secondRoundSecondPlayerPoints)),
-                ]),
-                TableRow(children: [
-                  const _Cell(ScoresStrings.round3),
-                  _Cell(_pts(score.thirdRoundFirstPlayerPoints)),
-                  _Cell(_pts(score.thirdRoundSecondPlayerPoints)),
-                ]),
+                TableRow(
+                  children: [
+                    _HeaderCell(ScoresStrings.round),
+                    _HeaderCell(score.firstPlayer),
+                    _HeaderCell(score.secondPlayer),
+                  ],
+                ),
+                TableRow(
+                  children: [
+                    const _Cell(ScoresStrings.round1),
+                    _Cell(_pts(score.firstRoundFirstPlayerPoints)),
+                    _Cell(_pts(score.firstRoundSecondPlayerPoints)),
+                  ],
+                ),
+                TableRow(
+                  children: [
+                    const _Cell(ScoresStrings.round2),
+                    _Cell(_pts(score.secondRoundFirstPlayerPoints)),
+                    _Cell(_pts(score.secondRoundSecondPlayerPoints)),
+                  ],
+                ),
+                TableRow(
+                  children: [
+                    const _Cell(ScoresStrings.round3),
+                    _Cell(_pts(score.thirdRoundFirstPlayerPoints)),
+                    _Cell(_pts(score.thirdRoundSecondPlayerPoints)),
+                  ],
+                ),
               ],
             ),
           ],
@@ -123,15 +134,14 @@ class _HeaderCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2),
-        child: Text(
-          text,
-          style: Theme.of(context)
-              .textTheme
-              .bodySmall
-              ?.copyWith(fontWeight: FontWeight.bold),
-        ),
-      );
+    padding: const EdgeInsets.symmetric(vertical: 2),
+    child: Text(
+      text,
+      style: Theme.of(
+        context,
+      ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+    ),
+  );
 }
 
 class _Cell extends StatelessWidget {
@@ -141,7 +151,7 @@ class _Cell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2),
-        child: Text(text, style: Theme.of(context).textTheme.bodyMedium),
-      );
+    padding: const EdgeInsets.symmetric(vertical: 2),
+    child: Text(text, style: Theme.of(context).textTheme.bodyMedium),
+  );
 }
