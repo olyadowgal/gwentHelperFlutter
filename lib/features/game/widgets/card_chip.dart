@@ -8,44 +8,67 @@ class CardChip extends StatelessWidget {
   final Card card;
   final int displayPoints;
   final VoidCallback onLongPress;
+  final VoidCallback? onTap;
+  final bool isScorchTarget;
 
   const CardChip({
     super.key,
     required this.card,
     required this.displayPoints,
     required this.onLongPress,
+    this.onTap,
+    this.isScorchTarget = false,
   });
 
-  String? _abilityIcon() {
+  Widget _abilityMark(Color contentColor) {
     for (final ability in card.abilities) {
-      final icon = switch (ability) {
+      final asset = switch (ability) {
         Ability.decoy => 'assets/icons/ic_decoy.svg',
         Ability.moraleBoost => 'assets/icons/ic_morale_boost.svg',
         Ability.tightBond => 'assets/icons/ic_tight_bond.svg',
         Ability.horn => 'assets/icons/ic_horn.svg',
         _ => null,
       };
-      if (icon != null) return icon;
+      if (asset != null) {
+        return SvgPicture.asset(
+          asset,
+          width: 14,
+          height: 14,
+          colorFilter: ColorFilter.mode(contentColor, BlendMode.srcIn),
+        );
+      }
+      final icon = switch (ability) {
+        Ability.spy => Icons.visibility,
+        Ability.muster => Icons.groups,
+        Ability.scorchRow => Icons.local_fire_department,
+        _ => null,
+      };
+      if (icon != null) {
+        return Icon(icon, size: 14, color: contentColor);
+      }
     }
-    return null;
+    return const SizedBox(height: 14);
   }
 
   @override
   Widget build(BuildContext context) {
     final isHero = card.abilities.contains(Ability.hero);
-    final iconPath = _abilityIcon();
-    // onSecondary (0xFF263238) is the real theme-paired contrast color for
-    // the hero/secondary background; it's reused for the white background
-    // too since it's dark enough to stay readable there as well.
     final contentColor = Theme.of(context).colorScheme.onSecondary;
     return GestureDetector(
+      onTap: onTap,
       onLongPress: onLongPress,
       child: material.Card(
-        color: isHero
-            ? Theme.of(context).colorScheme.secondary
-            : Colors.white,
+        color: isHero ? Theme.of(context).colorScheme.secondary : Colors.white,
         elevation: 2,
         margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+        shape: isScorchTarget
+            ? RoundedRectangleBorder(
+                side: BorderSide(
+                  color: Theme.of(context).colorScheme.error,
+                  width: 3,
+                ),
+              )
+            : null,
         child: SizedBox(
           width: 28,
           height: 44,
@@ -63,18 +86,7 @@ class CardChip extends StatelessWidget {
                     color: contentColor,
                   ),
                 ),
-                if (iconPath != null)
-                  SvgPicture.asset(
-                    iconPath,
-                    width: 14,
-                    height: 14,
-                    colorFilter: ColorFilter.mode(
-                      contentColor,
-                      BlendMode.srcIn,
-                    ),
-                  )
-                else
-                  const SizedBox(height: 14),
+                _abilityMark(contentColor),
               ],
             ),
           ),

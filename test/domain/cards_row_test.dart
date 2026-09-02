@@ -183,6 +183,27 @@ void main() {
           expect(row.pointsOf(target), 4); // (min(4, 1) + 1) * 2
         },
       );
+
+      for (final ability in [Ability.spy, Ability.muster, Ability.scorchRow]) {
+        test(
+          '''
+      Given a card with `$ability`
+      When `pointsOf` is called
+      Then the ability does not change its strength
+      ''',
+          () {
+            // Given
+            final card = Card(points: 6, abilities: [ability]);
+            final row = CardsRow(type: CardsRowType.closeCombat, cards: [card]);
+
+            // When
+            final points = row.pointsOf(card);
+
+            // Then
+            expect(points, 6);
+          },
+        );
+      }
     });
   });
 }

@@ -6,7 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:gwent_helper_flutter/arch/bloc_side_effect_handler.dart';
 import 'package:gwent_helper_flutter/domain/models/card.dart';
 import 'package:gwent_helper_flutter/domain/models/cards_row_type.dart';
+import 'package:gwent_helper_flutter/domain/models/player_side.dart';
 import 'package:gwent_helper_flutter/domain/models/winner.dart';
+import 'package:gwent_helper_flutter/domain/scorch.dart';
 import '../cubit/game_cubit.dart';
 import '../cubit/game_side_effect.dart';
 import '../cubit/game_state.dart';
@@ -144,6 +146,41 @@ class _GameViewState extends State<GameView> {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text(GameStrings.saveFailed)));
+        case ShowNoScorchTargets(:final reason):
+          final message = switch (reason) {
+            ScorchNoTargetReason.nothingToScorch => GameStrings.nothingToScorch,
+            ScorchNoTargetReason.rowBelowTen => GameStrings.rowBelowTen,
+          };
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(message)));
+        case ShowMusterCountDialog(:final rowType, :final card, :final owner):
+          showDialog<int>(
+            context: context,
+            builder: (dialogContext) => AlertDialog(
+              title: const Text(GameStrings.musterTitle),
+              content: const Text(GameStrings.musterCount),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text(GameStrings.cancel),
+                ),
+                for (var count = 1; count <= 4; count++)
+                  TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(count),
+                    child: Text('$count'),
+                  ),
+              ],
+            ),
+          ).then((count) {
+            if (count == null || !context.mounted) return;
+            context.read<GameCubit>().onMusterCountChosen(
+              rowType,
+              card,
+              count,
+              owner,
+            );
+          });
       }
     },
     child: BlocBuilder<GameCubit, GameState>(
@@ -185,12 +222,10 @@ class _GameViewState extends State<GameView> {
                                 lives: p1.lives,
                                 photoPath: widget.player1PhotoPath,
                                 isSelected:
-                                    state.selectedPlayer ==
-                                    SelectedPlayer.first,
+                                    state.selectedPlayer == PlayerSide.first,
                                 isWinning: p1.totalPoints > p2.totalPoints,
-                                onTap: () => cubit.onPlayerSelected(
-                                  SelectedPlayer.first,
-                                ),
+                                onTap: () =>
+                                    cubit.onPlayerSelected(PlayerSide.first),
                               ),
                               // Weather
                               WeatherWidget(
@@ -218,16 +253,20 @@ class _GameViewState extends State<GameView> {
                                 lives: p2.lives,
                                 photoPath: widget.player2PhotoPath,
                                 isSelected:
-                                    state.selectedPlayer ==
-                                    SelectedPlayer.second,
+                                    state.selectedPlayer == PlayerSide.second,
                                 isWinning: p2.totalPoints > p1.totalPoints,
-                                onTap: () => cubit.onPlayerSelected(
-                                  SelectedPlayer.second,
-                                ),
+                                onTap: () =>
+                                    cubit.onPlayerSelected(PlayerSide.second),
                               ),
                             ],
                           ),
                         ),
+                      ),
+                      _SidebarButton(
+                        icon: Icons.local_fire_department,
+                        label: GameStrings.scorch,
+                        onTap: cubit.onScorchTapped,
+                        tooltip: GameStrings.scorchHint,
                       ),
                       // Pass button (long-press to end round)
                       _SidebarButton(
@@ -252,16 +291,41 @@ class _GameViewState extends State<GameView> {
                 // Zone 4: Card rows
                 Expanded(
                   child: Column(
-                    children: CardsRowType.values.map((rowType) {
-                      final row = selectedData.cardsRows[rowType]!;
-                      return Expanded(
-                        child: CardsRowWidget(
-                          row: row,
-                          onAddCard: cubit.onAddCardRequested,
-                          onCardLongPress: cubit.onEditCardRequested,
+                    children: [
+                      if (state.scorchPrompt != null)
+                        _ScorchBanner(
+                          prompt: state.scorchPrompt!,
+                          selectedPlayer: state.selectedPlayer,
+                          onCancel: cubit.onScorchPickCancelled,
                         ),
-                      );
-                    }).toList(),
+                      ...CardsRowType.values.map((rowType) {
+                        final row = selectedData.cardsRows[rowType]!;
+                        final targetIds = <String>{
+                          for (final target
+                              in state.scorchPrompt?.targets ?? const [])
+                            if (target.side == state.selectedPlayer &&
+                                target.rowType == rowType)
+                              target.cardId,
+                        };
+                        return Expanded(
+                          child: CardsRowWidget(
+                            row: row,
+                            onAddCard: cubit.onAddCardRequested,
+                            onCardLongPress: cubit.onEditCardRequested,
+                            scorchTargetIds: targetIds,
+                            onScorchTargetTap: (type, card) {
+                              cubit.onScorchTargetTapped(
+                                ScorchTarget(
+                                  side: state.selectedPlayer,
+                                  rowType: type,
+                                  cardId: card.cardId,
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      }),
+                    ],
                   ),
                 ),
               ],
@@ -274,14 +338,16 @@ class _GameViewState extends State<GameView> {
 }
 
 class _SidebarButton extends StatelessWidget {
-  final String iconAsset;
+  final String? iconAsset;
+  final IconData? icon;
   final String label;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
   final String? tooltip;
 
   const _SidebarButton({
-    required this.iconAsset,
+    this.iconAsset,
+    this.icon,
     required this.label,
     this.onTap,
     this.onLongPress,
@@ -291,6 +357,14 @@ class _SidebarButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final mark = icon != null
+        ? Icon(icon, size: GameView._buttonIconSize, color: colorScheme.outline)
+        : SvgPicture.asset(
+            iconAsset!,
+            width: GameView._buttonIconSize,
+            height: GameView._buttonIconSize,
+            colorFilter: ColorFilter.mode(colorScheme.outline, BlendMode.srcIn),
+          );
     final button = GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
@@ -300,15 +374,7 @@ class _SidebarButton extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SvgPicture.asset(
-              iconAsset,
-              width: GameView._buttonIconSize,
-              height: GameView._buttonIconSize,
-              colorFilter: ColorFilter.mode(
-                colorScheme.outline,
-                BlendMode.srcIn,
-              ),
-            ),
+            mark,
             Text(
               label,
               style: TextStyle(
@@ -320,8 +386,6 @@ class _SidebarButton extends StatelessWidget {
         ),
       ),
     );
-    // A tap-triggered tooltip keeps the hint discoverable without competing
-    // with the long-press that actually ends the round.
     return tooltip != null
         ? Tooltip(
             message: tooltip!,
@@ -329,5 +393,48 @@ class _SidebarButton extends StatelessWidget {
             child: button,
           )
         : button;
+  }
+}
+
+class _ScorchBanner extends StatelessWidget {
+  final ScorchPrompt prompt;
+  final PlayerSide selectedPlayer;
+  final VoidCallback onCancel;
+
+  const _ScorchBanner({
+    required this.prompt,
+    required this.selectedPlayer,
+    required this.onCancel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final otherSide = prompt.targets.any((t) => t.side != selectedPlayer);
+    return Material(
+      color: Theme.of(context).colorScheme.errorContainer,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                otherSide
+                    ? '${GameStrings.scorchRemaining}${prompt.targets.length}. '
+                          '${GameStrings.scorchOtherSide}'
+                    : '${GameStrings.scorchRemaining}${prompt.targets.length}',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onErrorContainer,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: onCancel,
+              child: const Text(GameStrings.cancel),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -23,4 +23,13 @@ abstract class GameStrings {
   static const exitTitle = 'Exit game?';
   static const exitContent = 'Progress will not be saved.';
   static const saveFailed = 'Could not save the game. Try again.';
+  static const scorch = 'Scorch';
+  static const scorchHint = 'Highlight strongest units';
+  static const nothingToScorch = 'There are no units Scorch can destroy.';
+  static const rowBelowTen = 'The enemy row must total at least 10.';
+  static const musterTitle = 'Muster';
+  static const musterCount = 'How many matching cards should be added?';
+  static const scorchRemaining = 'Scorch targets remaining: ';
+  static const scorchOtherSide =
+      'Targets also remain on the other player’s side.';
 }

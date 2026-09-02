@@ -6,7 +6,9 @@ import 'package:gwent_helper_flutter/domain/models/ability.dart';
 import 'package:gwent_helper_flutter/domain/models/card.dart';
 import 'package:gwent_helper_flutter/domain/models/cards_row_type.dart';
 import 'package:gwent_helper_flutter/domain/models/game_score.dart';
+import 'package:gwent_helper_flutter/domain/models/player_side.dart';
 import 'package:gwent_helper_flutter/domain/models/winner.dart';
+import 'package:gwent_helper_flutter/domain/scorch.dart';
 import 'package:gwent_helper_flutter/features/game/cubit/game_cubit.dart';
 import 'package:gwent_helper_flutter/features/game/cubit/game_side_effect.dart';
 import 'package:gwent_helper_flutter/features/game/cubit/game_state.dart';
@@ -76,7 +78,7 @@ void main() {
           expect(state.gameData.firstPlayerData.lives, 2);
           expect(state.gameData.secondPlayerData.lives, 2);
           expect(state.gameData.firstPlayerData.totalPoints, 0);
-          expect(state.selectedPlayer, SelectedPlayer.first);
+          expect(state.selectedPlayer, PlayerSide.first);
           expect(state.roundCounter, 0);
           expect(state.gameOver, isNull);
           expect(state.sideEffects, isEmpty);
@@ -93,13 +95,13 @@ void main() {
       ''',
         () {
           // Given
-          expect(cubit.state.selectedPlayer, SelectedPlayer.first);
+          expect(cubit.state.selectedPlayer, PlayerSide.first);
 
           // When
-          cubit.onPlayerSelected(SelectedPlayer.second);
+          cubit.onPlayerSelected(PlayerSide.second);
 
           // Then
-          expect(cubit.state.selectedPlayer, SelectedPlayer.second);
+          expect(cubit.state.selectedPlayer, PlayerSide.second);
           expect(cubit.state.selectedPlayerData.name, 'Bob');
         },
       );
@@ -162,7 +164,7 @@ void main() {
       ''',
         () {
           // Given
-          cubit.onPlayerSelected(SelectedPlayer.second);
+          cubit.onPlayerSelected(PlayerSide.second);
 
           // When
           cubit.onCardAdded(CardsRowType.longRange, createCard(3));
@@ -180,6 +182,291 @@ void main() {
               .cardsRows[CardsRowType.longRange]!;
           expect(p1Row.cards, isEmpty);
           expect(p2Row.cards, hasLength(1));
+        },
+      );
+
+      test(
+        '''
+      Given a Spy card
+      When `onCardAdded` is called
+      Then the card is placed on the other player's same row
+      ''',
+        () {
+          // Given
+          final spy = createCard(9, id: 'spy', abilities: [Ability.spy]);
+
+          // When
+          cubit.onCardAdded(CardsRowType.closeCombat, spy);
+
+          // Then
+          final p1Row = cubit
+              .state
+              .gameData
+              .firstPlayerData
+              .cardsRows[CardsRowType.closeCombat]!;
+          final p2Row = cubit
+              .state
+              .gameData
+              .secondPlayerData
+              .cardsRows[CardsRowType.closeCombat]!;
+          expect(p1Row.cards, isEmpty);
+          expect(p2Row.cards.single.cardId, 'spy');
+          expect(cubit.state.gameData.secondPlayerData.totalPoints, 9);
+          expect(cubit.state.gameData.firstPlayerData.totalPoints, 0);
+        },
+      );
+
+      test(
+        '''
+      Given a Muster card
+      When `onCardAdded` is called
+      Then `ShowMusterCountDialog` is emitted for the owner
+      ''',
+        () async {
+          // Given
+          final card = createCard(4, id: 'm1', abilities: [Ability.muster]);
+
+          // When
+          cubit.onCardAdded(CardsRowType.siege, card);
+          await Future<void>.delayed(Duration.zero);
+
+          // Then
+          verify(
+            () => sideEffectHandler.call(
+              ShowMusterCountDialog(CardsRowType.siege, card, PlayerSide.first),
+            ),
+          ).called(1);
+        },
+      );
+
+      test(
+        '''
+      Given a row-Scorch unit and an enemy row totaling 9
+      When `onCardAdded` is called
+      Then `ShowNoScorchTargets` with `rowBelowTen` is emitted
+      ''',
+        () async {
+          // Given
+          cubit.onPlayerSelected(PlayerSide.second);
+          cubit.onCardAdded(CardsRowType.closeCombat, createCard(9, id: 'b9'));
+          cubit.onPlayerSelected(PlayerSide.first);
+
+          // When
+          cubit.onCardAdded(
+            CardsRowType.closeCombat,
+            createCard(7, id: 'vt', abilities: [Ability.scorchRow]),
+          );
+          await Future<void>.delayed(Duration.zero);
+
+          // Then
+          verify(
+            () => sideEffectHandler.call(
+              const ShowNoScorchTargets(ScorchNoTargetReason.rowBelowTen),
+            ),
+          ).called(1);
+          expect(cubit.state.scorchPrompt, isNull);
+        },
+      );
+
+      test(
+        '''
+      Given a row-Scorch unit and an enemy row totaling 10
+      When `onCardAdded` is called
+      Then a prompt lists the strongest non-hero units on that row
+      ''',
+        () {
+          // Given
+          cubit.onPlayerSelected(PlayerSide.second);
+          cubit.onCardAdded(CardsRowType.closeCombat, createCard(6, id: 'b6'));
+          cubit.onCardAdded(CardsRowType.closeCombat, createCard(4, id: 'b4'));
+          cubit.onPlayerSelected(PlayerSide.first);
+
+          // When
+          cubit.onCardAdded(
+            CardsRowType.closeCombat,
+            createCard(7, id: 'vt', abilities: [Ability.scorchRow]),
+          );
+
+          // Then
+          expect(cubit.state.scorchPrompt?.targets, [
+            const ScorchTarget(
+              side: PlayerSide.second,
+              rowType: CardsRowType.closeCombat,
+              cardId: 'b6',
+            ),
+          ]);
+        },
+      );
+
+      test(
+        '''
+      Given a row-Scorch unit and an enemy row of heroes totaling 10
+      When `onCardAdded` is called
+      Then `ShowNoScorchTargets` with `nothingToScorch` is emitted
+      ''',
+        () async {
+          // Given
+          cubit.onPlayerSelected(PlayerSide.second);
+          cubit.onCardAdded(
+            CardsRowType.closeCombat,
+            createCard(10, id: 'hero', abilities: [Ability.hero]),
+          );
+          cubit.onPlayerSelected(PlayerSide.first);
+
+          // When
+          cubit.onCardAdded(
+            CardsRowType.closeCombat,
+            createCard(7, id: 'vt', abilities: [Ability.scorchRow]),
+          );
+          await Future<void>.delayed(Duration.zero);
+
+          // Then
+          verify(
+            () => sideEffectHandler.call(
+              const ShowNoScorchTargets(ScorchNoTargetReason.nothingToScorch),
+            ),
+          ).called(1);
+          expect(cubit.state.scorchPrompt, isNull);
+        },
+      );
+
+      test(
+        '''
+      Given the game is over
+      When `onCardAdded` is called
+      Then the board is unchanged
+      ''',
+        () async {
+          // Given
+          cubit.onCardAdded(CardsRowType.closeCombat, createCard(5));
+          cubit.onEndRoundTapped();
+          cubit.onCardAdded(CardsRowType.closeCombat, createCard(7));
+          cubit.onEndRoundTapped();
+          await Future<void>.delayed(Duration.zero);
+          final before = cubit.state.gameData;
+
+          // When
+          cubit.onCardAdded(
+            CardsRowType.closeCombat,
+            createCard(3, id: 'late'),
+          );
+
+          // Then
+          expect(identical(cubit.state.gameData, before), isTrue);
+        },
+      );
+    });
+
+    group('`onMusterCountChosen`', () {
+      test(
+        '''
+      Given a Muster card was just added
+      When `onMusterCountChosen` is called with 3
+      Then three extra copies are appended with unique ids
+      ''',
+        () {
+          // Given
+          final card = createCard(4, id: 'm1', abilities: [Ability.muster]);
+          cubit.onCardAdded(CardsRowType.siege, card);
+
+          // When
+          cubit.onMusterCountChosen(
+            CardsRowType.siege,
+            card,
+            3,
+            PlayerSide.first,
+          );
+
+          // Then
+          final row = cubit
+              .state
+              .gameData
+              .firstPlayerData
+              .cardsRows[CardsRowType.siege]!;
+          expect(row.cards, hasLength(4));
+          expect(row.cards.map((c) => c.cardId).toSet(), hasLength(4));
+          expect(row.cards.every((c) => c.points == 4), isTrue);
+          expect(
+            row.cards.every((c) => c.abilities.contains(Ability.muster)),
+            isTrue,
+          );
+        },
+      );
+
+      test(
+        '''
+      Given a Spy Muster card on the opponent row
+      When `onMusterCountChosen` is called
+      Then copies stay on the opponent row
+      ''',
+        () {
+          // Given
+          final card = createCard(
+            5,
+            id: 'sm',
+            abilities: [Ability.spy, Ability.muster],
+          );
+          cubit.onCardAdded(CardsRowType.longRange, card);
+
+          // When
+          cubit.onMusterCountChosen(
+            CardsRowType.longRange,
+            card,
+            2,
+            PlayerSide.first,
+          );
+
+          // Then
+          final p1 = cubit
+              .state
+              .gameData
+              .firstPlayerData
+              .cardsRows[CardsRowType.longRange]!;
+          final p2 = cubit
+              .state
+              .gameData
+              .secondPlayerData
+              .cardsRows[CardsRowType.longRange]!;
+          expect(p1.cards, isEmpty);
+          expect(p2.cards, hasLength(3));
+        },
+      );
+
+      test(
+        '''
+      Given an invalid extra-copy count
+      When `onMusterCountChosen` is called
+      Then no copies are added
+      ''',
+        () {
+          // Given
+          final card = createCard(4, id: 'm1', abilities: [Ability.muster]);
+          cubit.onCardAdded(CardsRowType.siege, card);
+
+          // When
+          cubit.onMusterCountChosen(
+            CardsRowType.siege,
+            card,
+            0,
+            PlayerSide.first,
+          );
+          cubit.onMusterCountChosen(
+            CardsRowType.siege,
+            card,
+            5,
+            PlayerSide.first,
+          );
+
+          // Then
+          expect(
+            cubit
+                .state
+                .gameData
+                .firstPlayerData
+                .cardsRows[CardsRowType.siege]!
+                .cards,
+            hasLength(1),
+          );
         },
       );
     });
@@ -310,6 +597,366 @@ void main() {
       );
     });
 
+    group('`onScorchTapped`', () {
+      test(
+        '''
+      Given tied strongest non-hero units on both sides and a stronger hero
+      When `onScorchTapped` is called
+      Then a prompt holds exactly the tied non-hero targets
+      ''',
+        () async {
+          // Given
+          cubit.onCardAdded(CardsRowType.closeCombat, createCard(8, id: 'a8'));
+          cubit.onCardAdded(
+            CardsRowType.longRange,
+            createCard(10, id: 'aHero', abilities: const [Ability.hero]),
+          );
+          cubit.onPlayerSelected(PlayerSide.second);
+          cubit.onCardAdded(CardsRowType.siege, createCard(8, id: 'b8'));
+
+          // When
+          cubit.onScorchTapped();
+          await Future<void>.delayed(Duration.zero);
+
+          // Then
+          expect(
+            cubit.state.scorchPrompt?.targets,
+            unorderedEquals(const [
+              ScorchTarget(
+                side: PlayerSide.first,
+                rowType: CardsRowType.closeCombat,
+                cardId: 'a8',
+              ),
+              ScorchTarget(
+                side: PlayerSide.second,
+                rowType: CardsRowType.siege,
+                cardId: 'b8',
+              ),
+            ]),
+          );
+          verifyZeroInteractions(sideEffectHandler);
+        },
+      );
+
+      test(
+        '''
+      Given an empty battlefield
+      When `onScorchTapped` is called
+      Then `ShowNoScorchTargets` explains there is nothing to scorch
+      ''',
+        () async {
+          // When
+          cubit.onScorchTapped();
+          await Future<void>.delayed(Duration.zero);
+
+          // Then
+          expect(cubit.state.scorchPrompt, isNull);
+          verify(
+            () => sideEffectHandler.call(
+              const ShowNoScorchTargets(ScorchNoTargetReason.nothingToScorch),
+            ),
+          ).called(1);
+        },
+      );
+
+      test(
+        '''
+      Given a prompt whose only target was deleted from the board
+      When `onScorchTapped` is called again
+      Then the stale prompt is cleared and `ShowNoScorchTargets` is emitted
+      ''',
+        () async {
+          // Given
+          final card = createCard(8, id: 'a8');
+          cubit.onCardAdded(CardsRowType.closeCombat, card);
+          cubit.onScorchTapped();
+          expect(cubit.state.scorchPrompt, isNotNull);
+          cubit.onCardDeleted(CardsRowType.closeCombat, card);
+
+          // When
+          cubit.onScorchTapped();
+          await Future<void>.delayed(Duration.zero);
+
+          // Then
+          expect(cubit.state.scorchPrompt, isNull);
+          verify(
+            () => sideEffectHandler.call(
+              const ShowNoScorchTargets(ScorchNoTargetReason.nothingToScorch),
+            ),
+          ).called(1);
+        },
+      );
+
+      test(
+        '''
+      Given the game is over
+      When `onScorchTapped` is called
+      Then no prompt is created and no side effect is emitted
+      ''',
+        () async {
+          // Given
+          cubit.onEndRoundTapped(); // tie: both 2→1
+          cubit.onCardAdded(CardsRowType.closeCombat, createCard(5, id: 'a5'));
+          cubit.onEndRoundTapped(); // Bob 1→0 → game over
+          await Future<void>.delayed(Duration.zero);
+
+          // When
+          cubit.onScorchTapped();
+          await Future<void>.delayed(Duration.zero);
+
+          // Then
+          expect(cubit.state.scorchPrompt, isNull);
+          verifyNever(
+            () => sideEffectHandler.call(any(that: isA<ShowNoScorchTargets>())),
+          );
+        },
+      );
+    });
+
+    group('`onScorchTargetTapped`', () {
+      test(
+        '''
+      Given a prompt with targets on both sides
+      When `onScorchTargetTapped` is called with one of them
+      Then only that card is removed and the prompt keeps the other target
+      ''',
+        () {
+          // Given
+          cubit.onCardAdded(CardsRowType.closeCombat, createCard(8, id: 'a8'));
+          cubit.onCardAdded(CardsRowType.closeCombat, createCard(3, id: 'a3'));
+          cubit.onPlayerSelected(PlayerSide.second);
+          cubit.onCardAdded(CardsRowType.siege, createCard(8, id: 'b8'));
+          cubit.onScorchTapped();
+          const target = ScorchTarget(
+            side: PlayerSide.first,
+            rowType: CardsRowType.closeCombat,
+            cardId: 'a8',
+          );
+
+          // When
+          cubit.onScorchTargetTapped(target);
+
+          // Then
+          final data = cubit.state.gameData;
+          expect(
+            data.firstPlayerData.cardsRows[CardsRowType.closeCombat]!.cards.map(
+              (c) => c.cardId,
+            ),
+            ['a3'],
+          );
+          expect(
+            data.secondPlayerData.cardsRows[CardsRowType.siege]!.cards.map(
+              (c) => c.cardId,
+            ),
+            ['b8'],
+          );
+          expect(cubit.state.scorchPrompt?.targets, const [
+            ScorchTarget(
+              side: PlayerSide.second,
+              rowType: CardsRowType.siege,
+              cardId: 'b8',
+            ),
+          ]);
+        },
+      );
+
+      test(
+        '''
+      Given a prompt with a single target
+      When `onScorchTargetTapped` removes it
+      Then the card is gone and the prompt is cleared
+      ''',
+        () {
+          // Given
+          cubit.onCardAdded(CardsRowType.siege, createCard(8, id: 'a8'));
+          cubit.onScorchTapped();
+          final target = cubit.state.scorchPrompt!.targets.single;
+
+          // When
+          cubit.onScorchTargetTapped(target);
+
+          // Then
+          expect(
+            cubit
+                .state
+                .gameData
+                .firstPlayerData
+                .cardsRows[CardsRowType.siege]!
+                .cards,
+            isEmpty,
+          );
+          expect(cubit.state.scorchPrompt, isNull);
+        },
+      );
+
+      test(
+        '''
+      Given a prompt that does not list a card
+      When `onScorchTargetTapped` is called with that card
+      Then the board and the prompt are unchanged
+      ''',
+        () {
+          // Given
+          cubit.onCardAdded(CardsRowType.closeCombat, createCard(8, id: 'a8'));
+          cubit.onCardAdded(CardsRowType.closeCombat, createCard(3, id: 'a3'));
+          cubit.onScorchTapped();
+          final stateBefore = cubit.state;
+
+          // When
+          cubit.onScorchTargetTapped(
+            const ScorchTarget(
+              side: PlayerSide.first,
+              rowType: CardsRowType.closeCombat,
+              cardId: 'a3',
+            ),
+          );
+
+          // Then
+          expect(cubit.state, same(stateBefore));
+        },
+      );
+
+      test(
+        '''
+      Given a target that was already scorched
+      When `onScorchTargetTapped` is called with it again
+      Then nothing changes
+      ''',
+        () {
+          // Given
+          cubit.onCardAdded(CardsRowType.closeCombat, createCard(8, id: 'a8'));
+          cubit.onPlayerSelected(PlayerSide.second);
+          cubit.onCardAdded(CardsRowType.siege, createCard(8, id: 'b8'));
+          cubit.onScorchTapped();
+          const target = ScorchTarget(
+            side: PlayerSide.first,
+            rowType: CardsRowType.closeCombat,
+            cardId: 'a8',
+          );
+          cubit.onScorchTargetTapped(target);
+          final stateBefore = cubit.state;
+
+          // When
+          cubit.onScorchTargetTapped(target);
+
+          // Then
+          expect(cubit.state, same(stateBefore));
+        },
+      );
+
+      test(
+        '''
+      Given a prompt whose round ended before the target was tapped
+      When `onScorchTargetTapped` is called with the now-stale target
+      Then the prompt is already gone and the card stays on the board
+      ''',
+        () async {
+          // Given
+          cubit.onEndRoundTapped(); // tie: both 2→1
+          cubit.onCardAdded(CardsRowType.closeCombat, createCard(5, id: 'a5'));
+          cubit.onScorchTapped();
+          final target = cubit.state.scorchPrompt!.targets.single;
+          cubit.onEndRoundTapped(); // Bob 1→0 → game over
+          await Future<void>.delayed(Duration.zero);
+
+          // When
+          cubit.onScorchTargetTapped(target);
+
+          // Then
+          expect(cubit.state.scorchPrompt, isNull);
+          expect(
+            cubit
+                .state
+                .gameData
+                .firstPlayerData
+                .cardsRows[CardsRowType.closeCombat]!
+                .cards
+                .map((c) => c.cardId),
+            ['a5'],
+          );
+        },
+      );
+    });
+
+    group('`onScorchPickCancelled`', () {
+      test(
+        '''
+      Given a prompt with remaining targets
+      When `onScorchPickCancelled` is called
+      Then the prompt is cleared and no card is removed
+      ''',
+        () {
+          // Given
+          cubit.onCardAdded(CardsRowType.closeCombat, createCard(8, id: 'a8'));
+          cubit.onPlayerSelected(PlayerSide.second);
+          cubit.onCardAdded(CardsRowType.siege, createCard(8, id: 'b8'));
+          cubit.onScorchTapped();
+          expect(cubit.state.scorchPrompt?.targets, hasLength(2));
+
+          // When
+          cubit.onScorchPickCancelled();
+
+          // Then
+          final data = cubit.state.gameData;
+          expect(cubit.state.scorchPrompt, isNull);
+          expect(
+            data.firstPlayerData.cardsRows[CardsRowType.closeCombat]!.cards.map(
+              (c) => c.cardId,
+            ),
+            ['a8'],
+          );
+          expect(
+            data.secondPlayerData.cardsRows[CardsRowType.siege]!.cards.map(
+              (c) => c.cardId,
+            ),
+            ['b8'],
+          );
+        },
+      );
+
+      test(
+        '''
+      Given no prompt
+      When `onScorchPickCancelled` is called
+      Then nothing changes
+      ''',
+        () {
+          // Given
+          final stateBefore = cubit.state;
+
+          // When
+          cubit.onScorchPickCancelled();
+
+          // Then
+          expect(cubit.state, same(stateBefore));
+        },
+      );
+
+      test(
+        '''
+      Given a prompt whose round ended before it was cancelled
+      When `onScorchPickCancelled` is called
+      Then nothing changes because the round already cleared the prompt
+      ''',
+        () async {
+          // Given
+          cubit.onEndRoundTapped(); // tie: both 2→1
+          cubit.onCardAdded(CardsRowType.closeCombat, createCard(5, id: 'a5'));
+          cubit.onScorchTapped();
+          cubit.onEndRoundTapped(); // Bob 1→0 → game over
+          await Future<void>.delayed(Duration.zero);
+          final stateBefore = cubit.state;
+          expect(stateBefore.scorchPrompt, isNull);
+
+          // When
+          cubit.onScorchPickCancelled();
+
+          // Then
+          expect(cubit.state, same(stateBefore));
+        },
+      );
+    });
+
     group('`onEndRoundTapped`', () {
       test(
         '''
@@ -354,7 +1001,7 @@ void main() {
       ''',
         () {
           // Given
-          cubit.onPlayerSelected(SelectedPlayer.second);
+          cubit.onPlayerSelected(PlayerSide.second);
           cubit.onCardAdded(CardsRowType.closeCombat, createCard(5));
 
           // When
@@ -375,7 +1022,7 @@ void main() {
         () {
           // Given
           cubit.onCardAdded(CardsRowType.closeCombat, createCard(5));
-          cubit.onPlayerSelected(SelectedPlayer.second);
+          cubit.onPlayerSelected(PlayerSide.second);
           cubit.onCardAdded(CardsRowType.siege, createCard(2));
 
           // When
@@ -427,7 +1074,7 @@ void main() {
       ''',
         () async {
           // Given
-          cubit.onPlayerSelected(SelectedPlayer.second);
+          cubit.onPlayerSelected(PlayerSide.second);
           cubit.onCardAdded(CardsRowType.closeCombat, createCard(5));
           cubit.onEndRoundTapped(); // Alice 2→1
           cubit.onCardAdded(CardsRowType.closeCombat, createCard(5));
@@ -484,6 +1131,51 @@ void main() {
 
           // Then
           expect(cubit.state.roundCounter, roundsBefore);
+        },
+      );
+
+      test(
+        '''
+      Given an open Scorch prompt
+      When `onEndRoundTapped` ends a non-terminal round
+      Then the prompt is cleared along with the board
+      ''',
+        () {
+          // Given
+          cubit.onCardAdded(CardsRowType.closeCombat, createCard(5, id: 'a5'));
+          cubit.onScorchTapped();
+          expect(cubit.state.scorchPrompt, isNotNull);
+
+          // When
+          cubit.onEndRoundTapped(); // Bob 2→1, board cleared
+
+          // Then
+          expect(cubit.state.gameOver, isNull);
+          expect(cubit.state.scorchPrompt, isNull);
+        },
+      );
+
+      test(
+        '''
+      Given an open Scorch prompt
+      When `onEndRoundTapped` ends the game
+      Then the prompt is cleared so no stale target survives game over
+      ''',
+        () async {
+          // Given
+          cubit.onCardAdded(CardsRowType.closeCombat, createCard(5, id: 'a5'));
+          cubit.onEndRoundTapped(); // Bob 2→1
+          cubit.onCardAdded(CardsRowType.closeCombat, createCard(5, id: 'a6'));
+          cubit.onScorchTapped();
+          expect(cubit.state.scorchPrompt, isNotNull);
+
+          // When
+          cubit.onEndRoundTapped(); // Bob 1→0 → game over
+          await Future<void>.delayed(Duration.zero);
+
+          // Then
+          expect(cubit.state.gameOver, Winner.first);
+          expect(cubit.state.scorchPrompt, isNull);
         },
       );
     });

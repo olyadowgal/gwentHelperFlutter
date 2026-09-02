@@ -1,7 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Card;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gwent_helper_flutter/data/gwent_repository.dart';
+import 'package:gwent_helper_flutter/domain/models/card.dart';
+import 'package:gwent_helper_flutter/domain/models/cards_row_type.dart';
+import 'package:gwent_helper_flutter/domain/models/player_side.dart';
 import 'package:gwent_helper_flutter/features/game/cubit/game_cubit.dart';
 import 'package:gwent_helper_flutter/features/game/resources/game_strings.dart';
 import 'package:gwent_helper_flutter/features/game/view/game_view.dart';
@@ -126,6 +129,117 @@ void main() {
           tester.getRect(exitButton).top,
           greaterThanOrEqualTo(viewPadding.top / devicePixelRatio),
         );
+      },
+    );
+  });
+
+  group('GameView Scorch', () {
+    testWidgets(
+      '''
+      Given a phone screen in landscape
+      When the game board is rendered
+      Then the Scorch control is fully on screen
+      ''',
+      (tester) async {
+        // When
+        final screen = await pumpGameView(tester);
+
+        // Then
+        final scorchRect = tester.getRect(find.text(GameStrings.scorch));
+        expect(scorchRect.top, greaterThanOrEqualTo(0));
+        expect(scorchRect.bottom, lessThanOrEqualTo(screen.height));
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      '''
+      Given two tied strongest units
+      When Scorch is tapped
+      Then pick mode starts and a highlighted chip can be removed
+      ''',
+      (tester) async {
+        // Given
+        cubit.onCardAdded(
+          CardsRowType.closeCombat,
+          Card(cardId: 'a8', points: 8, abilities: const []),
+        );
+        cubit.onPlayerSelected(PlayerSide.second);
+        cubit.onCardAdded(
+          CardsRowType.siege,
+          Card(cardId: 'b8', points: 8, abilities: const []),
+        );
+        cubit.onPlayerSelected(PlayerSide.first);
+        await pumpGameView(tester);
+
+        // When
+        await tester.tap(find.text(GameStrings.scorch));
+        await tester.pump();
+
+        // Then
+        expect(
+          find.text(
+            '${GameStrings.scorchRemaining}2. ${GameStrings.scorchOtherSide}',
+          ),
+          findsOneWidget,
+        );
+
+        // When
+        await tester.tap(find.byKey(const ValueKey('a8')));
+        await tester.pump();
+
+        // Then
+        expect(find.byKey(const ValueKey('a8')), findsNothing);
+        expect(cubit.state.scorchPrompt?.targets, hasLength(1));
+      },
+    );
+
+    testWidgets(
+      '''
+      Given pick mode is active
+      When Cancel is tapped
+      Then the prompt is cleared and the card remains
+      ''',
+      (tester) async {
+        // Given
+        cubit.onCardAdded(
+          CardsRowType.closeCombat,
+          Card(cardId: 'a8', points: 8, abilities: const []),
+        );
+        await pumpGameView(tester);
+        await tester.tap(find.text(GameStrings.scorch));
+        await tester.pump();
+
+        // When
+        await tester.tap(find.text(GameStrings.cancel));
+        await tester.pump();
+
+        // Then
+        expect(cubit.state.scorchPrompt, isNull);
+        expect(find.byKey(const ValueKey('a8')), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      '''
+      Given a card on the board
+      When it is tapped outside pick mode
+      Then it is not removed
+      ''',
+      (tester) async {
+        // Given
+        cubit.onCardAdded(
+          CardsRowType.closeCombat,
+          Card(cardId: 'a5', points: 5, abilities: const []),
+        );
+        await pumpGameView(tester);
+
+        // When
+        await tester.tap(find.byKey(const ValueKey('a5')));
+        await tester.pump();
+
+        // Then
+        expect(find.byKey(const ValueKey('a5')), findsOneWidget);
       },
     );
   });
