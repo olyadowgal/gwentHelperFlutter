@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gwent_helper_flutter/app_theme.dart';
 import 'package:gwent_helper_flutter/features/home/widgets/background_touch_button.dart';
+import 'package:gwent_helper_flutter/features/home/widgets/player_input_widget.dart';
 import 'package:gwent_helper_flutter/main.dart';
 import 'package:gwent_helper_flutter/widgets/hud/hud_avatar.dart';
 
@@ -268,6 +269,124 @@ void main() {
 
         // Then
         expect(taps, 3);
+      },
+    );
+
+    testWidgets(
+      '''
+      Given a chevron control
+      When its semantics are read
+      Then it is one tappable button carrying its label
+      ''',
+      (WidgetTester tester) async {
+        // Given
+        final semantics = tester.ensureSemantics();
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.data,
+            home: Scaffold(
+              body: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  BackgroundTouchButton(
+                    label: 'Scores',
+                    side: ChevronSide.right,
+                    onTap: () {},
+                  ),
+                  const Expanded(child: SizedBox.shrink()),
+                ],
+              ),
+            ),
+          ),
+        );
+
+        // Then
+        expect(
+          tester.getSemantics(find.byType(BackgroundTouchButton)),
+          isSemantics(label: 'Scores', isButton: true, hasTapAction: true),
+        );
+        expect(find.bySemanticsLabel('Scores'), findsOneWidget);
+        semantics.dispose();
+      },
+    );
+  });
+
+  group('PlayerInputWidget', () {
+    Future<void> pumpEditor(
+      WidgetTester tester, {
+      required VoidCallback onPhotoTap,
+    }) async {
+      final controller = TextEditingController();
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.data,
+          home: Scaffold(
+            body: Center(
+              child: PlayerInputWidget(
+                hint: 'Player 1',
+                controller: controller,
+                onPhotoTap: onPhotoTap,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    testWidgets(
+      '''
+      Given the six-sided avatar
+      When a transparent corner outside its shape is tapped
+      Then the photo picker stays shut, while a tap on the avatar opens it
+      ''',
+      (WidgetTester tester) async {
+        // Given
+        var photoTaps = 0;
+        await pumpEditor(tester, onPhotoTap: () => photoTaps++);
+        final avatar = tester.getRect(find.byType(HudAvatar));
+
+        // When
+        await tester.tapAt(avatar.topLeft + const Offset(4, 4));
+
+        // Then
+        expect(photoTaps, 0);
+
+        // When
+        await tester.tapAt(avatar.center);
+
+        // Then
+        expect(photoTaps, 1);
+      },
+    );
+
+    testWidgets(
+      '''
+      Given the avatar photo picker
+      When its semantics are read
+      Then it is one tappable button that names the player it belongs to
+      ''',
+      (WidgetTester tester) async {
+        // Given
+        final semantics = tester.ensureSemantics();
+
+        // When
+        await pumpEditor(tester, onPhotoTap: () {});
+
+        // Then
+        expect(
+          tester.getSemantics(find.byType(HudAvatar)),
+          isSemantics(
+            label: 'Change photo for Player 1',
+            isButton: true,
+            hasTapAction: true,
+          ),
+        );
+        expect(
+          find.bySemanticsLabel('Change photo for Player 1'),
+          findsOneWidget,
+        );
+        semantics.dispose();
       },
     );
   });

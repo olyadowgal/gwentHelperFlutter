@@ -103,44 +103,52 @@ class BackgroundTouchButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: label,
       onTap: onTap,
-      child: SizedBox(
-        width: _width,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            ClipPath(
-              clipper: ChevronClipper(side),
-              child: ColoredBox(
-                color: filled ? colorScheme.primary : colorScheme.surface,
-                child: Center(
-                  child: RotatedBox(
-                    quarterTurns: side == ChevronSide.left ? 1 : 3,
-                    child: Text(
-                      label,
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(
-                            fontSize: 20,
-                            color: filled
-                                ? colorScheme.onPrimary
-                                : colorScheme.onSurface,
-                            fontWeight: FontWeight.w700,
-                          ),
+      // The rotated label would otherwise be announced as a second node
+      // alongside the button itself.
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: SizedBox(
+          width: _width,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              ClipPath(
+                clipper: ChevronClipper(side),
+                child: ColoredBox(
+                  color: filled ? colorScheme.primary : colorScheme.surface,
+                  child: Center(
+                    child: RotatedBox(
+                      quarterTurns: side == ChevronSide.left ? 1 : 3,
+                      child: Text(
+                        label,
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(
+                              fontSize: 20,
+                              color: filled
+                                  ? colorScheme.onPrimary
+                                  : colorScheme.onSurface,
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            if (!filled)
-              CustomPaint(
-                painter: ChevronOutlinePainter(
-                  side: side,
-                  color: colorScheme.primary,
-                  strokeWidth: _strokeWidth,
+              if (!filled)
+                CustomPaint(
+                  painter: ChevronOutlinePainter(
+                    side: side,
+                    color: colorScheme.primary,
+                    strokeWidth: _strokeWidth,
+                  ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

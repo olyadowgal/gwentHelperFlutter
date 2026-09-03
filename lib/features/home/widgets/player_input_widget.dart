@@ -30,12 +30,20 @@ class PlayerInputWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            GestureDetector(
+            Semantics(
+              button: true,
+              label: 'Change photo for $hint',
               onTap: onPhotoTap,
-              child: HudAvatar(
-                size: _avatarSize,
-                iconSize: _avatarSize / 2,
-                image: photoPath == null ? null : FileImage(File(photoPath!)),
+              // The avatar has nothing to read out on its own, so excluding it
+              // keeps the picker a single node instead of two.
+              excludeSemantics: true,
+              child: GestureDetector(
+                onTap: onPhotoTap,
+                child: HudAvatar(
+                  size: _avatarSize,
+                  iconSize: _avatarSize / 2,
+                  image: photoPath == null ? null : FileImage(File(photoPath!)),
+                ),
               ),
             ),
             const SizedBox(height: 8),

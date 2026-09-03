@@ -57,6 +57,11 @@ class HudHexFramePainter extends CustomPainter {
   @override
   bool shouldRepaint(HudHexFramePainter oldDelegate) =>
       oldDelegate.color != color || oldDelegate.strokeWidth != strokeWidth;
+
+  /// The border never takes taps, so the transparent corners of its square
+  /// cannot claim what falls outside the clipped avatar.
+  @override
+  bool hitTest(Offset position) => false;
 }
 
 /// A player portrait inside the HUD frame.
