@@ -5,6 +5,12 @@ import 'package:gwent_helper_flutter/domain/models/ability.dart';
 import 'package:gwent_helper_flutter/domain/models/card.dart';
 
 class CardChip extends StatelessWidget {
+  /// Only used when a host theme leaves the card shape unset; the app theme
+  /// always supplies one.
+  static const _fallbackRadius = BorderRadius.all(Radius.circular(4));
+
+  static const _scorchBorderWidth = 3.0;
+
   final Card card;
   final int displayPoints;
   final VoidCallback onLongPress;
@@ -50,25 +56,41 @@ class CardChip extends StatelessWidget {
     return const SizedBox(height: 14);
   }
 
+  /// The rounding every card in the app uses, so the Scorch border follows the
+  /// chip's corners instead of squaring them off.
+  BorderRadiusGeometry _cornerRadius(ThemeData theme) {
+    final shape = theme.cardTheme.shape;
+    return shape is RoundedRectangleBorder
+        ? shape.borderRadius
+        : _fallbackRadius;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final isHero = card.abilities.contains(Ability.hero);
-    final contentColor = Theme.of(context).colorScheme.onSecondary;
+    // Scorch has to be spottable even on a hero, so it outranks the gold edge.
+    final borderColor = isScorchTarget
+        ? colorScheme.error
+        : isHero
+        ? colorScheme.primary
+        : colorScheme.outline;
+    final contentColor = colorScheme.onSurface;
     return GestureDetector(
       onTap: onTap,
       onLongPress: onLongPress,
       child: material.Card(
-        color: isHero ? Theme.of(context).colorScheme.secondary : Colors.white,
-        elevation: 2,
+        color: colorScheme.surface,
+        elevation: 0,
         margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
-        shape: isScorchTarget
-            ? RoundedRectangleBorder(
-                side: BorderSide(
-                  color: Theme.of(context).colorScheme.error,
-                  width: 3,
-                ),
-              )
-            : null,
+        shape: RoundedRectangleBorder(
+          borderRadius: _cornerRadius(theme),
+          side: BorderSide(
+            color: borderColor,
+            width: isScorchTarget ? _scorchBorderWidth : 1,
+          ),
+        ),
         child: SizedBox(
           width: 28,
           height: 44,

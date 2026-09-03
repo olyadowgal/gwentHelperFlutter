@@ -59,7 +59,7 @@ class _WeatherToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = active
-        ? Theme.of(context).colorScheme.primaryContainer
+        ? Theme.of(context).colorScheme.primary
         : Theme.of(context).colorScheme.outline;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,

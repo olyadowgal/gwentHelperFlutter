@@ -45,7 +45,7 @@ class CardsRowWidget extends StatelessWidget {
             width: 32,
             height: 32,
             colorFilter: ColorFilter.mode(
-              Theme.of(context).colorScheme.primaryContainer,
+              Theme.of(context).colorScheme.primary,
               BlendMode.srcIn,
             ),
           ),

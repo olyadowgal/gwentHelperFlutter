@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart' hide Card;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gwent_helper_flutter/app_theme.dart';
 import 'package:gwent_helper_flutter/data/gwent_repository.dart';
 import 'package:gwent_helper_flutter/domain/models/card.dart';
 import 'package:gwent_helper_flutter/domain/models/cards_row_type.dart';
@@ -8,6 +9,8 @@ import 'package:gwent_helper_flutter/domain/models/player_side.dart';
 import 'package:gwent_helper_flutter/features/game/cubit/game_cubit.dart';
 import 'package:gwent_helper_flutter/features/game/resources/game_strings.dart';
 import 'package:gwent_helper_flutter/features/game/view/game_view.dart';
+import 'package:gwent_helper_flutter/features/game/widgets/user_widget.dart';
+import 'package:gwent_helper_flutter/widgets/hud/hud_avatar.dart';
 import 'package:mocktail/mocktail.dart';
 
 // region Mocks
@@ -45,6 +48,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        theme: AppTheme.data,
         home: BlocProvider<GameCubit>.value(
           value: cubit,
           child: const GameView(),
@@ -55,6 +59,11 @@ void main() {
 
     return physicalSize / devicePixelRatio;
   }
+
+  Finder avatarFrameOf(int playerIndex) => find.descendant(
+    of: find.byType(UserWidget).at(playerIndex),
+    matching: find.byKey(HudAvatar.frameKey),
+  );
 
   group('GameView sidebar', () {
     testWidgets(
@@ -129,6 +138,78 @@ void main() {
           tester.getRect(exitButton).top,
           greaterThanOrEqualTo(viewPadding.top / devicePixelRatio),
         );
+      },
+    );
+  });
+
+  group('GameView chrome', () {
+    testWidgets(
+      '''
+      Given the first player is selected
+      When the sidebar is rendered
+      Then only that player's avatar frame is gold
+      ''',
+      (tester) async {
+        // When
+        await pumpGameView(tester);
+
+        // Then
+        expect(
+          avatarFrameOf(0),
+          paints..path(color: AppTheme.gold, style: PaintingStyle.stroke),
+        );
+        expect(
+          avatarFrameOf(1),
+          paints..path(color: AppTheme.olive, style: PaintingStyle.stroke),
+        );
+      },
+    );
+
+    testWidgets(
+      '''
+      Given the first player is selected
+      When the second player is tapped
+      Then the gold frame follows the selection
+      ''',
+      (tester) async {
+        // Given
+        await pumpGameView(tester);
+
+        // When
+        await tester.tap(find.text('Bob'));
+        await tester.pump();
+
+        // Then
+        expect(cubit.state.selectedPlayer, PlayerSide.second);
+        expect(
+          avatarFrameOf(0),
+          paints..path(color: AppTheme.olive, style: PaintingStyle.stroke),
+        );
+        expect(
+          avatarFrameOf(1),
+          paints..path(color: AppTheme.gold, style: PaintingStyle.stroke),
+        );
+      },
+    );
+
+    testWidgets(
+      '''
+      Given the game board is rendered
+      When the sidebar is inspected
+      Then it is a dark panel with an olive edge at its full width
+      ''',
+      (tester) async {
+        // When
+        await pumpGameView(tester);
+
+        // Then
+        final sidebar = tester.widget<Container>(
+          find.byKey(GameView.sidebarKey),
+        );
+        final decoration = sidebar.decoration! as BoxDecoration;
+        expect(decoration.color, AppTheme.panel);
+        expect((decoration.border! as Border).right.color, AppTheme.olive);
+        expect(tester.getSize(find.byKey(GameView.sidebarKey)).width, 90);
       },
     );
   });

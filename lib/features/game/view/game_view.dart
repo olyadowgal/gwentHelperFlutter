@@ -21,11 +21,18 @@ import '../widgets/user_widget.dart';
 import '../widgets/weather_widget.dart';
 
 class GameView extends StatefulWidget {
+  /// Names the sidebar panel so tests can read its chrome.
+  static const sidebarKey = Key('game-sidebar');
+
   static const _sidebarWidth = 90.0;
   static const _buttonIconSize = 18.0;
   static const _buttonLabelSize = 10.0;
   static const _buttonPadding = 6.0;
   static const _dividerWidth = 1.0;
+
+  /// Olive is loud at full strength for a separator, so the in-board hairlines
+  /// only hint at the grid.
+  static const _hairlineAlpha = 0.24;
 
   final String? player1PhotoPath;
   final String? player2PhotoPath;
@@ -197,8 +204,17 @@ class _GameViewState extends State<GameView> {
               children: [
                 // Zone 1: Sidebar
                 Container(
+                  key: GameView.sidebarKey,
                   width: GameView._sidebarWidth,
-                  color: colorScheme.surface,
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface,
+                    border: Border(
+                      right: BorderSide(
+                        color: colorScheme.outline,
+                        width: GameView._dividerWidth,
+                      ),
+                    ),
+                  ),
                   child: Column(
                     children: [
                       // Exit button
@@ -286,7 +302,9 @@ class _GameViewState extends State<GameView> {
                 // Zone 3: Divider
                 Container(
                   width: GameView._dividerWidth,
-                  color: colorScheme.outline.withValues(alpha: 0.24),
+                  color: colorScheme.outline.withValues(
+                    alpha: GameView._hairlineAlpha,
+                  ),
                 ),
                 // Zone 4: Card rows
                 Expanded(
@@ -298,7 +316,10 @@ class _GameViewState extends State<GameView> {
                           selectedPlayer: state.selectedPlayer,
                           onCancel: cubit.onScorchPickCancelled,
                         ),
-                      ...CardsRowType.values.map((rowType) {
+                      ...CardsRowType.values.indexed.map((entry) {
+                        final (index, rowType) = entry;
+                        final isLastRow =
+                            index == CardsRowType.values.length - 1;
                         final row = selectedData.cardsRows[rowType]!;
                         final targetIds = <String>{
                           for (final target
@@ -308,20 +329,34 @@ class _GameViewState extends State<GameView> {
                               target.cardId,
                         };
                         return Expanded(
-                          child: CardsRowWidget(
-                            row: row,
-                            onAddCard: cubit.onAddCardRequested,
-                            onCardLongPress: cubit.onEditCardRequested,
-                            scorchTargetIds: targetIds,
-                            onScorchTargetTap: (type, card) {
-                              cubit.onScorchTargetTapped(
-                                ScorchTarget(
-                                  side: state.selectedPlayer,
-                                  rowType: type,
-                                  cardId: card.cardId,
-                                ),
-                              );
-                            },
+                          child: Container(
+                            decoration: isLastRow
+                                ? null
+                                : BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: colorScheme.outline.withValues(
+                                          alpha: GameView._hairlineAlpha,
+                                        ),
+                                        width: GameView._dividerWidth,
+                                      ),
+                                    ),
+                                  ),
+                            child: CardsRowWidget(
+                              row: row,
+                              onAddCard: cubit.onAddCardRequested,
+                              onCardLongPress: cubit.onEditCardRequested,
+                              scorchTargetIds: targetIds,
+                              onScorchTargetTap: (type, card) {
+                                cubit.onScorchTargetTapped(
+                                  ScorchTarget(
+                                    side: state.selectedPlayer,
+                                    rowType: type,
+                                    cardId: card.cardId,
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                         );
                       }),
@@ -357,13 +392,16 @@ class _SidebarButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    // Every sidebar control is an action rather than a toggle, so its mark
+    // stays gold and its label reads in cream.
+    final markColor = colorScheme.primary;
     final mark = icon != null
-        ? Icon(icon, size: GameView._buttonIconSize, color: colorScheme.outline)
+        ? Icon(icon, size: GameView._buttonIconSize, color: markColor)
         : SvgPicture.asset(
             iconAsset!,
             width: GameView._buttonIconSize,
             height: GameView._buttonIconSize,
-            colorFilter: ColorFilter.mode(colorScheme.outline, BlendMode.srcIn),
+            colorFilter: ColorFilter.mode(markColor, BlendMode.srcIn),
           );
     final button = GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -379,7 +417,7 @@ class _SidebarButton extends StatelessWidget {
               label,
               style: TextStyle(
                 fontSize: GameView._buttonLabelSize,
-                color: colorScheme.outline,
+                color: colorScheme.onSurface,
               ),
             ),
           ],

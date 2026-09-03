@@ -40,9 +40,7 @@ class StatsColumnWidget extends StatelessWidget {
                   width: 28,
                   height: 28,
                   colorFilter: ColorFilter.mode(
-                    row.horn
-                        ? colorScheme.primaryContainer
-                        : colorScheme.onSurface,
+                    row.horn ? colorScheme.primary : colorScheme.outline,
                     BlendMode.srcIn,
                   ),
                 ),

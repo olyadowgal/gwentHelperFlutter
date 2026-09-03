@@ -37,67 +37,75 @@ class _EditCardDialogState extends State<EditCardDialog> {
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
-        title: const Text(GameStrings.editCardTitle),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  const Text(GameStrings.points),
-                  Expanded(
-                    child: Slider(
-                      value: _points.toDouble(),
-                      min: 0,
-                      max: 15,
-                      divisions: 15,
-                      label: '$_points',
-                      onChanged: (v) => setState(() => _points = v.round()),
-                    ),
+  Widget build(BuildContext context) {
+    final errorColor = Theme.of(context).colorScheme.error;
+    return AlertDialog(
+      title: const Text(GameStrings.editCardTitle),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                const Text(GameStrings.points),
+                Expanded(
+                  child: Slider(
+                    value: _points.toDouble(),
+                    min: 0,
+                    max: 15,
+                    divisions: 15,
+                    label: '$_points',
+                    onChanged: (v) => setState(() => _points = v.round()),
                   ),
-                  Text('$_points'),
-                ],
-              ),
-              const Divider(),
-              const Text(GameStrings.abilities),
-              ...Ability.values.map(
-                (ability) => CheckboxListTile(
-                  title: Text(ability.displayName),
-                  value: _selectedAbilities.contains(ability),
-                  onChanged: (v) => setState(() {
-                    if (v == true) {
-                      _selectedAbilities.add(ability);
-                    } else {
-                      _selectedAbilities.remove(ability);
-                    }
-                  }),
                 ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(const EditCardDelete()),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text(GameStrings.delete),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text(GameStrings.cancel),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(
-              EditCardSave(
-                widget.card.copyWith(
-                  points: _points,
-                  abilities: List.from(_selectedAbilities),
-                ),
+                Text('$_points'),
+              ],
+            ),
+            const Divider(),
+            const Text(GameStrings.abilities),
+            ...Ability.values.map(
+              (ability) => CheckboxListTile(
+                title: Text(ability.displayName),
+                value: _selectedAbilities.contains(ability),
+                onChanged: (v) => setState(() {
+                  if (v == true) {
+                    _selectedAbilities.add(ability);
+                  } else {
+                    _selectedAbilities.remove(ability);
+                  }
+                }),
               ),
             ),
-            child: const Text(GameStrings.save),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(const EditCardDelete()),
+          // The gold outline the theme gives secondary actions would read as
+          // safe here, so this button outlines itself in the error color.
+          style: TextButton.styleFrom(
+            foregroundColor: errorColor,
+            side: BorderSide(color: errorColor),
           ),
-        ],
-      );
+          child: const Text(GameStrings.delete),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text(GameStrings.cancel),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.of(context).pop(
+            EditCardSave(
+              widget.card.copyWith(
+                points: _points,
+                abilities: List.from(_selectedAbilities),
+              ),
+            ),
+          ),
+          child: const Text(GameStrings.save),
+        ),
+      ],
+    );
+  }
 }
