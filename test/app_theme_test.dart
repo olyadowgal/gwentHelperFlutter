@@ -70,6 +70,10 @@ void main() {
           greaterThanOrEqualTo(4.5),
         );
         expect(
+          _contrastRatio(scheme.onPrimary, scheme.primary),
+          greaterThanOrEqualTo(4.5),
+        );
+        expect(
           _contrastRatio(scheme.onError, scheme.error),
           greaterThanOrEqualTo(4.5),
         );
@@ -102,7 +106,17 @@ void main() {
         expect(scheme.onSecondaryContainer, AppTheme.background);
         expect(scheme.surface, AppTheme.panel);
         expect(scheme.onSurface, AppTheme.cream);
+        expect(scheme.onSurfaceVariant, AppTheme.cream);
         expect(scheme.outline, AppTheme.olive);
+        expect(scheme.tertiary, AppTheme.gold);
+        expect(scheme.onTertiary, AppTheme.background);
+        expect(scheme.inversePrimary, AppTheme.gold);
+        expect(scheme.surfaceTint, Colors.transparent);
+        expect(scheme.surfaceContainerLowest, AppTheme.background);
+        expect(scheme.surfaceContainerLow, AppTheme.panel);
+        expect(scheme.surfaceContainer, AppTheme.panel);
+        expect(scheme.surfaceContainerHigh, AppTheme.panel);
+        expect(scheme.surfaceContainerHighest, AppTheme.panel);
       },
     );
 
@@ -137,7 +151,7 @@ void main() {
         expect(cardTheme.elevation, 0);
         final shape = cardTheme.shape! as RoundedRectangleBorder;
         expect(shape.side.color, AppTheme.olive);
-        expect(shape.side.width, greaterThan(0));
+        expect(shape.side.width, 1);
         expect(shape.borderRadius, const BorderRadius.all(Radius.circular(4)));
       },
     );
@@ -154,6 +168,7 @@ void main() {
 
         // Then
         expect(dialogTheme.backgroundColor, AppTheme.panel);
+        expect(dialogTheme.elevation, 0);
         final title = dialogTheme.titleTextStyle!;
         expect(title.fontFamily, 'Vollkorn');
         expect(title.color, AppTheme.gold);
