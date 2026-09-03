@@ -2,72 +2,147 @@ import 'package:flutter/material.dart';
 
 enum ChevronSide { left, right }
 
-class BackgroundTouchButton extends StatelessWidget {
-  final String label;
-  final Color color;
-  final Color textColor;
+/// How deep the arrow bites into the chevron.
+const _notch = 24.0;
+
+/// The chevron outline, shared by the clip and the painted border so the two
+/// always describe the same shape.
+Path chevronPath(Size size, ChevronSide side) {
+  final path = Path();
+  if (side == ChevronSide.right) {
+    path.moveTo(0, 0);
+    path.lineTo(size.width - _notch, 0);
+    path.lineTo(size.width, size.height / 2);
+    path.lineTo(size.width - _notch, size.height);
+    path.lineTo(0, size.height);
+  } else {
+    path.moveTo(_notch, 0);
+    path.lineTo(size.width, 0);
+    path.lineTo(size.width, size.height);
+    path.lineTo(_notch, size.height);
+    path.lineTo(0, size.height / 2);
+  }
+  path.close();
+  return path;
+}
+
+class ChevronClipper extends CustomClipper<Path> {
   final ChevronSide side;
+
+  const ChevronClipper(this.side);
+
+  @override
+  Path getClip(Size size) => chevronPath(size, side);
+
+  @override
+  bool shouldReclip(ChevronClipper oldClipper) => oldClipper.side != side;
+}
+
+/// Strokes the chevron edge for the outlined variant.
+class ChevronOutlinePainter extends CustomPainter {
+  final ChevronSide side;
+  final Color color;
+  final double strokeWidth;
+
+  const ChevronOutlinePainter({
+    required this.side,
+    required this.color,
+    required this.strokeWidth,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = chevronPath(size, side);
+    // Clipping to the same path keeps the inner half of a double-width stroke,
+    // so the border cannot spill past the chevron on the diagonal edges.
+    canvas
+      ..save()
+      ..clipPath(path)
+      ..drawPath(
+        path,
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = strokeWidth * 2,
+      )
+      ..restore();
+  }
+
+  @override
+  bool shouldRepaint(ChevronOutlinePainter oldDelegate) =>
+      oldDelegate.side != side ||
+      oldDelegate.color != color ||
+      oldDelegate.strokeWidth != strokeWidth;
+
+  /// The outline never takes taps; the chevron underneath owns the hit area.
+  @override
+  bool hitTest(Offset position) => false;
+}
+
+/// The full-height chevron that starts a match or opens the scores.
+///
+/// [filled] paints the primary gold action; the outlined variant is a dark
+/// panel with a gold edge for secondary navigation.
+class BackgroundTouchButton extends StatelessWidget {
+  static const _width = 100.0;
+  static const _strokeWidth = 2.0;
+
+  final String label;
+  final ChevronSide side;
+  final bool filled;
   final VoidCallback onTap;
 
   const BackgroundTouchButton({
     super.key,
     required this.label,
-    required this.color,
-    required this.textColor,
     required this.side,
     required this.onTap,
+    this.filled = false,
   });
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-        onTap: onTap,
-        child: ClipPath(
-          clipper: _ChevronClipper(side),
-          child: Container(
-            width: 100,
-            color: color,
-            alignment: Alignment.center,
-            child: RotatedBox(
-              quarterTurns: side == ChevronSide.left ? 1 : 3,
-              child: Text(
-                label,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontSize: 20,
-                      color: textColor,
-                      fontWeight: FontWeight.w700,
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return GestureDetector(
+      onTap: onTap,
+      child: SizedBox(
+        width: _width,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            ClipPath(
+              clipper: ChevronClipper(side),
+              child: ColoredBox(
+                color: filled ? colorScheme.primary : colorScheme.surface,
+                child: Center(
+                  child: RotatedBox(
+                    quarterTurns: side == ChevronSide.left ? 1 : 3,
+                    child: Text(
+                      label,
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(
+                            fontSize: 20,
+                            color: filled
+                                ? colorScheme.onPrimary
+                                : colorScheme.onSurface,
+                            fontWeight: FontWeight.w700,
+                          ),
                     ),
+                  ),
+                ),
               ),
             ),
-          ),
+            if (!filled)
+              CustomPaint(
+                painter: ChevronOutlinePainter(
+                  side: side,
+                  color: colorScheme.primary,
+                  strokeWidth: _strokeWidth,
+                ),
+              ),
+          ],
         ),
-      );
-}
-
-class _ChevronClipper extends CustomClipper<Path> {
-  final ChevronSide side;
-  const _ChevronClipper(this.side);
-
-  @override
-  Path getClip(Size size) {
-    const notch = 24.0;
-    final path = Path();
-    if (side == ChevronSide.right) {
-      path.moveTo(0, 0);
-      path.lineTo(size.width - notch, 0);
-      path.lineTo(size.width, size.height / 2);
-      path.lineTo(size.width - notch, size.height);
-      path.lineTo(0, size.height);
-    } else {
-      path.moveTo(notch, 0);
-      path.lineTo(size.width, 0);
-      path.lineTo(size.width, size.height);
-      path.lineTo(notch, size.height);
-      path.lineTo(0, size.height / 2);
-    }
-    path.close();
-    return path;
+      ),
+    );
   }
-
-  @override
-  bool shouldReclip(_ChevronClipper old) => old.side != side;
 }

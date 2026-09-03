@@ -1,8 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gwent_helper_flutter/app_theme.dart';
+import 'package:gwent_helper_flutter/features/home/widgets/background_touch_button.dart';
 import 'package:gwent_helper_flutter/main.dart';
+import 'package:gwent_helper_flutter/widgets/hud/hud_avatar.dart';
 
 void main() {
+  /// The chevron button that carries [label].
+  Finder chevron(String label) => find.ancestor(
+    of: find.text(label),
+    matching: find.byType(BackgroundTouchButton),
+  );
+
+  /// The color filling a chevron, which is what separates the filled primary
+  /// action from the outlined secondary one.
+  Color chevronFill(WidgetTester tester, String label) => tester
+      .widget<ColoredBox>(
+        find
+            .descendant(of: chevron(label), matching: find.byType(ColoredBox))
+            .first,
+      )
+      .color;
+
+  /// The outline painted along a chevron, or `null` when it has none.
+  ChevronOutlinePainter? chevronOutline(WidgetTester tester, String label) {
+    final painters = tester
+        .widgetList<CustomPaint>(
+          find.descendant(
+            of: chevron(label),
+            matching: find.byType(CustomPaint),
+          ),
+        )
+        .map((paint) => paint.painter)
+        .whereType<ChevronOutlinePainter>();
+    return painters.isEmpty ? null : painters.first;
+  }
+
   group('GwentHelperApp', () {
     testWidgets(
       '''
@@ -42,5 +75,209 @@ void main() {
         expect(tester.takeException(), isNull);
       },
     );
+
+    testWidgets(
+      '''
+      Given a landscape phone screen
+      When the app is launched
+      Then the HUD home screen fits without overflowing
+      ''',
+      (WidgetTester tester) async {
+        // Given
+        tester.view
+          ..physicalSize = const Size(2400, 1080)
+          ..devicePixelRatio = 2.625;
+        addTearDown(tester.view.reset);
+
+        // When
+        await tester.pumpWidget(const GwentHelperApp());
+        await tester.pumpAndSettle();
+
+        // Then
+        expect(tester.takeException(), isNull);
+        expect(find.text('Player 1'), findsOneWidget);
+        expect(find.text('Player 2'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      '''
+      Given the home screen
+      When the player editors are rendered
+      Then each one is a dark panel with an olive hairline and 4px corners
+      ''',
+      (WidgetTester tester) async {
+        // When
+        await tester.pumpWidget(const GwentHelperApp());
+        await tester.pumpAndSettle();
+
+        // Then
+        for (final hint in ['Player 1', 'Player 2']) {
+          final material = tester.widget<Material>(
+            find
+                .descendant(
+                  of: find.byKey(Key('player-input-$hint')),
+                  matching: find.byType(Material),
+                )
+                .first,
+          );
+          expect(material.color, AppTheme.panel);
+          final shape = material.shape! as RoundedRectangleBorder;
+          expect(shape.side.color, AppTheme.olive);
+          expect(shape.side.width, 1);
+          expect(
+            shape.borderRadius,
+            const BorderRadius.all(Radius.circular(4)),
+          );
+        }
+      },
+    );
+
+    testWidgets(
+      '''
+      Given the home screen without player photos
+      When the avatars are rendered
+      Then both are idle olive HUD frames around the person placeholder
+      ''',
+      (WidgetTester tester) async {
+        // When
+        await tester.pumpWidget(const GwentHelperApp());
+        await tester.pumpAndSettle();
+
+        // Then
+        expect(find.byType(HudAvatar), findsNWidgets(2));
+        expect(find.byIcon(Icons.person), findsNWidgets(2));
+        final painters = tester
+            .widgetList<CustomPaint>(find.byKey(HudAvatar.frameKey))
+            .map((paint) => paint.painter)
+            .cast<HudHexFramePainter>();
+        expect(
+          painters.map((painter) => painter.color),
+          everyElement(AppTheme.olive),
+        );
+      },
+    );
+
+    testWidgets(
+      '''
+      Given the home screen
+      When the player name fields are rendered
+      Then their text is cream and their hint stays readable on the panel
+      ''',
+      (WidgetTester tester) async {
+        // When
+        await tester.pumpWidget(const GwentHelperApp());
+        await tester.pumpAndSettle();
+
+        // Then
+        final field = tester.widget<TextField>(find.byType(TextField).first);
+        expect(field.style!.color, AppTheme.cream);
+        final hint = field.decoration!.hintStyle!.color!;
+        expect(
+          _contrastRatio(
+            Color.alphaBlend(hint, AppTheme.panel),
+            AppTheme.panel,
+          ),
+          greaterThanOrEqualTo(4.5),
+        );
+      },
+    );
+
+    testWidgets(
+      '''
+      Given the home screen
+      When the Play and Scores chevrons are rendered
+      Then Play is filled gold and Scores is an outlined dark panel
+      ''',
+      (WidgetTester tester) async {
+        // When
+        await tester.pumpWidget(const GwentHelperApp());
+        await tester.pumpAndSettle();
+
+        // Then
+        expect(chevronFill(tester, 'PLAY'), AppTheme.gold);
+        expect(
+          tester.widget<Text>(find.text('PLAY')).style!.color,
+          AppTheme.background,
+        );
+        expect(chevronOutline(tester, 'PLAY'), isNull);
+
+        expect(chevronFill(tester, 'Scores'), AppTheme.panel);
+        expect(
+          tester.widget<Text>(find.text('Scores')).style!.color,
+          AppTheme.cream,
+        );
+        expect(chevronOutline(tester, 'Scores')!.color, AppTheme.gold);
+      },
+    );
+
+    testWidgets(
+      '''
+      Given the home screen
+      When the VS separator is rendered
+      Then it uses the gold display style from the theme
+      ''',
+      (WidgetTester tester) async {
+        // When
+        await tester.pumpWidget(const GwentHelperApp());
+        await tester.pumpAndSettle();
+
+        // Then
+        expect(
+          tester.widget<Text>(find.text('VS')).style!.color,
+          AppTheme.gold,
+        );
+      },
+    );
   });
+
+  group('BackgroundTouchButton', () {
+    testWidgets(
+      '''
+      Given a chevron beside the rest of the screen
+      When its top, middle and bottom are tapped
+      Then the whole column still reacts
+      ''',
+      (WidgetTester tester) async {
+        // Given
+        var taps = 0;
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.data,
+            home: Scaffold(
+              body: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  BackgroundTouchButton(
+                    label: 'Scores',
+                    side: ChevronSide.right,
+                    onTap: () => taps++,
+                  ),
+                  const Expanded(child: SizedBox.shrink()),
+                ],
+              ),
+            ),
+          ),
+        );
+
+        // When
+        final chevron = tester.getRect(find.byType(BackgroundTouchButton));
+        await tester.tapAt(Offset(chevron.left + 8, chevron.top + 8));
+        await tester.tapAt(chevron.center);
+        await tester.tapAt(Offset(chevron.left + 8, chevron.bottom - 8));
+
+        // Then
+        expect(taps, 3);
+      },
+    );
+  });
+}
+
+/// WCAG contrast ratio between two opaque colors.
+double _contrastRatio(Color a, Color b) {
+  final first = a.computeLuminance();
+  final second = b.computeLuminance();
+  final lighter = first > second ? first : second;
+  final darker = first > second ? second : first;
+  return (lighter + 0.05) / (darker + 0.05);
 }
