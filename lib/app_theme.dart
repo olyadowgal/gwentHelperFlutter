@@ -24,12 +24,6 @@ abstract class AppTheme {
 
   static const _radius = BorderRadius.all(Radius.circular(4));
 
-  /// Text and icon color for content placed on cards.
-  ///
-  /// Temporary alias kept while the scores UI still overrides its own text
-  /// colors; it disappears once those widgets read the tokens directly.
-  static const onLightCard = cream;
-
   static final data = _hudTheme();
 
   static ThemeData _hudTheme() {

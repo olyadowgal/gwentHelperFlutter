@@ -44,50 +44,71 @@ class ScoresView extends StatelessWidget {
         child: BlocBuilder<ScoresCubit, ScoresState>(
           builder: (context, state) => Scaffold(
             appBar: AppBar(
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              backgroundColor: Theme.of(context).colorScheme.surface,
               leading: IconButton(
+                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
                 icon: SvgPicture.asset(
                   'assets/icons/ic_baseline_arrow_back.svg',
+                  key: const Key('scores-back-icon'),
                   width: 24,
                   height: 24,
-                  colorFilter: const ColorFilter.mode(
-                    Color(0xFFC4C5C5),
+                  colorFilter: ColorFilter.mode(
+                    Theme.of(context).colorScheme.onSurface,
                     BlendMode.srcIn,
                   ),
                 ),
                 onPressed: () => context.pop(),
               ),
               actions: [
-                GestureDetector(
-                  onLongPress: () =>
-                      context.read<ScoresCubit>().onClearAllTapped(),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: SvgPicture.asset(
-                      'assets/icons/ic_trash.svg',
-                      width: 24,
-                      height: 24,
-                      colorFilter: const ColorFilter.mode(
-                        Color(0xFFC4C5C5),
-                        BlendMode.srcIn,
+                Builder(
+                  builder: (context) {
+                    void clearAll() =>
+                        context.read<ScoresCubit>().onClearAllTapped();
+                    return Semantics(
+                      button: true,
+                      label: ScoresStrings.clearAll,
+                      onLongPress: clearAll,
+                      excludeSemantics: true,
+                      child: Tooltip(
+                        message: ScoresStrings.clearAll,
+                        triggerMode: TooltipTriggerMode.tap,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onLongPress: clearAll,
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: SvgPicture.asset(
+                              'assets/icons/ic_trash.svg',
+                              key: const Key('scores-clear-icon'),
+                              width: 24,
+                              height: 24,
+                              colorFilter: ColorFilter.mode(
+                                Theme.of(context).colorScheme.error,
+                                BlendMode.srcIn,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ],
             ),
             body: switch (state) {
-              ScoresState(isLoading: true) =>
-                const Center(child: CircularProgressIndicator()),
-              ScoresState(errorMessage: final msg) when msg != null =>
-                Center(child: Text('${ScoresStrings.errorPrefix}$msg')),
+              ScoresState(isLoading: true) => const Center(
+                child: CircularProgressIndicator(),
+              ),
+              ScoresState(errorMessage: final msg) when msg != null => Center(
+                child: Text('${ScoresStrings.errorPrefix}$msg'),
+              ),
               ScoresState(scores: final scores) when scores.isEmpty =>
                 const Center(child: Text(ScoresStrings.empty)),
               ScoresState(scores: final scores) => ListView.builder(
-                  itemCount: scores.length,
-                  itemBuilder: (context, index) =>
-                      ScoreCardWidget(score: scores[index]),
-                ),
+                itemCount: scores.length,
+                itemBuilder: (context, index) =>
+                    ScoreCardWidget(score: scores[index]),
+              ),
             },
           ),
         ),

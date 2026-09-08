@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
-import 'package:gwent_helper_flutter/app_theme.dart';
 import 'package:gwent_helper_flutter/domain/models/game_score.dart';
 import '../resources/scores_strings.dart';
 
@@ -11,23 +10,10 @@ class ScoreCardWidget extends StatelessWidget {
   const ScoreCardWidget({super.key, required this.score});
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    // Cards are light while the app's color scheme is dark, so the card needs
-    // its own text colors to stay readable.
-    return Theme(
-      data: theme.copyWith(
-        textTheme: theme.textTheme.apply(
-          bodyColor: AppTheme.onLightCard,
-          displayColor: AppTheme.onLightCard,
-        ),
-      ),
-      child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        child: _ScoreCardBody(score: score),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Card(
+    margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    child: _ScoreCardBody(score: score),
+  );
 }
 
 class _ScoreCardBody extends StatelessWidget {
@@ -59,7 +45,10 @@ class _ScoreCardBody extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _Crown(won: score.firstPlayerWon),
+                    _Crown(
+                      key: const Key('score-card-crown-first'),
+                      won: score.firstPlayerWon,
+                    ),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
@@ -78,7 +67,10 @@ class _ScoreCardBody extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    _Crown(won: score.secondPlayerWon),
+                    _Crown(
+                      key: const Key('score-card-crown-second'),
+                      won: score.secondPlayerWon,
+                    ),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
@@ -143,20 +135,21 @@ class _ScoreCardBody extends StatelessWidget {
 class _Crown extends StatelessWidget {
   final bool won;
 
-  const _Crown({required this.won});
+  const _Crown({super.key, required this.won});
 
   @override
-  Widget build(BuildContext context) => SvgPicture.asset(
-    'assets/icons/ic_crown.svg',
-    width: 24,
-    height: 24,
-    colorFilter: ColorFilter.mode(
-      won
-          ? Theme.of(context).colorScheme.secondaryContainer
-          : AppTheme.onLightCard,
-      BlendMode.srcIn,
-    ),
-  );
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return SvgPicture.asset(
+      'assets/icons/ic_crown.svg',
+      width: 24,
+      height: 24,
+      colorFilter: ColorFilter.mode(
+        won ? colorScheme.primary : colorScheme.outline,
+        BlendMode.srcIn,
+      ),
+    );
+  }
 }
 
 class _HeaderCell extends StatelessWidget {

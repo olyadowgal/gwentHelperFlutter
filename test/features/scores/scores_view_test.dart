@@ -1,0 +1,96 @@
+import 'dart:ui' show SemanticsAction;
+
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:gwent_helper_flutter/app_theme.dart';
+import 'package:gwent_helper_flutter/data/gwent_repository.dart';
+import 'package:gwent_helper_flutter/features/scores/cubit/scores_cubit.dart';
+import 'package:gwent_helper_flutter/features/scores/resources/scores_strings.dart';
+import 'package:gwent_helper_flutter/features/scores/view/scores_view.dart';
+import 'package:mocktail/mocktail.dart';
+
+class _MockGwentRepository extends Mock implements GwentRepository {}
+
+void main() {
+  late _MockGwentRepository repository;
+  late ScoresCubit cubit;
+
+  setUp(() {
+    repository = _MockGwentRepository();
+    when(() => repository.getGames()).thenAnswer((_) async => []);
+    cubit = ScoresCubit(repository: repository);
+  });
+
+  tearDown(() => cubit.close());
+
+  Future<void> pumpView(WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.data,
+        home: BlocProvider.value(value: cubit, child: const ScoresView()),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  group('ScoresView', () {
+    testWidgets(
+      '''
+      Given the HUD theme
+      When the scores screen is rendered
+      Then its app bar and actions use panel, cream, and error colors
+      ''',
+      (tester) async {
+        // When
+        await pumpView(tester);
+
+        // Then
+        expect(
+          tester.widget<AppBar>(find.byType(AppBar)).backgroundColor,
+          AppTheme.panel,
+        );
+        expect(
+          tester
+              .widget<SvgPicture>(find.byKey(const Key('scores-back-icon')))
+              .colorFilter,
+          const ColorFilter.mode(AppTheme.cream, BlendMode.srcIn),
+        );
+        expect(
+          tester
+              .widget<SvgPicture>(find.byKey(const Key('scores-clear-icon')))
+              .colorFilter,
+          ColorFilter.mode(AppTheme.data.colorScheme.error, BlendMode.srcIn),
+        );
+      },
+    );
+
+    testWidgets(
+      '''
+      Given the clear-scores action
+      When assistive technology reads the app bar
+      Then it exposes one labelled long-press button
+      ''',
+      (tester) async {
+        // Given
+        final semantics = tester.ensureSemantics();
+
+        // When
+        await pumpView(tester);
+
+        // Then
+        expect(find.bySemanticsLabel(ScoresStrings.clearAll), findsOneWidget);
+        final node = tester.getSemantics(
+          find.bySemanticsLabel(ScoresStrings.clearAll),
+        );
+        expect(node.flagsCollection.isButton, isTrue);
+        expect(
+          node.getSemanticsData().hasAction(SemanticsAction.longPress),
+          isTrue,
+        );
+        semantics.dispose();
+      },
+    );
+  });
+}
