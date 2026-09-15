@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -8,6 +9,12 @@ class AppDatabase {
     _db ??= await _open();
     return _db!;
   }
+
+  /// Drops the cached instance so the next [instance] access reopens the
+  /// database file from disk, re-running `onCreate`/`onUpgrade`. Tests use
+  /// this to exercise migrations against a db file they seeded themselves.
+  @visibleForTesting
+  static void resetForTest() => _db = null;
 
   static const _tableColumns = '''
             id TEXT PRIMARY KEY,

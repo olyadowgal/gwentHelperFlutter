@@ -2,56 +2,45 @@
 
 ## Entry Point
 
-`lib/main.dart` bootstraps the app in this order:
+`lib/main.dart` bootstraps the app:
 
-1. Initialize Firebase (Crashlytics, Analytics)
-2. Set up `FlutterError` and `PlatformDispatcher` to forward uncaught errors to Crashlytics
-3. Initialize Mapbox with the `MAPBOX_API_TOKEN` dart-define
-4. Initialize `NotificationService` (local push notifications)
-5. Initialize `DatabaseService` (Drift SQLite database)
-6. Run `App` wrapped in `MultiRepositoryProvider` with the three shared services
+1. Create a single `GwentRepository` and expose it app-wide via `RepositoryProvider`.
+2. Run `MaterialApp.router`, configured with `appRouter` (`lib/router.dart`, `go_router`) and the app's `MaterialTheme` (`lib/app_theme.dart`).
 
-`APP_NAME`, `BASE_URL`, and `MAPBOX_API_TOKEN` are injected at build time via `--dart-define-from-file`. See [ci-and-flavors.md](ci-and-flavors.md).
+There is no Firebase, no remote API, no build flavors, and no dart-define configuration — this is a fully offline, single-build app.
 
 ## Folder Structure
 
 ```
 lib/
 ├── main.dart                  # App entry point
-├── theme.dart                 # Global MaterialTheme
-├── firebase_options.dart      # Generated Firebase config (do not edit)
+├── router.dart                # go_router route table
+├── app_theme.dart             # Global MaterialTheme (Witcher HUD styling)
 │
-├── app/                       # Root app widget and top-level BLoC
-│   ├── bloc/                  # AppCubit (auth state, global navigation)
-│   ├── model/                 # App-level models
-│   └── view/                  # App widget, router
+├── features/                  # One folder per screen
+│   └── <feature>/              (home, game, scores)
+│       ├── cubit/              # Cubit + State + SideEffect for this screen
+│       ├── resources/          # Strings local to this feature (<Feature>Strings)
+│       ├── view/                # Page (route target) + View (screen body) widgets
+│       └── widgets/             # Private widgets used only by this feature
 │
-├── features/                  # One folder per screen or flow
-│   └── <feature>/
-│       ├── cubit/             # State management (Cubit + State + SideEffects)
-│       ├── model/             # Feature-local data models
-│       ├── resources/         # Strings, constants local to this feature
-│       ├── services/          # Feature-local business logic
-│       ├── view/              # Screen widget(s)
-│       └── widgets/           # Private widgets used by this feature
+├── domain/models/              # Plain Dart entities and scoring logic
+│   ├── card.dart, ability.dart, cards_row.dart, cards_row_type.dart
+│   ├── game_data.dart, player_data.dart, rounds_data.dart, winner.dart
+│   └── game_score.dart         # DB-facing DTO (toMap/fromMap)
 │
-├── data/                      # Shared data layer
-│   ├── api/                   # Dio HTTP client + interceptors
-│   ├── database/              # Drift DB definition and tables
-│   ├── datasources/           # Raw data access (API calls, DB queries)
-│   ├── entities/              # Shared data models (API response shapes)
-│   ├── providers/             # Combine datasources, return domain objects
-│   └── services/              # Cross-feature shared services
+├── data/                       # Persistence
+│   ├── database.dart           # AppDatabase — sqflite singleton, schema + migrations
+│   ├── game_score_dao.dart     # GameScoreDao — CRUD against the `game_score` table
+│   └── gwent_repository.dart   # GwentRepository — the one dependency Cubits see
 │
-├── arch/                      # Custom architecture base classes
-│   ├── side_effect.dart       # SideEffect mixin and WithSideEffects mixin
-│   ├── bloc_side_effect_handler.dart  # BlocListener wrapper for side effects
-│   └── ...                    # JSON extensions, list extensions, typedefs
+├── arch/                       # Side-effect plumbing shared by every Cubit
+│   ├── side_effect.dart               # SideEffect mixin, WithSideEffects mixin
+│   ├── bloc_side_effect_handler.dart  # BlocListener wrapper that consumes side effects
+│   ├── side_effect_consumed_aware.dart
+│   ├── json_extensions.dart / list_extensions.dart / typedefs.dart
 │
-├── services/                  # App-wide singleton services
-│   └── talker_service.dart    # Logging (Talker)
-│
-└── widgets/                   # Shared UI widgets used across features
+└── widgets/hud/                # Shared UI widgets used across features (e.g. HudAvatar)
 ```
 
 ## Layer Diagram
@@ -60,30 +49,26 @@ lib/
 ┌─────────────────────────────────────┐
 │              UI (View)              │  BlocBuilder / BlocConsumer
 └───────────────────┬─────────────────┘
-                    │ events / state
+                    │ method calls / state
 ┌───────────────────▼─────────────────┐
 │              Cubit                  │  lib/features/<name>/cubit/
-└───────────┬───────────┬─────────────┘
-            │           │
-┌───────────▼──┐  ┌─────▼──────────────┐
-│   Services   │  │     Providers      │  lib/data/providers/
-│ (lib/data/   │  │ (combine sources,  │
-│  services/)  │  │  return models)    │
-└──────────────┘  └─────┬──────────────┘
-                        │
-           ┌────────────▼────────────┐
-           │       Datasources       │  lib/data/datasources/
-           └───────┬─────────┬───────┘
-                   │         │
-          ┌────────▼──┐  ┌───▼──────┐
-          │  Dio API  │  │  Drift   │
-          │  Client   │  │   (DB)   │
-          └───────────┘  └──────────┘
+└───────────────────┬─────────────────┘
+                    │
+┌───────────────────▼─────────────────┐
+│           GwentRepository           │  lib/data/gwent_repository.dart
+└───────────────────┬─────────────────┘
+                    │
+┌───────────────────▼─────────────────┐
+│    GameScoreDao  →  AppDatabase     │  lib/data/
+│                       (sqflite)     │
+└──────────────────────────────────────┘
 ```
+
+`domain/models/` sits beside this stack, not inside it — Cubits and the repository both depend on it, but it has no Flutter or sqflite imports of its own.
 
 ## State Management: Bloc + SideEffects
 
-The app uses [Cubit](https://bloclibrary.dev/) (a simplified form of Bloc from the `flutter_bloc` package) for all state management. Each feature has its own Cubit that holds the screen state and exposes methods the UI calls in response to user actions.
+The app uses [Cubit](https://bloclibrary.dev/) (via `flutter_bloc`) for all state management. Each feature has its own Cubit that holds the screen state and exposes methods the UI calls in response to user actions.
 
 **Cubit** holds the current state and emits new states via `emit()`. The View rebuilds automatically whenever state changes.
 
@@ -97,22 +82,26 @@ SideEffects are optional, but should be added to any non-trivial screen even if 
 
 See [state-management.md](state-management.md) for a full walkthrough with code examples, and [adding-a-feature.md](adding-a-feature.md) for the step-by-step pattern. For deeper Bloc/Cubit background: [bloclibrary.dev](https://bloclibrary.dev/).
 
-## Key Shared Services
+## Persistence
 
-| Service | File | Purpose |
+`AppDatabase` (`lib/data/database.dart`) is a static singleton wrapping a single `sqflite` database (`gwent_helper.db`) with one table, `game_score`. It owns schema creation (`onCreate`) and upgrades (`onUpgrade`); the current schema is version 2, adding a primary-key `id` column that earlier installs didn't have — see the `onUpgrade` block and `test/data/database_migration_test.dart` for how that migration is verified.
+
+`GameScoreDao` is the only class that talks to `AppDatabase` directly. `GwentRepository` wraps the DAO and is the only dependency Cubits are constructed with — no Cubit imports `sqflite` or `AppDatabase` directly.
+
+## Key Shared Dependency
+
+| Class | File | Purpose |
 |---|---|---|
-| `DatabaseService` | `lib/data/database/database_service.dart` | Drift SQLite — local persistence |
-| `NotificationService` | `lib/data/services/notification_service.dart` | Local push notifications |
-| `talker` | `lib/services/talker_service.dart` | App-wide logging, also exposed in debug UI |
+| `GwentRepository` | `lib/data/gwent_repository.dart` | The single data-access dependency injected into every Cubit |
 
-All three are created in `main.dart` and injected via `RepositoryProvider`. Cubits receive them through constructor injection — never via service locator.
+It's created once in `main.dart` and provided via `RepositoryProvider`. Cubits receive it through constructor injection — never via service locator.
 
 ## Naming Conventions
 
 - Files and folders: `snake_case`
 - Classes and enums: `UpperCamelCase`
 - Variables and parameters: `lowerCamelCase`
-- Cubit public methods: `onSomethingHappened` (e.g. `onLoginClicked`, `onEmailChanged`)
-- Service/provider methods: describe the action, no `on` prefix (e.g. `login`, `fetchData`)
+- Cubit public methods: `onSomethingHappened` (e.g. `onCardTapped`, `onNameChanged`)
+- Service/provider methods: describe the action, no `on` prefix (e.g. `insert`, `getAll`)
 
-See `.github/copilot-instructions.md` for the full coding style guide.
+See `docs/ai-instructions.md` for the full coding style guide.
