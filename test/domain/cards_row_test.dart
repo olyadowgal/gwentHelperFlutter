@@ -121,6 +121,84 @@ void main() {
 
       test(
         '''
+      Given the horn toggle on and a card with `Ability.horn`
+      When `pointsOf` is called
+      Then the row only doubles once, not twice
+      ''',
+        () {
+          // Given
+          final hornCard = Card(points: 3, abilities: [Ability.horn]);
+          final target = Card(points: 5, abilities: []);
+          final row = CardsRow(
+            type: CardsRowType.closeCombat,
+            cards: [hornCard, target],
+            horn: true,
+          );
+
+          // Then
+          expect(row.pointsOf(target), 10); // 5 * 2, not 5 * 4
+        },
+      );
+
+      test(
+        '''
+      Given two different cards each with `Ability.horn` in the row
+      When `pointsOf` is called
+      Then the row only doubles once, not four times
+      ''',
+        () {
+          // Given
+          final horn1 = Card(points: 3, abilities: [Ability.horn]);
+          final horn2 = Card(points: 4, abilities: [Ability.horn]);
+          final target = Card(points: 5, abilities: []);
+          final row = CardsRow(
+            type: CardsRowType.closeCombat,
+            cards: [horn1, horn2, target],
+          );
+
+          // Then
+          expect(row.pointsOf(target), 10); // 5 * 2, not 5 * 4
+        },
+      );
+
+      test(
+        '''
+      Given a card with `Ability.horn` as the only horn source in the row
+      When `pointsOf` is called
+      Then it does not double itself
+      ''',
+        () {
+          // Given
+          final hornCard = Card(points: 5, abilities: [Ability.horn]);
+          final row = CardsRow(type: CardsRowType.closeCombat, cards: [hornCard]);
+
+          // Then
+          expect(row.pointsOf(hornCard), 5);
+        },
+      );
+
+      test(
+        '''
+      Given a card with `Ability.horn` and a separate horn toggle in the row
+      When `pointsOf` is called
+      Then the other horn source still doubles it
+      ''',
+        () {
+          // Given
+          final hornCard = Card(points: 5, abilities: [Ability.horn]);
+          final row = CardsRow(
+            type: CardsRowType.closeCombat,
+            cards: [hornCard],
+            horn: true,
+          );
+
+          // Then
+          expect(row.pointsOf(hornCard), 10);
+        },
+      );
+
+      test(
+        '''
       Given a morale boost card in the row
       When `pointsOf` is called
       Then other cards gain 1 but not itself

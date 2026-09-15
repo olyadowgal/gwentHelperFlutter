@@ -18,9 +18,6 @@ class CardsRow {
 
   int get totalPoints => cards.fold(0, (sum, card) => sum + pointsOf(card));
 
-  int get _hornsCount =>
-      (horn ? 1 : 0) + cards.where((c) => c.abilities.contains(Ability.horn)).length;
-
   int pointsOf(Card card) {
     assert(cards.contains(card), 'Card does not belong to this row');
 
@@ -48,12 +45,16 @@ class CardsRow {
       points--;
     }
 
-    final effectiveHorns =
-        card.abilities.contains(Ability.horn) ? _hornsCount - 1 : _hornsCount;
-    if (effectiveHorns > 0) {
-      for (var i = 0; i < effectiveHorns; i++) {
-        points *= 2;
-      }
+    // Horn does not stack in Witcher 3 Gwent: any number of horn sources on
+    // a row still only doubles it once, and a card's own horn ability never
+    // doubles itself.
+    final hornFromOtherSource =
+        horn ||
+        cards.any(
+          (c) => c.cardId != card.cardId && c.abilities.contains(Ability.horn),
+        );
+    if (hornFromOtherSource) {
+      points *= 2;
     }
 
     return points;
