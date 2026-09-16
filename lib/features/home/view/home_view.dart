@@ -46,9 +46,33 @@ class _HomeViewState extends State<HomeView> {
     super.dispose();
   }
 
-  Future<void> _pickPhoto(bool isPlayer1) async {
+  Future<void> _showPhotoSourceDialog(bool isPlayer1) async {
+    final source = await showDialog<ImageSource>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(HomeStrings.choosePhotoSource),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SimpleDialogOption(
+              onPressed: () => Navigator.of(context).pop(ImageSource.camera),
+              child: const Text(HomeStrings.camera),
+            ),
+            SimpleDialogOption(
+              onPressed: () => Navigator.of(context).pop(ImageSource.gallery),
+              child: const Text(HomeStrings.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source == null || !mounted) return;
+    await _pickPhoto(isPlayer1, source);
+  }
+
+  Future<void> _pickPhoto(bool isPlayer1, ImageSource source) async {
     final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery);
+    final picked = await picker.pickImage(source: source);
     if (picked == null) return;
     final cropped = await ImageCropper().cropImage(
       sourcePath: picked.path,
@@ -113,7 +137,7 @@ class _HomeViewState extends State<HomeView> {
                             hint: HomeStrings.player1,
                             controller: _p1Controller,
                             photoPath: state.player1PhotoPath,
-                            onPhotoTap: () => _pickPhoto(true),
+                            onPhotoTap: () => _showPhotoSourceDialog(true),
                           ),
                           const SizedBox(width: 32),
                           Text(
@@ -125,7 +149,7 @@ class _HomeViewState extends State<HomeView> {
                             hint: HomeStrings.player2,
                             controller: _p2Controller,
                             photoPath: state.player2PhotoPath,
-                            onPhotoTap: () => _pickPhoto(false),
+                            onPhotoTap: () => _showPhotoSourceDialog(false),
                           ),
                         ],
                       ),

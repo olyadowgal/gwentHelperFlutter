@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required for ImageSource.camera (image_picker); without it the
+         picker fails silently with no error. -->
+    <uses-permission android:name="android.permission.CAMERA"/>
     <application
         android:label="gwent_helper_flutter"
         android:name="${applicationName}"
@@ -25,6 +28,11 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- Required by image_cropper (uCrop): https://pub.dev/packages/image_cropper#android -->
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
