@@ -15,4 +15,9 @@
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowBackground">?android:colorBackground</item>
     </style>
+    <!-- image_cropper's crop screen (UCropActivity): fullscreen so the phone's
+         status bar doesn't eat into the already-tight landscape crop area. -->
+    <style name="UCropTheme" parent="@style/Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
+    </style>
 </resources>
