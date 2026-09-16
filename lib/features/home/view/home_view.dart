@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../app_theme.dart';
 import '../../../arch/bloc_side_effect_handler.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/home_side_effect.dart';
@@ -72,8 +73,26 @@ class _HomeViewState extends State<HomeView> {
       sourcePath: picked.path,
       aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
       uiSettings: [
-        AndroidUiSettings(toolbarTitle: 'Crop Photo', lockAspectRatio: true),
-        IOSUiSettings(title: 'Crop Photo', aspectRatioLockEnabled: true),
+        AndroidUiSettings(
+          toolbarTitle: 'Crop Photo',
+          lockAspectRatio: true,
+          // The crop rectangle is already square-locked, so the scale/rotate
+          // tab bar only eats vertical space without adding a real choice.
+          hideBottomControls: true,
+          toolbarColor: AppTheme.background,
+          toolbarWidgetColor: AppTheme.gold,
+          backgroundColor: AppTheme.background,
+          statusBarLight: false,
+          navBarLight: false,
+          activeControlsWidgetColor: AppTheme.gold,
+          cropFrameColor: AppTheme.gold,
+          cropGridColor: AppTheme.olive,
+        ),
+        IOSUiSettings(
+          title: 'Crop Photo',
+          aspectRatioLockEnabled: true,
+          rotateButtonsHidden: true,
+        ),
       ],
     );
     if (cropped == null || !mounted) return;
@@ -110,53 +129,55 @@ class _HomeViewState extends State<HomeView> {
         },
         child: BlocBuilder<HomeCubit, HomeState>(
           builder: (context, state) => Scaffold(
-            body: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                BackgroundTouchButton(
-                  label: HomeStrings.scoresTooltip,
-                  side: ChevronSide.right,
-                  onTap: context.read<HomeCubit>().onScoresTapped,
-                ),
-                Expanded(
-                  child: Center(
-                    // The screen is locked to landscape, but the first frames
-                    // can still be portrait, where the inputs do not fit.
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          PlayerInputWidget(
-                            hint: HomeStrings.player1,
-                            controller: _p1Controller,
-                            photoPath: state.player1PhotoPath,
-                            onPhotoTap: () => _showPhotoSourceDialog(true),
-                          ),
-                          const SizedBox(width: 32),
-                          Text(
-                            HomeStrings.vs,
-                            style: Theme.of(context).textTheme.displayLarge,
-                          ),
-                          const SizedBox(width: 32),
-                          PlayerInputWidget(
-                            hint: HomeStrings.player2,
-                            controller: _p2Controller,
-                            photoPath: state.player2PhotoPath,
-                            onPhotoTap: () => _showPhotoSourceDialog(false),
-                          ),
-                        ],
+            body: SafeArea(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  BackgroundTouchButton(
+                    label: HomeStrings.scoresTooltip,
+                    side: ChevronSide.right,
+                    onTap: context.read<HomeCubit>().onScoresTapped,
+                  ),
+                  Expanded(
+                    child: Center(
+                      // The screen is locked to landscape, but the first frames
+                      // can still be portrait, where the inputs do not fit.
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            PlayerInputWidget(
+                              hint: HomeStrings.player1,
+                              controller: _p1Controller,
+                              photoPath: state.player1PhotoPath,
+                              onPhotoTap: () => _showPhotoSourceDialog(true),
+                            ),
+                            const SizedBox(width: 32),
+                            Text(
+                              HomeStrings.vs,
+                              style: Theme.of(context).textTheme.displayLarge,
+                            ),
+                            const SizedBox(width: 32),
+                            PlayerInputWidget(
+                              hint: HomeStrings.player2,
+                              controller: _p2Controller,
+                              photoPath: state.player2PhotoPath,
+                              onPhotoTap: () => _showPhotoSourceDialog(false),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                BackgroundTouchButton(
-                  label: HomeStrings.play,
-                  side: ChevronSide.left,
-                  filled: true,
-                  onTap: context.read<HomeCubit>().onPlayTapped,
-                ),
-              ],
+                  BackgroundTouchButton(
+                    label: HomeStrings.play,
+                    side: ChevronSide.left,
+                    filled: true,
+                    onTap: context.read<HomeCubit>().onPlayTapped,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
