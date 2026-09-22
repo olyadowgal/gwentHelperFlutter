@@ -3,6 +3,7 @@ import 'package:gwent_helper_flutter/domain/models/ability.dart';
 import 'package:gwent_helper_flutter/domain/models/card.dart';
 import 'package:gwent_helper_flutter/domain/models/cards_row_type.dart';
 import '../resources/game_strings.dart';
+import 'card_form_fields.dart';
 
 class AddCardDialog extends StatefulWidget {
   final CardsRowType rowType;
@@ -17,62 +18,41 @@ class _AddCardDialogState extends State<AddCardDialog> {
   int _points = 0;
   final List<Ability> _selectedAbilities = [];
 
+  void _toggleAbility(Ability ability) => setState(() {
+    if (_selectedAbilities.contains(ability)) {
+      _selectedAbilities.remove(ability);
+    } else {
+      _selectedAbilities.add(ability);
+    }
+  });
+
   @override
   Widget build(BuildContext context) => AlertDialog(
-        title: Text(
-            '${GameStrings.addCardTitle} (${widget.rowType.displayName})'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  const Text(GameStrings.points),
-                  Expanded(
-                    child: Slider(
-                      value: _points.toDouble(),
-                      min: 0,
-                      max: 15,
-                      divisions: 15,
-                      label: '$_points',
-                      onChanged: (v) => setState(() => _points = v.round()),
-                    ),
-                  ),
-                  Text('$_points'),
-                ],
-              ),
-              const Divider(),
-              const Text(GameStrings.abilities),
-              ...Ability.values.map(
-                (ability) => CheckboxListTile(
-                  title: Text(ability.displayName),
-                  value: _selectedAbilities.contains(ability),
-                  onChanged: (v) => setState(() {
-                    if (v == true) {
-                      _selectedAbilities.add(ability);
-                    } else {
-                      _selectedAbilities.remove(ability);
-                    }
-                  }),
-                ),
-              ),
-            ],
-          ),
+    title: Text('${GameStrings.addCardTitle} (${widget.rowType.displayName})'),
+    content: SingleChildScrollView(
+      // Wide enough that the ability grid fits in a few columns instead of
+      // one tall list, capped so it never overflows a narrow screen.
+      child: SizedBox(
+        width: (MediaQuery.sizeOf(context).width * 0.8).clamp(360.0, 720.0),
+        child: CardFormFields(
+          points: _points,
+          onPointsChanged: (v) => setState(() => _points = v),
+          selectedAbilities: _selectedAbilities,
+          onAbilityToggled: _toggleAbility,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text(GameStrings.cancel),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(
-              Card(
-                points: _points,
-                abilities: List.from(_selectedAbilities),
-              ),
-            ),
-            child: const Text(GameStrings.add),
-          ),
-        ],
-      );
+      ),
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.of(context).pop(),
+        child: const Text(GameStrings.cancel),
+      ),
+      ElevatedButton(
+        onPressed: () => Navigator.of(context).pop(
+          Card(points: _points, abilities: List.from(_selectedAbilities)),
+        ),
+        child: const Text(GameStrings.add),
+      ),
+    ],
+  );
 }
