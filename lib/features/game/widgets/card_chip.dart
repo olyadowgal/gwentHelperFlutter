@@ -11,6 +11,11 @@ class CardChip extends StatelessWidget {
 
   static const _scorchBorderWidth = 3.0;
 
+  static const _chipWidth = 44.0;
+  static const _chipHeight = 68.0;
+  static const _pointsFontSize = 18.0;
+  static const _abilityMarkSize = 18.0;
+
   final Card card;
   final int displayPoints;
   final VoidCallback onLongPress;
@@ -38,8 +43,8 @@ class CardChip extends StatelessWidget {
       if (asset != null) {
         return SvgPicture.asset(
           asset,
-          width: 14,
-          height: 14,
+          width: _abilityMarkSize,
+          height: _abilityMarkSize,
           colorFilter: ColorFilter.mode(contentColor, BlendMode.srcIn),
         );
       }
@@ -50,10 +55,10 @@ class CardChip extends StatelessWidget {
         _ => null,
       };
       if (icon != null) {
-        return Icon(icon, size: 14, color: contentColor);
+        return Icon(icon, size: _abilityMarkSize, color: contentColor);
       }
     }
-    return const SizedBox(height: 14);
+    return const SizedBox(height: _abilityMarkSize);
   }
 
   /// The rounding every card in the app uses, so the Scorch border follows the
@@ -92,10 +97,10 @@ class CardChip extends StatelessWidget {
           ),
         ),
         child: SizedBox(
-          width: 28,
-          height: 44,
+          width: _chipWidth,
+          height: _chipHeight,
           child: Padding(
-            padding: const EdgeInsets.all(3),
+            padding: const EdgeInsets.all(4),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -103,7 +108,7 @@ class CardChip extends StatelessWidget {
                 Text(
                   '$displayPoints',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: _pointsFontSize,
                     fontWeight: FontWeight.bold,
                     color: contentColor,
                   ),

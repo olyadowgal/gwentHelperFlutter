@@ -29,6 +29,13 @@ class GameView extends StatefulWidget {
   static const _buttonPadding = 6.0;
   static const _dividerWidth = 1.0;
 
+  /// Wider than [_dividerWidth] so the close/ranged/siege rows read as
+  /// distinct bands instead of one continuous strip.
+  static const _rowDividerWidth = 3.0;
+
+  /// Keeps each row (and its divider) off the board's left/right edges.
+  static const _rowHorizontalInset = 16.0;
+
   /// Olive is loud at full strength for a separator, so the in-board hairlines
   /// only hint at the grid.
   static const _hairlineAlpha = 0.24;
@@ -246,6 +253,15 @@ class _GameViewState extends State<GameView> {
                                     false,
                                 onChanged: cubit.onWeatherChanged,
                               ),
+                              // Scorch sits between the two players — it
+                              // reads as a shared action, not one belonging
+                              // to whichever player happens to be below it.
+                              _SidebarButton(
+                                icon: Icons.local_fire_department,
+                                label: GameStrings.scorch,
+                                onTap: cubit.onScorchTapped,
+                                tooltip: GameStrings.scorchHint,
+                              ),
                               // Player 2
                               UserWidget(
                                 name: p2.name,
@@ -261,12 +277,6 @@ class _GameViewState extends State<GameView> {
                             ],
                           ),
                         ),
-                      ),
-                      _SidebarButton(
-                        icon: Icons.local_fire_department,
-                        label: GameStrings.scorch,
-                        onTap: cubit.onScorchTapped,
-                        tooltip: GameStrings.scorchHint,
                       ),
                       // Pass button (long-press to end round)
                       _SidebarButton(
@@ -293,6 +303,10 @@ class _GameViewState extends State<GameView> {
                 // Zone 4: Card rows
                 Expanded(
                   child: Column(
+                    // Each row's Container shrink-wraps to its cards by
+                    // default, so its bottom-border divider would only span
+                    // the cards instead of the full board width.
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       if (state.scorchPrompt != null)
                         _ScorchBanner(
@@ -314,6 +328,11 @@ class _GameViewState extends State<GameView> {
                         };
                         return Expanded(
                           child: Container(
+                            // Insets the row itself, not just the divider —
+                            // a full-bleed board reads as harsh, not sleek.
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: GameView._rowHorizontalInset,
+                            ),
                             decoration: isLastRow
                                 ? null
                                 : BoxDecoration(
@@ -322,7 +341,7 @@ class _GameViewState extends State<GameView> {
                                         color: colorScheme.outline.withValues(
                                           alpha: GameView._hairlineAlpha,
                                         ),
-                                        width: GameView._dividerWidth,
+                                        width: GameView._rowDividerWidth,
                                       ),
                                     ),
                                   ),
