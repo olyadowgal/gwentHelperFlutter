@@ -96,7 +96,7 @@ void main() {
         final getResult = await pumpAndOpenDialog(tester, card);
 
         // When
-        await tester.tap(find.text('DELETE'));
+        await tester.tap(find.byKey(EditCardDialog.deleteButtonKey));
         await tester.pumpAndSettle();
 
         // Then

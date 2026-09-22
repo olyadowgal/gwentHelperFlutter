@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' hide Card;
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gwent_helper_flutter/domain/models/ability.dart';
 import 'package:gwent_helper_flutter/domain/models/card.dart';
 import '../resources/game_strings.dart';
@@ -18,6 +19,10 @@ class EditCardDelete extends EditCardResult {
 }
 
 class EditCardDialog extends StatefulWidget {
+  /// Names the header's icon-only delete button so tests can find it
+  /// without relying on its (absent) label text.
+  static const deleteButtonKey = Key('edit-card-delete-button');
+
   final Card card;
 
   const EditCardDialog({super.key, required this.card});
@@ -49,7 +54,54 @@ class _EditCardDialogState extends State<EditCardDialog> {
   Widget build(BuildContext context) {
     final errorColor = Theme.of(context).colorScheme.error;
     return AlertDialog(
-      title: const Text(GameStrings.editCardTitle),
+      // Trimmed from Material's roomy defaults so the ability grid gets the
+      // width back instead of it being eaten by dialog chrome.
+      titlePadding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      contentPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      // Delete/Cancel/Save live in the header, not the footer, so they're
+      // always in view even before the ability grid below has been
+      // scrolled to. Delete is icon-only (matching the Scores screen's
+      // trash icon) so three actions still fit alongside the title.
+      title: Row(
+        children: [
+          Expanded(
+            child: Text(
+              GameStrings.editCardTitle,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Tooltip(
+            message: GameStrings.delete,
+            child: IconButton(
+              key: EditCardDialog.deleteButtonKey,
+              onPressed: () =>
+                  Navigator.of(context).pop(const EditCardDelete()),
+              icon: SvgPicture.asset(
+                'assets/icons/ic_trash.svg',
+                width: 24,
+                height: 24,
+                colorFilter: ColorFilter.mode(errorColor, BlendMode.srcIn),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text(GameStrings.cancel),
+          ),
+          const SizedBox(width: 8),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(
+              EditCardSave(
+                widget.card.copyWith(
+                  points: _points,
+                  abilities: List.from(_selectedAbilities),
+                ),
+              ),
+            ),
+            child: const Text(GameStrings.save),
+          ),
+        ],
+      ),
       content: SingleChildScrollView(
         // Wide enough that the ability grid fits in a few columns instead of
         // one tall list, capped so it never overflows a narrow screen.
@@ -63,33 +115,6 @@ class _EditCardDialogState extends State<EditCardDialog> {
           ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(const EditCardDelete()),
-          // The gold outline the theme gives secondary actions would read as
-          // safe here, so this button outlines itself in the error color.
-          style: TextButton.styleFrom(
-            foregroundColor: errorColor,
-            side: BorderSide(color: errorColor),
-          ),
-          child: const Text(GameStrings.delete),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text(GameStrings.cancel),
-        ),
-        ElevatedButton(
-          onPressed: () => Navigator.of(context).pop(
-            EditCardSave(
-              widget.card.copyWith(
-                points: _points,
-                abilities: List.from(_selectedAbilities),
-              ),
-            ),
-          ),
-          child: const Text(GameStrings.save),
-        ),
-      ],
     );
   }
 }

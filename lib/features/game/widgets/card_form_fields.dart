@@ -6,7 +6,7 @@ import '../resources/game_strings.dart';
 /// [EditCardDialog]. A wrapping grid instead of one tall checkbox list, so
 /// all abilities fit on screen at once on the app's landscape-only layout.
 class CardFormFields extends StatelessWidget {
-  static const _abilityTileWidth = 200.0;
+  static const _abilityTileWidth = 140.0;
 
   final int points;
   final ValueChanged<int> onPointsChanged;
@@ -22,48 +22,68 @@ class CardFormFields extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
-        children: [
-          const Text(GameStrings.points),
-          Expanded(
-            child: Slider(
-              value: points.toDouble(),
-              min: 0,
-              max: 15,
-              divisions: 15,
-              label: '$points',
-              onChanged: (v) => onPointsChanged(v.round()),
-            ),
-          ),
-          Text('$points'),
-        ],
-      ),
-      const Divider(),
-      const Text(GameStrings.abilities),
-      const SizedBox(height: 4),
-      Wrap(
-        spacing: 8,
-        children: Ability.values
-            .map(
-              (ability) => SizedBox(
-                width: _abilityTileWidth,
-                child: CheckboxListTile(
-                  dense: true,
-                  visualDensity: VisualDensity.compact,
-                  contentPadding: EdgeInsets.zero,
-                  controlAffinity: ListTileControlAffinity.leading,
-                  title: Text(ability.displayName),
-                  value: selectedAbilities.contains(ability),
-                  onChanged: (_) => onAbilityToggled(ability),
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Text(GameStrings.points),
+            Expanded(
+              child: SliderTheme(
+                // The default value-indicator text color is unreadable
+                // against this dark theme, so it's pinned explicitly here.
+                data: SliderTheme.of(context).copyWith(
+                  valueIndicatorColor: colorScheme.primary,
+                  valueIndicatorTextStyle: TextStyle(
+                    color: colorScheme.onPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                child: Slider(
+                  value: points.toDouble(),
+                  min: 0,
+                  max: 15,
+                  divisions: 15,
+                  label: '$points',
+                  onChanged: (v) => onPointsChanged(v.round()),
                 ),
               ),
-            )
-            .toList(),
-      ),
-    ],
-  );
+            ),
+            Text('$points'),
+          ],
+        ),
+        const Divider(),
+        const Text(GameStrings.abilities),
+        const SizedBox(height: 4),
+        Wrap(
+          spacing: 4,
+          children: Ability.values
+              .map(
+                (ability) => SizedBox(
+                  width: _abilityTileWidth,
+                  child: CheckboxListTile(
+                    dense: true,
+                    visualDensity: VisualDensity.compact,
+                    contentPadding: EdgeInsets.zero,
+                    // CheckboxListTile's own default gap/margins assume a
+                    // full-width list tile, not a compact grid cell — trim
+                    // them so the tile is only as wide as it needs to be.
+                    horizontalTitleGap: 4,
+                    minLeadingWidth: 0,
+                    minVerticalPadding: 0,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    title: Text(ability.displayName),
+                    value: selectedAbilities.contains(ability),
+                    onChanged: (_) => onAbilityToggled(ability),
+                  ),
+                ),
+              )
+              .toList(),
+        ),
+      ],
+    );
+  }
 }

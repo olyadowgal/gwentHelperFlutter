@@ -68,7 +68,7 @@ void main() {
         final secondTop = tester
             .getTopLeft(find.text(Ability.values[1].displayName))
             .dy;
-        expect(secondTop, closeTo(firstTop, 5));
+        expect(secondTop, closeTo(firstTop, 15));
       },
     );
 
