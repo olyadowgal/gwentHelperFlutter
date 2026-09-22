@@ -49,6 +49,7 @@ dev_dependencies:
   bloc_test: ^10.0.0
   mocktail: ^1.0.5
   sqflite_common_ffi: ^2.4.0+3
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -69,3 +70,12 @@ flutter:
   assets:
     - assets/icons/
     - assets/fonts/
+
+flutter_launcher_icons:
+  # Android's launcher icon is maintained by hand in android/app/src/main/res
+  # (adaptive icon: drawable/ic_launcher_foreground.xml + ic_launcher_background.xml),
+  # ported from the original Android app — this only generates the iOS set.
+  android: false
+  ios: true
+  image_path: "assets/app_icon/app_icon_source.png"
+  remove_alpha_ios: true
