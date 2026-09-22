@@ -139,6 +139,30 @@ void main() {
 
     testWidgets(
       '''
+      Given a score card
+      When it is rendered
+      Then the winner line is centered under the players and reads larger than the date
+      ''',
+      (tester) async {
+        // When
+        await pumpCard(tester, buildScore(winner: Winner.first.name));
+
+        // Then
+        final winnerFinder = find.textContaining(ScoresStrings.winner);
+        final winnerText = tester.widget<Text>(winnerFinder);
+        final dateFinder = find.textContaining('2026');
+        final dateText = tester.widget<Text>(dateFinder);
+        expect(
+          winnerText.style!.fontSize,
+          greaterThan(dateText.style!.fontSize!),
+        );
+        final cardCenterX = tester.getCenter(find.byType(Card)).dx;
+        expect(tester.getCenter(winnerFinder).dx, closeTo(cardCenterX, 1));
+      },
+    );
+
+    testWidgets(
+      '''
       Given a game won by the first player
       When the card is rendered
       Then the winner wears a gold crown and the loser an olive one

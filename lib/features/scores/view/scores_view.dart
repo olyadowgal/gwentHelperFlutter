@@ -105,6 +105,7 @@ class ScoresView extends StatelessWidget {
               ScoresState(scores: final scores) when scores.isEmpty =>
                 const Center(child: Text(ScoresStrings.empty)),
               ScoresState(scores: final scores) => ListView.builder(
+                scrollDirection: Axis.horizontal,
                 itemCount: scores.length,
                 itemBuilder: (context, index) =>
                     ScoreCardWidget(score: scores[index]),

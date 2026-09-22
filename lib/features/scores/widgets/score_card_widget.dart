@@ -5,21 +5,29 @@ import 'package:gwent_helper_flutter/domain/models/game_score.dart';
 import '../resources/scores_strings.dart';
 
 class ScoreCardWidget extends StatelessWidget {
+  static const _cardWidth = 280.0;
+
   final GameScore score;
 
   const ScoreCardWidget({super.key, required this.score});
 
   @override
-  Widget build(BuildContext context) => Card(
-    margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-    child: _ScoreCardBody(score: score),
+  Widget build(BuildContext context) => SizedBox(
+    // The history list scrolls horizontally, so each card gets a fixed
+    // narrow width but fills the row's full height, leaving just the
+    // margin as a gap top and bottom.
+    width: _cardWidth,
+    child: Card(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+      child: _ScoreCardBody(score: score),
+    ),
   );
 }
 
 class _ScoreCardBody extends StatelessWidget {
-  final GameScore score;
-
   const _ScoreCardBody({required this.score});
+
+  final GameScore score;
 
   static String _pts(int? v) => v?.toString() ?? '—';
 
@@ -33,24 +41,24 @@ class _ScoreCardBody extends StatelessWidget {
       fallback: ScoresStrings.player2,
     );
     return Padding(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(dateStr, style: Theme.of(context).textTheme.bodySmall),
-          const SizedBox(height: 6),
+          Text(dateStr, style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
                     _Crown(
                       key: const Key('score-card-crown-first'),
                       won: score.firstPlayerWon,
                     ),
                     const SizedBox(width: 4),
-                    Expanded(
+                    Flexible(
                       child: Text(
                         firstPlayer,
                         style: Theme.of(context).textTheme.titleMedium,
@@ -61,18 +69,15 @@ class _ScoreCardBody extends StatelessWidget {
                   ],
                 ),
               ),
-              const Text(ScoresStrings.vs),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4),
+                child: Text(ScoresStrings.vs),
+              ),
               Expanded(
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    _Crown(
-                      key: const Key('score-card-crown-second'),
-                      won: score.secondPlayerWon,
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
+                    Flexible(
                       child: Text(
                         secondPlayer,
                         textAlign: TextAlign.end,
@@ -81,20 +86,32 @@ class _ScoreCardBody extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    const SizedBox(width: 4),
+                    _Crown(
+                      key: const Key('score-card-crown-second'),
+                      won: score.secondPlayerWon,
+                    ),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            '${ScoresStrings.winner}${score.displayedWinner(tieLabel: ScoresStrings.tie, firstPlayerFallback: ScoresStrings.player1, secondPlayerFallback: ScoresStrings.player2)}',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+          const SizedBox(height: 10),
+          Center(
+            child: Text(
+              '${ScoresStrings.winner}${score.displayedWinner(tieLabel: ScoresStrings.tie, firstPlayerFallback: ScoresStrings.player1, secondPlayerFallback: ScoresStrings.player2)}',
+              textAlign: TextAlign.center,
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 14),
           Table(
+            // The round column only ever holds "1"/"2"/"3" — flexing it
+            // equally with the player columns just stretches it with empty
+            // space, which is exactly what made the old table look sparse.
+            columnWidths: const {0: IntrinsicColumnWidth()},
             children: [
               TableRow(
                 children: [
@@ -133,9 +150,9 @@ class _ScoreCardBody extends StatelessWidget {
 }
 
 class _Crown extends StatelessWidget {
-  final bool won;
-
   const _Crown({super.key, required this.won});
+
+  final bool won;
 
   @override
   Widget build(BuildContext context) {
@@ -153,13 +170,13 @@ class _Crown extends StatelessWidget {
 }
 
 class _HeaderCell extends StatelessWidget {
-  final String text;
-
   const _HeaderCell(this.text);
+
+  final String text;
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 2),
+    padding: const EdgeInsets.only(right: 8, top: 2, bottom: 2),
     child: Text(
       text,
       style: Theme.of(
@@ -172,13 +189,13 @@ class _HeaderCell extends StatelessWidget {
 }
 
 class _Cell extends StatelessWidget {
-  final String text;
-
   const _Cell(this.text);
+
+  final String text;
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 2),
+    padding: const EdgeInsets.only(right: 8, top: 2, bottom: 2),
     child: Text(text, style: Theme.of(context).textTheme.bodyMedium),
   );
 }
