@@ -102,7 +102,7 @@ void main() {
       '''
       Given a phone screen in landscape
       When the pass control is long-pressed
-      Then the round ends
+      Then a confirmation dialog appears and the round has not ended yet
       ''',
       (tester) async {
         // Given
@@ -110,10 +110,54 @@ void main() {
 
         // When
         await tester.longPress(find.text(GameStrings.pass));
-        await tester.pump();
+        await tester.pumpAndSettle();
+
+        // Then
+        expect(find.text(GameStrings.passConfirmTitle), findsOneWidget);
+        expect(cubit.state.roundCounter, 0);
+      },
+    );
+
+    testWidgets(
+      '''
+      Given the pass confirmation dialog is open
+      When END ROUND is tapped
+      Then the round ends
+      ''',
+      (tester) async {
+        // Given
+        await pumpGameView(tester);
+        await tester.longPress(find.text(GameStrings.pass));
+        await tester.pumpAndSettle();
+
+        // When
+        await tester.tap(find.text(GameStrings.endRound));
+        await tester.pumpAndSettle();
 
         // Then
         expect(cubit.state.roundCounter, 1);
+      },
+    );
+
+    testWidgets(
+      '''
+      Given the pass confirmation dialog is open
+      When CANCEL is tapped
+      Then the round does not end
+      ''',
+      (tester) async {
+        // Given
+        await pumpGameView(tester);
+        await tester.longPress(find.text(GameStrings.pass));
+        await tester.pumpAndSettle();
+
+        // When
+        await tester.tap(find.text(GameStrings.cancel));
+        await tester.pumpAndSettle();
+
+        // Then
+        expect(find.text(GameStrings.passConfirmTitle), findsNothing);
+        expect(cubit.state.roundCounter, 0);
       },
     );
 

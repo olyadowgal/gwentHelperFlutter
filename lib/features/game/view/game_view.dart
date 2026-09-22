@@ -83,6 +83,30 @@ class _GameViewState extends State<GameView> {
     );
   }
 
+  void _showPassConfirmDialog(BuildContext context) {
+    final cubit = context.read<GameCubit>();
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text(GameStrings.passConfirmTitle),
+        content: const Text(GameStrings.passConfirmContent),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text(GameStrings.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              cubit.onEndRoundTapped();
+            },
+            child: const Text(GameStrings.endRound),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(
     BuildContext context,
@@ -278,11 +302,11 @@ class _GameViewState extends State<GameView> {
                           ),
                         ),
                       ),
-                      // Pass button (long-press to end round)
+                      // Pass button (long-press, then confirm, to end round)
                       _SidebarButton(
                         iconAsset: 'assets/icons/ic_reset.svg',
                         label: GameStrings.pass,
-                        onLongPress: cubit.onEndRoundTapped,
+                        onLongPress: () => _showPassConfirmDialog(context),
                         tooltip: GameStrings.passHint,
                       ),
                     ],

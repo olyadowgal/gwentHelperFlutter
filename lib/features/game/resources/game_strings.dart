@@ -20,6 +20,10 @@ abstract class GameStrings {
   static const exit = 'Exit';
   static const pass = 'Pass';
   static const passHint = 'Hold to end the round';
+  static const passConfirmTitle = 'End the round?';
+  static const passConfirmContent =
+      "This scores the round from the cards currently on the board. "
+      "You won't be able to add more cards to this round after.";
   static const exitTitle = 'Exit game?';
   static const exitContent = 'Progress will not be saved.';
   static const saveFailed = 'Could not save the game. Try again.';
