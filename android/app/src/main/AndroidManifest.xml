@@ -3,7 +3,7 @@
          picker fails silently with no error. -->
     <uses-permission android:name="android.permission.CAMERA"/>
     <application
-        android:label="gwent_helper_flutter"
+        android:label="GwentHelper"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round">

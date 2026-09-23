@@ -1,0 +1,8 @@
+# Copy this file to key.properties (same directory) and fill in the real
+# values. key.properties is gitignored — it holds secrets and must never be
+# committed. See docs/release.md for where the keystore itself comes from.
+storePassword=
+keyPassword=
+keyAlias=
+# Path is relative to the android/ directory (this file's location).
+storeFile=upload-keystore.jks

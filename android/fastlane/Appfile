@@ -1,0 +1,4 @@
+# Service account JSON for the Play Developer API — never commit this file.
+# See docs/release.md for how to create it.
+json_key_file("fastlane/play-service-account.json")
+package_name("com.dowgalolya.gwenthelper")

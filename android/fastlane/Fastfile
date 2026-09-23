@@ -1,0 +1,36 @@
+default_platform(:android)
+
+platform :android do
+  desc "Build a release App Bundle (requires android/key.properties + the real keystore — see docs/release.md)"
+  lane :build do
+    Dir.chdir("..") do
+      sh("flutter", "build", "appbundle", "--release")
+    end
+  end
+
+  desc "Build and upload to the Internal testing track"
+  lane :internal do
+    build
+    upload_to_play_store(
+      track: "internal",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      # This repo doesn't hold store-listing text/screenshots — those stay
+      # managed by hand in Play Console until there's a reason to automate them.
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+    )
+  end
+
+  desc "Build and upload to the Production track"
+  lane :production do
+    build
+    upload_to_play_store(
+      track: "production",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+    )
+  end
+end
