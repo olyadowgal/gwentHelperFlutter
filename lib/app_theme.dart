@@ -4,7 +4,7 @@ abstract class AppTheme {
   /// Scaffold behind the HUD.
   static const background = Color(0xFF14170F);
 
-  /// Sidebar, score rows, chips and dialog surfaces.
+  /// Score rows, chips and dialog surfaces.
   static const panel = Color(0xFF1E2417);
 
   /// Hairlines and idle borders.
@@ -21,6 +21,11 @@ abstract class AppTheme {
   /// parchment distinct from [cream] so a card's fill and its text never
   /// share one token.
   static const cardFace = Color(0xFFEDE6D0);
+
+  /// The game screen's sidebar only — a warm walnut brown, distinct from
+  /// [panel], so the sidebar reads as its own frame rather than blending
+  /// into the same dark chrome as dialogs and score rows.
+  static const sidebarSurface = Color(0xFF3D2A1C);
 
   /// Scorch highlights and destructive actions.
   static const _error = Color(0xFFE31829);

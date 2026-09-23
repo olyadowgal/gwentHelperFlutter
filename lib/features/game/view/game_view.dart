@@ -2,6 +2,7 @@ import 'package:flutter/material.dart' hide Card;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gwent_helper_flutter/app_theme.dart';
 import 'package:gwent_helper_flutter/arch/bloc_side_effect_handler.dart';
 import 'package:gwent_helper_flutter/domain/models/card.dart';
 import 'package:gwent_helper_flutter/domain/models/cards_row_type.dart';
@@ -228,7 +229,7 @@ class _GameViewState extends State<GameView> {
                   key: GameView.sidebarKey,
                   width: GameView._sidebarWidth,
                   decoration: BoxDecoration(
-                    color: colorScheme.surface,
+                    color: AppTheme.sidebarSurface,
                     border: Border(
                       right: BorderSide(
                         color: colorScheme.outline,

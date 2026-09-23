@@ -188,7 +188,7 @@ void main() {
       '''
       Given the home screen
       When the Play and Scores chevrons are rendered
-      Then Play is filled gold and Scores is an outlined dark panel
+      Then Play is filled gold and Scores is a borderless walnut chevron
       ''',
       (WidgetTester tester) async {
         // When
@@ -203,12 +203,12 @@ void main() {
         );
         expect(chevronOutline(tester, 'PLAY'), isNull);
 
-        expect(chevronFill(tester, 'Scores'), AppTheme.panel);
+        expect(chevronFill(tester, 'Scores'), AppTheme.sidebarSurface);
         expect(
           tester.widget<Text>(find.text('Scores')).style!.color,
           AppTheme.cream,
         );
-        expect(chevronOutline(tester, 'Scores')!.color, AppTheme.gold);
+        expect(chevronOutline(tester, 'Scores'), isNull);
       },
     );
 

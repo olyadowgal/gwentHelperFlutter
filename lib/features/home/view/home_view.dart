@@ -139,6 +139,9 @@ class _HomeViewState extends State<HomeView> {
                     BackgroundTouchButton(
                       label: l10n.scoresTooltip,
                       side: ChevronSide.right,
+                      filled: true,
+                      fillColor: AppTheme.sidebarSurface,
+                      textColor: AppTheme.cream,
                       onTap: context.read<HomeCubit>().onScoresTapped,
                     ),
                     Expanded(

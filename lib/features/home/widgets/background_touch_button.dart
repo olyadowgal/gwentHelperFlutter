@@ -92,17 +92,32 @@ class BackgroundTouchButton extends StatelessWidget {
   final bool filled;
   final VoidCallback onTap;
 
+  /// Overrides the default fill ([filled] ? primary : surface). Used to give
+  /// a filled chevron its own identity (e.g. walnut for Scores) without
+  /// reaching for the primary gold that PLAY owns.
+  final Color? fillColor;
+
+  /// Overrides the default label color ([filled] ? onPrimary : onSurface),
+  /// paired with [fillColor] when the default wouldn't stay readable on it.
+  final Color? textColor;
+
   const BackgroundTouchButton({
     super.key,
     required this.label,
     required this.side,
     required this.onTap,
     this.filled = false,
+    this.fillColor,
+    this.textColor,
   });
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final resolvedFill =
+        fillColor ?? (filled ? colorScheme.primary : colorScheme.surface);
+    final resolvedTextColor =
+        textColor ?? (filled ? colorScheme.onPrimary : colorScheme.onSurface);
     return Semantics(
       button: true,
       label: label,
@@ -120,7 +135,7 @@ class BackgroundTouchButton extends StatelessWidget {
               ClipPath(
                 clipper: ChevronClipper(side),
                 child: ColoredBox(
-                  color: filled ? colorScheme.primary : colorScheme.surface,
+                  color: resolvedFill,
                   child: Center(
                     child: RotatedBox(
                       quarterTurns: side == ChevronSide.left ? 1 : 3,
@@ -129,9 +144,7 @@ class BackgroundTouchButton extends StatelessWidget {
                         style: Theme.of(context).textTheme.headlineMedium
                             ?.copyWith(
                               fontSize: 20,
-                              color: filled
-                                  ? colorScheme.onPrimary
-                                  : colorScheme.onSurface,
+                              color: resolvedTextColor,
                               fontWeight: FontWeight.w700,
                             ),
                       ),

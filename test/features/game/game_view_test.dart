@@ -242,7 +242,7 @@ void main() {
       '''
       Given the game board is rendered
       When the sidebar is inspected
-      Then it is a dark panel with an olive edge at its full width
+      Then it is a walnut panel with an olive edge at its full width
       ''',
       (tester) async {
         // When
@@ -253,7 +253,7 @@ void main() {
           find.byKey(GameView.sidebarKey),
         );
         final decoration = sidebar.decoration! as BoxDecoration;
-        expect(decoration.color, AppTheme.panel);
+        expect(decoration.color, AppTheme.sidebarSurface);
         expect((decoration.border! as Border).right.color, AppTheme.olive);
         expect(tester.getSize(find.byKey(GameView.sidebarKey)).width, 90);
       },
