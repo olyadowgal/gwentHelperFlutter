@@ -7,7 +7,10 @@ import 'package:gwent_helper_flutter/l10n/domain_localizations.dart';
 /// [EditCardDialog]. A wrapping grid instead of one tall checkbox list, so
 /// all abilities fit on screen at once on the app's landscape-only layout.
 class CardFormFields extends StatelessWidget {
-  static const _abilityTileWidth = 140.0;
+  // Wide enough for the longest translated ability name that has no space
+  // to wrap at, e.g. Dutch "Moreelverhoging" (Morale Boost) — narrower
+  // widths force it to break mid-word.
+  static const _abilityTileWidth = 165.0;
 
   final int points;
   final ValueChanged<int> onPointsChanged;
