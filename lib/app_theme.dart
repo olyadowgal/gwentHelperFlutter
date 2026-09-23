@@ -22,10 +22,11 @@ abstract class AppTheme {
   /// share one token.
   static const cardFace = Color(0xFFEDE6D0);
 
-  /// The game screen's sidebar only — a warm walnut brown, distinct from
+  /// The game screen's sidebar only — a saddle-leather brown, distinct from
   /// [panel], so the sidebar reads as its own frame rather than blending
-  /// into the same dark chrome as dialogs and score rows.
-  static const sidebarSurface = Color(0xFF3D2A1C);
+  /// into the same dark chrome as dialogs and score rows. Lighter than a
+  /// true walnut, which read too dark and too warm against this palette.
+  static const sidebarSurface = Color(0xFF5C3D24);
 
   /// Scorch highlights and destructive actions.
   static const _error = Color(0xFFE31829);

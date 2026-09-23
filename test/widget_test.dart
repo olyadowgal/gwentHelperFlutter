@@ -188,7 +188,7 @@ void main() {
       '''
       Given the home screen
       When the Play and Scores chevrons are rendered
-      Then Play is filled gold and Scores is a borderless walnut chevron
+      Then Play is filled gold and Scores is a borderless saddle chevron
       ''',
       (WidgetTester tester) async {
         // When

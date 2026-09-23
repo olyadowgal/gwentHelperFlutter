@@ -242,7 +242,7 @@ void main() {
       '''
       Given the game board is rendered
       When the sidebar is inspected
-      Then it is a walnut panel with an olive edge at its full width
+      Then it is a saddle panel with an olive edge at its full width
       ''',
       (tester) async {
         // When

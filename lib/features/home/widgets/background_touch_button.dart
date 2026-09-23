@@ -93,7 +93,7 @@ class BackgroundTouchButton extends StatelessWidget {
   final VoidCallback onTap;
 
   /// Overrides the default fill ([filled] ? primary : surface). Used to give
-  /// a filled chevron its own identity (e.g. walnut for Scores) without
+  /// a filled chevron its own identity (e.g. saddle brown for Scores) without
   /// reaching for the primary gold that PLAY owns.
   final Color? fillColor;
 
