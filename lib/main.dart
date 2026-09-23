@@ -5,7 +5,17 @@ import 'app_theme.dart';
 import 'l10n/app_localizations.dart';
 import 'router.dart';
 
-void main() => runApp(const GwentHelperApp());
+void main() {
+  // QA hook: `flutter run --dart-define=APP_LOCALE=de` forces a locale for
+  // reviewing translations, without touching the device's own settings.
+  // Empty (the default) leaves locale null, so the app follows the system.
+  const localeOverride = String.fromEnvironment('APP_LOCALE');
+  runApp(
+    GwentHelperApp(
+      locale: localeOverride.isEmpty ? null : Locale(localeOverride),
+    ),
+  );
+}
 
 class GwentHelperApp extends StatelessWidget {
   /// Null (the default) follows the system locale. Tests pass a fixed
