@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart' hide Card;
 import 'package:gwent_helper_flutter/domain/models/ability.dart';
-import '../resources/game_strings.dart';
+import 'package:gwent_helper_flutter/l10n/app_localizations.dart';
+import 'package:gwent_helper_flutter/l10n/domain_localizations.dart';
 
 /// The points slider + ability toggles shared by [AddCardDialog] and
 /// [EditCardDialog]. A wrapping grid instead of one tall checkbox list, so
@@ -24,13 +25,14 @@ class CardFormFields extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Text(GameStrings.points),
+            Text(l10n.points),
             Expanded(
               child: SliderTheme(
                 // The default value-indicator text color is unreadable
@@ -56,7 +58,7 @@ class CardFormFields extends StatelessWidget {
           ],
         ),
         const Divider(),
-        const Text(GameStrings.abilities),
+        Text(l10n.abilities),
         const SizedBox(height: 4),
         Wrap(
           spacing: 4,
@@ -75,7 +77,7 @@ class CardFormFields extends StatelessWidget {
                     minLeadingWidth: 0,
                     minVerticalPadding: 0,
                     controlAffinity: ListTileControlAffinity.leading,
-                    title: Text(ability.displayName),
+                    title: Text(localizedAbilityName(context, ability)),
                     value: selectedAbilities.contains(ability),
                     onChanged: (_) => onAbilityToggled(ability),
                   ),

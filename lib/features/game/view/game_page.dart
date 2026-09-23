@@ -20,14 +20,14 @@ class GamePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-        create: (_) => GameCubit(
-          player1Name: player1Name,
-          player2Name: player2Name,
-          repository: context.read<GwentRepository>(),
-        ),
-        child: GameView(
-          player1PhotoPath: player1PhotoPath,
-          player2PhotoPath: player2PhotoPath,
-        ),
-      );
+    create: (_) => GameCubit(
+      player1Name: player1Name,
+      player2Name: player2Name,
+      repository: context.read<GwentRepository>(),
+    ),
+    child: GameView(
+      player1PhotoPath: player1PhotoPath,
+      player2PhotoPath: player2PhotoPath,
+    ),
+  );
 }

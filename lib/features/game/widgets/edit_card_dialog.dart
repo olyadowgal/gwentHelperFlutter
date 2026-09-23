@@ -2,7 +2,7 @@ import 'package:flutter/material.dart' hide Card;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gwent_helper_flutter/domain/models/ability.dart';
 import 'package:gwent_helper_flutter/domain/models/card.dart';
-import '../resources/game_strings.dart';
+import 'package:gwent_helper_flutter/l10n/app_localizations.dart';
 import 'card_form_fields.dart';
 
 sealed class EditCardResult {
@@ -53,6 +53,7 @@ class _EditCardDialogState extends State<EditCardDialog> {
   @override
   Widget build(BuildContext context) {
     final errorColor = Theme.of(context).colorScheme.error;
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
       // Trimmed from Material's roomy defaults so the ability grid gets the
       // width back instead of it being eaten by dialog chrome.
@@ -65,13 +66,10 @@ class _EditCardDialogState extends State<EditCardDialog> {
       title: Row(
         children: [
           Expanded(
-            child: Text(
-              GameStrings.editCardTitle,
-              overflow: TextOverflow.ellipsis,
-            ),
+            child: Text(l10n.editCardTitle, overflow: TextOverflow.ellipsis),
           ),
           Tooltip(
-            message: GameStrings.delete,
+            message: l10n.delete,
             child: IconButton(
               key: EditCardDialog.deleteButtonKey,
               onPressed: () =>
@@ -86,7 +84,7 @@ class _EditCardDialogState extends State<EditCardDialog> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text(GameStrings.cancel),
+            child: Text(l10n.gameCancel),
           ),
           const SizedBox(width: 8),
           ElevatedButton(
@@ -98,7 +96,7 @@ class _EditCardDialogState extends State<EditCardDialog> {
                 ),
               ),
             ),
-            child: const Text(GameStrings.save),
+            child: Text(l10n.save),
           ),
         ],
       ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gwent_helper_flutter/domain/models/cards_row_type.dart';
-import '../resources/game_strings.dart';
+import 'package:gwent_helper_flutter/l10n/app_localizations.dart';
 
 class WeatherWidget extends StatelessWidget {
   final bool frostActive;
@@ -18,29 +18,32 @@ class WeatherWidget extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      _WeatherToggle(
-        icon: 'assets/icons/ic_frost.svg',
-        label: GameStrings.frost,
-        active: frostActive,
-        onTap: () => onChanged(CardsRowType.closeCombat, !frostActive),
-      ),
-      _WeatherToggle(
-        icon: 'assets/icons/ic_fog.svg',
-        label: GameStrings.fog,
-        active: fogActive,
-        onTap: () => onChanged(CardsRowType.longRange, !fogActive),
-      ),
-      _WeatherToggle(
-        icon: 'assets/icons/ic_rain.svg',
-        label: GameStrings.rain,
-        active: rainActive,
-        onTap: () => onChanged(CardsRowType.siege, !rainActive),
-      ),
-    ],
-  );
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _WeatherToggle(
+          icon: 'assets/icons/ic_frost.svg',
+          label: l10n.frost,
+          active: frostActive,
+          onTap: () => onChanged(CardsRowType.closeCombat, !frostActive),
+        ),
+        _WeatherToggle(
+          icon: 'assets/icons/ic_fog.svg',
+          label: l10n.fog,
+          active: fogActive,
+          onTap: () => onChanged(CardsRowType.longRange, !fogActive),
+        ),
+        _WeatherToggle(
+          icon: 'assets/icons/ic_rain.svg',
+          label: l10n.rain,
+          active: rainActive,
+          onTap: () => onChanged(CardsRowType.siege, !rainActive),
+        ),
+      ],
+    );
+  }
 }
 
 class _WeatherToggle extends StatelessWidget {

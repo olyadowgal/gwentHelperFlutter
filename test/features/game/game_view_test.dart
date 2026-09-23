@@ -7,9 +7,9 @@ import 'package:gwent_helper_flutter/domain/models/card.dart';
 import 'package:gwent_helper_flutter/domain/models/cards_row_type.dart';
 import 'package:gwent_helper_flutter/domain/models/player_side.dart';
 import 'package:gwent_helper_flutter/features/game/cubit/game_cubit.dart';
-import 'package:gwent_helper_flutter/features/game/resources/game_strings.dart';
 import 'package:gwent_helper_flutter/features/game/view/game_view.dart';
 import 'package:gwent_helper_flutter/features/game/widgets/user_widget.dart';
+import 'package:gwent_helper_flutter/l10n/app_localizations.dart';
 import 'package:gwent_helper_flutter/widgets/hud/hud_avatar.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -49,6 +49,8 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.data,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: BlocProvider<GameCubit>.value(
           value: cubit,
           child: const GameView(),
@@ -92,7 +94,7 @@ void main() {
         final screen = await pumpGameView(tester);
 
         // Then
-        final passRect = tester.getRect(find.text(GameStrings.pass));
+        final passRect = tester.getRect(find.text('Pass'));
         expect(passRect.top, greaterThanOrEqualTo(0));
         expect(passRect.bottom, lessThanOrEqualTo(screen.height));
       },
@@ -109,11 +111,11 @@ void main() {
         await pumpGameView(tester);
 
         // When
-        await tester.longPress(find.text(GameStrings.pass));
+        await tester.longPress(find.text('Pass'));
         await tester.pumpAndSettle();
 
         // Then
-        expect(find.text(GameStrings.passConfirmTitle), findsOneWidget);
+        expect(find.text('End the round?'), findsOneWidget);
         expect(cubit.state.roundCounter, 0);
       },
     );
@@ -127,11 +129,11 @@ void main() {
       (tester) async {
         // Given
         await pumpGameView(tester);
-        await tester.longPress(find.text(GameStrings.pass));
+        await tester.longPress(find.text('Pass'));
         await tester.pumpAndSettle();
 
         // When
-        await tester.tap(find.text(GameStrings.endRound));
+        await tester.tap(find.text('END ROUND'));
         await tester.pumpAndSettle();
 
         // Then
@@ -148,15 +150,15 @@ void main() {
       (tester) async {
         // Given
         await pumpGameView(tester);
-        await tester.longPress(find.text(GameStrings.pass));
+        await tester.longPress(find.text('Pass'));
         await tester.pumpAndSettle();
 
         // When
-        await tester.tap(find.text(GameStrings.cancel));
+        await tester.tap(find.text('CANCEL'));
         await tester.pumpAndSettle();
 
         // Then
-        expect(find.text(GameStrings.passConfirmTitle), findsNothing);
+        expect(find.text('End the round?'), findsNothing);
         expect(cubit.state.roundCounter, 0);
       },
     );
@@ -174,7 +176,7 @@ void main() {
         // Then
         final exitButton = find
             .ancestor(
-              of: find.text(GameStrings.exit),
+              of: find.text('Exit'),
               matching: find.byType(GestureDetector),
             )
             .first;
@@ -270,7 +272,7 @@ void main() {
         final screen = await pumpGameView(tester);
 
         // Then
-        final scorchRect = tester.getRect(find.text(GameStrings.scorch));
+        final scorchRect = tester.getRect(find.text('Scorch'));
         expect(scorchRect.top, greaterThanOrEqualTo(0));
         expect(scorchRect.bottom, lessThanOrEqualTo(screen.height));
         expect(tester.takeException(), isNull);
@@ -298,13 +300,14 @@ void main() {
         await pumpGameView(tester);
 
         // When
-        await tester.tap(find.text(GameStrings.scorch));
+        await tester.tap(find.text('Scorch'));
         await tester.pump();
 
         // Then
         expect(
           find.text(
-            '${GameStrings.scorchRemaining}2. ${GameStrings.scorchOtherSide}',
+            'Scorch targets remaining: 2. '
+            'Targets also remain on the other player’s side.',
           ),
           findsOneWidget,
         );
@@ -332,11 +335,11 @@ void main() {
           Card(cardId: 'a8', points: 8, abilities: const []),
         );
         await pumpGameView(tester);
-        await tester.tap(find.text(GameStrings.scorch));
+        await tester.tap(find.text('Scorch'));
         await tester.pump();
 
         // When
-        await tester.tap(find.text(GameStrings.cancel));
+        await tester.tap(find.text('CANCEL'));
         await tester.pump();
 
         // Then

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart' hide Card;
 import 'package:gwent_helper_flutter/domain/models/ability.dart';
 import 'package:gwent_helper_flutter/domain/models/card.dart';
 import 'package:gwent_helper_flutter/domain/models/cards_row_type.dart';
-import '../resources/game_strings.dart';
+import 'package:gwent_helper_flutter/l10n/app_localizations.dart';
+import 'package:gwent_helper_flutter/l10n/domain_localizations.dart';
 import 'card_form_fields.dart';
 
 class AddCardDialog extends StatefulWidget {
@@ -27,46 +28,51 @@ class _AddCardDialogState extends State<AddCardDialog> {
   });
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
-    // Trimmed from Material's roomy defaults so the ability grid gets the
-    // width back instead of it being eaten by dialog chrome.
-    titlePadding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-    contentPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-    // Cancel/Add live in the header, not the footer, so they're always in
-    // view even before the ability grid below has been scrolled to.
-    title: Row(
-      children: [
-        Expanded(
-          child: Text(
-            '${GameStrings.addCardTitle} (${widget.rowType.displayName})',
-            overflow: TextOverflow.ellipsis,
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return AlertDialog(
+      // Trimmed from Material's roomy defaults so the ability grid gets the
+      // width back instead of it being eaten by dialog chrome.
+      titlePadding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      contentPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      // Cancel/Add live in the header, not the footer, so they're always in
+      // view even before the ability grid below has been scrolled to.
+      title: Row(
+        children: [
+          Expanded(
+            child: Text(
+              l10n.addCardTitleWithRow(
+                localizedRowTypeName(context, widget.rowType),
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text(GameStrings.cancel),
-        ),
-        const SizedBox(width: 8),
-        ElevatedButton(
-          onPressed: () => Navigator.of(context).pop(
-            Card(points: _points, abilities: List.from(_selectedAbilities)),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.gameCancel),
           ),
-          child: const Text(GameStrings.add),
-        ),
-      ],
-    ),
-    content: SingleChildScrollView(
-      // Wide enough that the ability grid fits in a few columns instead of
-      // one tall list, capped so it never overflows a narrow screen.
-      child: SizedBox(
-        width: (MediaQuery.sizeOf(context).width * 0.8).clamp(360.0, 720.0),
-        child: CardFormFields(
-          points: _points,
-          onPointsChanged: (v) => setState(() => _points = v),
-          selectedAbilities: _selectedAbilities,
-          onAbilityToggled: _toggleAbility,
+          const SizedBox(width: 8),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(
+              Card(points: _points, abilities: List.from(_selectedAbilities)),
+            ),
+            child: Text(l10n.add),
+          ),
+        ],
+      ),
+      content: SingleChildScrollView(
+        // Wide enough that the ability grid fits in a few columns instead of
+        // one tall list, capped so it never overflows a narrow screen.
+        child: SizedBox(
+          width: (MediaQuery.sizeOf(context).width * 0.8).clamp(360.0, 720.0),
+          child: CardFormFields(
+            points: _points,
+            onPointsChanged: (v) => setState(() => _points = v),
+            selectedAbilities: _selectedAbilities,
+            onAbilityToggled: _toggleAbility,
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }

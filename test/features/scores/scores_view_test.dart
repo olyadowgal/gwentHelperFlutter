@@ -9,9 +9,9 @@ import 'package:gwent_helper_flutter/data/gwent_repository.dart';
 import 'package:gwent_helper_flutter/domain/models/game_score.dart';
 import 'package:gwent_helper_flutter/domain/models/winner.dart';
 import 'package:gwent_helper_flutter/features/scores/cubit/scores_cubit.dart';
-import 'package:gwent_helper_flutter/features/scores/resources/scores_strings.dart';
 import 'package:gwent_helper_flutter/features/scores/view/scores_view.dart';
 import 'package:gwent_helper_flutter/features/scores/widgets/score_card_widget.dart';
+import 'package:gwent_helper_flutter/l10n/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 
 class _MockGwentRepository extends Mock implements GwentRepository {}
@@ -32,6 +32,8 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.data,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: BlocProvider.value(value: cubit, child: const ScoresView()),
       ),
     );
@@ -83,10 +85,8 @@ void main() {
         await pumpView(tester);
 
         // Then
-        expect(find.bySemanticsLabel(ScoresStrings.clearAll), findsOneWidget);
-        final node = tester.getSemantics(
-          find.bySemanticsLabel(ScoresStrings.clearAll),
-        );
+        expect(find.bySemanticsLabel('Clear All'), findsOneWidget);
+        final node = tester.getSemantics(find.bySemanticsLabel('Clear All'));
         expect(node.flagsCollection.isButton, isTrue);
         expect(
           node.getSemanticsData().hasAction(SemanticsAction.longPress),
@@ -122,6 +122,8 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             theme: AppTheme.data,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: BlocProvider.value(
               value: scoresCubit,
               child: const ScoresView(),
@@ -168,6 +170,8 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             theme: AppTheme.data,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: BlocProvider.value(
               value: scoresCubit,
               child: const ScoresView(),

@@ -4,6 +4,8 @@ import 'package:gwent_helper_flutter/app_theme.dart';
 import 'package:gwent_helper_flutter/domain/models/ability.dart';
 import 'package:gwent_helper_flutter/domain/models/cards_row_type.dart';
 import 'package:gwent_helper_flutter/features/game/widgets/add_card_dialog.dart';
+import 'package:gwent_helper_flutter/l10n/app_localizations.dart';
+import 'package:gwent_helper_flutter/l10n/domain_localizations.dart';
 
 void main() {
   // Pixel 8 held in landscape — the only orientation this app supports.
@@ -20,15 +22,16 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.data,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Builder(
           builder: (context) => Center(
             child: ElevatedButton(
               onPressed: () async {
                 result = await showDialog(
                   context: context,
-                  builder: (_) => const AddCardDialog(
-                    rowType: CardsRowType.closeCombat,
-                  ),
+                  builder: (_) =>
+                      const AddCardDialog(rowType: CardsRowType.closeCombat),
                 );
               },
               child: const Text('open'),
@@ -52,10 +55,14 @@ void main() {
       (tester) async {
         // When
         await pumpAndOpenDialog(tester);
+        final context = tester.element(find.byType(AddCardDialog));
 
         // Then
         for (final ability in Ability.values) {
-          expect(find.text(ability.displayName), findsOneWidget);
+          expect(
+            find.text(localizedAbilityName(context, ability)),
+            findsOneWidget,
+          );
         }
         expect(tester.takeException(), isNull);
       },
@@ -70,7 +77,10 @@ void main() {
       (tester) async {
         // Given
         final getResult = await pumpAndOpenDialog(tester);
-        await tester.tap(find.text(Ability.hero.displayName));
+        final context = tester.element(find.byType(AddCardDialog));
+        await tester.tap(
+          find.text(localizedAbilityName(context, Ability.hero)),
+        );
         await tester.pump();
 
         // When

@@ -33,6 +33,13 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Generated localization code — regenerated from lib/l10n/*.arb via
+# `flutter gen-l10n` (runs automatically on pub get/run/build/test since
+# pubspec.yaml sets flutter: generate: true).
+/lib/l10n/app_localizations.dart
+/lib/l10n/app_localizations_*.dart
+/lib/l10n/untranslated.txt
+
 # Symbolication related
 app.*.symbols
 

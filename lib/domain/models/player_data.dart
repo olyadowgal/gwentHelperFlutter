@@ -10,8 +10,9 @@ class PlayerData {
     this.name = '',
     this.lives = 2,
     Map<CardsRowType, CardsRow>? cardsRows,
-  }) : cardsRows = cardsRows ??
-            {for (final t in CardsRowType.values) t: CardsRow(type: t)};
+  }) : cardsRows =
+           cardsRows ??
+           {for (final t in CardsRowType.values) t: CardsRow(type: t)};
 
   int get totalPoints =>
       cardsRows.values.fold(0, (sum, row) => sum + row.totalPoints);
@@ -36,7 +37,11 @@ class PlayerData {
     return copyWith(
       cardsRows: {
         for (final entry in cardsRows.entries)
-          entry.key: entry.value.copyWith(cards: [], horn: false, badWeather: false)
+          entry.key: entry.value.copyWith(
+            cards: [],
+            horn: false,
+            badWeather: false,
+          ),
       },
     );
   }

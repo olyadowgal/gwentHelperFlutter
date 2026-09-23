@@ -39,8 +39,10 @@ dependencies:
   image_picker: ^1.1.2
   image_cropper: ^12.2.1
   uuid: ^4.4.0
-  intl: ^0.19.0
+  intl: ^0.20.2
   flutter_svg: ^2.0.10+1
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
@@ -70,6 +72,8 @@ flutter:
   assets:
     - assets/icons/
     - assets/fonts/
+
+  generate: true
 
 flutter_launcher_icons:
   # Android's launcher icon is maintained by hand in android/app/src/main/res

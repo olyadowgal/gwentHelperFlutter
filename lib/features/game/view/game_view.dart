@@ -8,10 +8,10 @@ import 'package:gwent_helper_flutter/domain/models/cards_row_type.dart';
 import 'package:gwent_helper_flutter/domain/models/player_side.dart';
 import 'package:gwent_helper_flutter/domain/models/winner.dart';
 import 'package:gwent_helper_flutter/domain/scorch.dart';
+import 'package:gwent_helper_flutter/l10n/app_localizations.dart';
 import '../cubit/game_cubit.dart';
 import '../cubit/game_side_effect.dart';
 import '../cubit/game_state.dart';
-import '../resources/game_strings.dart';
 import '../widgets/add_card_dialog.dart';
 import '../widgets/cards_row_widget.dart';
 import '../widgets/edit_card_dialog.dart';
@@ -51,32 +51,34 @@ class GameView extends StatefulWidget {
 
 class _GameViewState extends State<GameView> {
   String _winnerMessage(
+    AppLocalizations l10n,
     Winner winner,
     String player1Name,
     String player2Name,
   ) => switch (winner) {
-    Winner.first => '$player1Name ${GameStrings.wins}',
-    Winner.second => '$player2Name ${GameStrings.wins}',
-    Winner.tie => GameStrings.tie,
+    Winner.first => l10n.playerWins(player1Name),
+    Winner.second => l10n.playerWins(player2Name),
+    Winner.tie => l10n.tie,
   };
 
   void _showExitDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text(GameStrings.exitTitle),
-        content: const Text(GameStrings.exitContent),
+        title: Text(l10n.exitTitle),
+        content: Text(l10n.exitContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text(GameStrings.cancel),
+            child: Text(l10n.gameCancel),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.of(dialogContext).pop();
               context.pop();
             },
-            child: const Text(GameStrings.exit),
+            child: Text(l10n.exit),
           ),
         ],
       ),
@@ -85,22 +87,23 @@ class _GameViewState extends State<GameView> {
 
   void _showPassConfirmDialog(BuildContext context) {
     final cubit = context.read<GameCubit>();
+    final l10n = AppLocalizations.of(context)!;
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text(GameStrings.passConfirmTitle),
-        content: const Text(GameStrings.passConfirmContent),
+        title: Text(l10n.passConfirmTitle),
+        content: Text(l10n.passConfirmContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text(GameStrings.cancel),
+            child: Text(l10n.gameCancel),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.of(dialogContext).pop();
               cubit.onEndRoundTapped();
             },
-            child: const Text(GameStrings.endRound),
+            child: Text(l10n.endRound),
           ),
         ],
       ),
@@ -112,6 +115,7 @@ class _GameViewState extends State<GameView> {
     BuildContext context,
   ) => BlocSideEffectHandler<GameCubit, GameState, GameSideEffect>(
     listener: (context, sideEffect) {
+      final l10n = AppLocalizations.of(context)!;
       switch (sideEffect) {
         case ShowAddCardDialog(:final rowType):
           showDialog<Card>(
@@ -143,9 +147,10 @@ class _GameViewState extends State<GameView> {
             context: context,
             barrierDismissible: false,
             builder: (dialogContext) => AlertDialog(
-              title: const Text(GameStrings.gameOverTitle),
+              title: Text(l10n.gameOverTitle),
               content: Text(
                 _winnerMessage(
+                  l10n,
                   winner,
                   state.gameData.firstPlayerData.name,
                   state.gameData.secondPlayerData.name,
@@ -156,7 +161,7 @@ class _GameViewState extends State<GameView> {
                   onPressed: () {
                     context.read<GameCubit>().onGameOverConfirmed();
                   },
-                  child: const Text(GameStrings.ok),
+                  child: Text(l10n.ok),
                 ),
               ],
             ),
@@ -167,11 +172,11 @@ class _GameViewState extends State<GameView> {
         case ShowSaveFailed():
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(const SnackBar(content: Text(GameStrings.saveFailed)));
+          ).showSnackBar(SnackBar(content: Text(l10n.saveFailed)));
         case ShowNoScorchTargets(:final reason):
           final message = switch (reason) {
-            ScorchNoTargetReason.nothingToScorch => GameStrings.nothingToScorch,
-            ScorchNoTargetReason.rowBelowTen => GameStrings.rowBelowTen,
+            ScorchNoTargetReason.nothingToScorch => l10n.nothingToScorch,
+            ScorchNoTargetReason.rowBelowTen => l10n.rowBelowTen,
           };
           ScaffoldMessenger.of(
             context,
@@ -180,12 +185,12 @@ class _GameViewState extends State<GameView> {
           showDialog<int>(
             context: context,
             builder: (dialogContext) => AlertDialog(
-              title: const Text(GameStrings.musterTitle),
-              content: const Text(GameStrings.musterCount),
+              title: Text(l10n.musterTitle),
+              content: Text(l10n.musterCount),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text(GameStrings.cancel),
+                  child: Text(l10n.gameCancel),
                 ),
                 for (var count = 1; count <= 4; count++)
                   TextButton(
@@ -212,6 +217,7 @@ class _GameViewState extends State<GameView> {
         final selectedData = state.selectedPlayerData;
         final cubit = context.read<GameCubit>();
         final colorScheme = Theme.of(context).colorScheme;
+        final l10n = AppLocalizations.of(context)!;
 
         return Scaffold(
           body: SafeArea(
@@ -235,7 +241,7 @@ class _GameViewState extends State<GameView> {
                       // Exit button
                       _SidebarButton(
                         iconAsset: 'assets/icons/ic_exit.svg',
-                        label: GameStrings.exit,
+                        label: l10n.exit,
                         onTap: () => _showExitDialog(context),
                       ),
                       // Players and weather shrink to fit so that the exit and
@@ -282,9 +288,9 @@ class _GameViewState extends State<GameView> {
                               // to whichever player happens to be below it.
                               _SidebarButton(
                                 icon: Icons.local_fire_department,
-                                label: GameStrings.scorch,
+                                label: l10n.scorch,
                                 onTap: cubit.onScorchTapped,
-                                tooltip: GameStrings.scorchHint,
+                                tooltip: l10n.scorchHint,
                               ),
                               // Player 2
                               UserWidget(
@@ -305,9 +311,9 @@ class _GameViewState extends State<GameView> {
                       // Pass button (long-press, then confirm, to end round)
                       _SidebarButton(
                         iconAsset: 'assets/icons/ic_reset.svg',
-                        label: GameStrings.pass,
+                        label: l10n.pass,
                         onLongPress: () => _showPassConfirmDialog(context),
-                        tooltip: GameStrings.passHint,
+                        tooltip: l10n.passHint,
                       ),
                     ],
                   ),
@@ -475,6 +481,8 @@ class _ScorchBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final otherSide = prompt.targets.any((t) => t.side != selectedPlayer);
+    final l10n = AppLocalizations.of(context)!;
+    final remaining = l10n.scorchRemaining(prompt.targets.length);
     return Material(
       color: Theme.of(context).colorScheme.errorContainer,
       child: Padding(
@@ -483,20 +491,14 @@ class _ScorchBanner extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                otherSide
-                    ? '${GameStrings.scorchRemaining}${prompt.targets.length}. '
-                          '${GameStrings.scorchOtherSide}'
-                    : '${GameStrings.scorchRemaining}${prompt.targets.length}',
+                otherSide ? '$remaining. ${l10n.scorchOtherSide}' : remaining,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onErrorContainer,
                   fontSize: 12,
                 ),
               ),
             ),
-            TextButton(
-              onPressed: onCancel,
-              child: const Text(GameStrings.cancel),
-            ),
+            TextButton(onPressed: onCancel, child: Text(l10n.gameCancel)),
           ],
         ),
       ),

@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gwent_helper_flutter/app_theme.dart';
 import 'package:gwent_helper_flutter/domain/models/game_score.dart';
 import 'package:gwent_helper_flutter/domain/models/winner.dart';
-import 'package:gwent_helper_flutter/features/scores/resources/scores_strings.dart';
+import 'package:gwent_helper_flutter/l10n/app_localizations.dart';
 import 'package:gwent_helper_flutter/features/scores/widgets/score_card_widget.dart';
 
 /// WCAG contrast ratio between two opaque colors.
@@ -37,6 +37,8 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.data,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(body: ScoreCardWidget(score: score)),
       ),
     );
@@ -148,7 +150,7 @@ void main() {
         await pumpCard(tester, buildScore(winner: Winner.first.name));
 
         // Then
-        final winnerFinder = find.textContaining(ScoresStrings.winner);
+        final winnerFinder = find.textContaining('Winner: ');
         final winnerText = tester.widget<Text>(winnerFinder);
         final dateFinder = find.textContaining('2026');
         final dateText = tester.widget<Text>(dateFinder);
@@ -216,8 +218,8 @@ void main() {
         await pumpCard(tester, buildScore(firstPlayer: '', secondPlayer: '  '));
 
         // Then
-        expect(find.text(ScoresStrings.player1), findsWidgets);
-        expect(find.text(ScoresStrings.player2), findsWidgets);
+        expect(find.text('Player 1'), findsWidgets);
+        expect(find.text('Player 2'), findsWidgets);
       },
     );
 
@@ -239,10 +241,7 @@ void main() {
         );
 
         // Then
-        expect(
-          find.text('${ScoresStrings.winner}${ScoresStrings.player1}'),
-          findsOneWidget,
-        );
+        expect(find.text('Winner: Player 1'), findsOneWidget);
       },
     );
 

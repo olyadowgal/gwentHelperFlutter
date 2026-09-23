@@ -24,10 +24,7 @@ extension JsonExceptions on Map<String, dynamic> {
   /// If value behind [key] is `null` will return `null`.
   /// If [parse] function will return `null` will skip this value.
   /// If [parse] function will throw an exception will throw an exception.
-  List<T>? parseObjectsList<T>(
-    String key,
-    MapToObjectParser<T> parse,
-  ) {
+  List<T>? parseObjectsList<T>(String key, MapToObjectParser<T> parse) {
     final value = this[key];
     if (value == null) return null;
     return (value as List<dynamic>)

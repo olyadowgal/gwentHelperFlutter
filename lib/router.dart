@@ -5,10 +5,7 @@ import 'package:gwent_helper_flutter/features/scores/view/scores_page.dart';
 
 final appRouter = GoRouter(
   routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const HomePage(),
-    ),
+    GoRoute(path: '/', builder: (context, state) => const HomePage()),
     GoRoute(
       path: '/game',
       builder: (context, state) {
@@ -21,9 +18,6 @@ final appRouter = GoRouter(
         );
       },
     ),
-    GoRoute(
-      path: '/scores',
-      builder: (context, state) => const ScoresPage(),
-    ),
+    GoRoute(path: '/scores', builder: (context, state) => const ScoresPage()),
   ],
 );

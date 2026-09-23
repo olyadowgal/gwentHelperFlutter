@@ -22,7 +22,12 @@ class NavigateToGame extends HomeSideEffect {
   });
 
   @override
-  List<Object?> get props => [player1Name, player2Name, player1PhotoPath, player2PhotoPath];
+  List<Object?> get props => [
+    player1Name,
+    player2Name,
+    player1PhotoPath,
+    player2PhotoPath,
+  ];
 }
 
 class NavigateToScores extends HomeSideEffect {

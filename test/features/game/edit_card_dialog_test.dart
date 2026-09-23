@@ -4,6 +4,8 @@ import 'package:gwent_helper_flutter/app_theme.dart';
 import 'package:gwent_helper_flutter/domain/models/ability.dart';
 import 'package:gwent_helper_flutter/domain/models/card.dart';
 import 'package:gwent_helper_flutter/features/game/widgets/edit_card_dialog.dart';
+import 'package:gwent_helper_flutter/l10n/app_localizations.dart';
+import 'package:gwent_helper_flutter/l10n/domain_localizations.dart';
 
 void main() {
   // Pixel 8 held in landscape — the only orientation this app supports.
@@ -20,6 +22,8 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.data,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Builder(
           builder: (context) => Center(
             child: ElevatedButton(
@@ -53,10 +57,14 @@ void main() {
 
         // When
         await pumpAndOpenDialog(tester, card);
+        final context = tester.element(find.byType(EditCardDialog));
 
         // Then
         for (final ability in Ability.values) {
-          expect(find.text(ability.displayName), findsOneWidget);
+          expect(
+            find.text(localizedAbilityName(context, ability)),
+            findsOneWidget,
+          );
         }
         expect(tester.takeException(), isNull);
       },

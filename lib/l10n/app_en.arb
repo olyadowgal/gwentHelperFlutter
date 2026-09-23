@@ -1,0 +1,88 @@
+{
+  "@@locale": "en",
+
+  "homeVs": "VS",
+  "play": "PLAY",
+  "player1": "Player 1",
+  "player2": "Player 2",
+  "scoresTooltip": "Scores",
+  "choosePhotoSource": "Choose Photo",
+  "camera": "Camera",
+  "gallery": "Gallery",
+
+  "endRound": "END ROUND",
+  "gameOverTitle": "Game Over",
+  "ok": "OK",
+  "addCardTitleWithRow": "Add Card ({rowType})",
+  "@addCardTitleWithRow": {
+    "placeholders": { "rowType": { "type": "String" } }
+  },
+  "editCardTitle": "Edit Card",
+  "points": "Points:",
+  "abilities": "Abilities:",
+  "gameCancel": "CANCEL",
+  "add": "ADD",
+  "save": "SAVE",
+  "delete": "DELETE",
+  "frost": "Frost",
+  "fog": "Fog",
+  "rain": "Rain",
+  "playerWins": "{name} wins!",
+  "@playerWins": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "tie": "It's a tie!",
+  "exit": "Exit",
+  "pass": "Pass",
+  "passHint": "Hold to end the round",
+  "passConfirmTitle": "End the round?",
+  "passConfirmContent": "This scores the round from the cards currently on the board. You won't be able to add more cards to this round after.",
+  "exitTitle": "Exit game?",
+  "exitContent": "Progress will not be saved.",
+  "saveFailed": "Could not save the game. Try again.",
+  "scorch": "Scorch",
+  "scorchHint": "Highlight strongest units",
+  "nothingToScorch": "There are no units Scorch can destroy.",
+  "rowBelowTen": "The enemy row must total at least 10.",
+  "musterTitle": "Muster",
+  "musterCount": "How many matching cards should be added?",
+  "scorchRemaining": "Scorch targets remaining: {count}",
+  "@scorchRemaining": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scorchOtherSide": "Targets also remain on the other player’s side.",
+
+  "scoresClearAll": "Clear All",
+  "clearConfirmTitle": "Clear All Scores",
+  "clearConfirmContent": "This will delete all game history. Continue?",
+  "scoresCancel": "Cancel",
+  "clear": "Clear",
+  "scoresEmpty": "No games recorded yet.",
+  "round": "Round",
+  "scoresVs": "vs",
+  "winner": "Winner: {name}",
+  "@winner": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "scoresTie": "Tie",
+  "errorMessage": "Error: {message}",
+  "@errorMessage": {
+    "placeholders": { "message": { "type": "String" } }
+  },
+
+  "abilityHero": "Hero",
+  "abilityMoraleBoost": "Morale Boost",
+  "abilityDecoy": "Decoy",
+  "abilityHorn": "Horn",
+  "abilityMardroeme": "Mardroeme",
+  "abilityYoungBerserker": "Young Berserker",
+  "abilityBerserker": "Berserker",
+  "abilityTightBond": "Tight Bond",
+  "abilitySpy": "Spy",
+  "abilityMuster": "Muster",
+  "abilityScorchRow": "Scorch (Row)",
+
+  "rowCloseCombat": "Close Combat",
+  "rowLongRange": "Long Range",
+  "rowSiege": "Siege"
+}

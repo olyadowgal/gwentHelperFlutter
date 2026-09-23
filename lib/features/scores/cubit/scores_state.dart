@@ -25,13 +25,12 @@ final class ScoresState extends Equatable
     String? errorMessage,
     bool clearError = false,
     List<ScoresSideEffect>? sideEffects,
-  }) =>
-      ScoresState(
-        isLoading: isLoading ?? this.isLoading,
-        scores: scores ?? this.scores,
-        errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
-        sideEffects: sideEffects ?? this.sideEffects,
-      );
+  }) => ScoresState(
+    isLoading: isLoading ?? this.isLoading,
+    scores: scores ?? this.scores,
+    errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+    sideEffects: sideEffects ?? this.sideEffects,
+  );
 
   @override
   ScoresState withSideEffects(List<ScoresSideEffect> sideEffects) =>

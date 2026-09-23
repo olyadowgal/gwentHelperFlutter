@@ -9,8 +9,7 @@ class ScoresPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-        create: (_) =>
-            ScoresCubit(repository: context.read<GwentRepository>()),
-        child: const ScoresView(),
-      );
+    create: (_) => ScoresCubit(repository: context.read<GwentRepository>()),
+    child: const ScoresView(),
+  );
 }

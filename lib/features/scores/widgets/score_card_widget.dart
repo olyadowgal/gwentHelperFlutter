@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:gwent_helper_flutter/domain/models/game_score.dart';
-import '../resources/scores_strings.dart';
+import 'package:gwent_helper_flutter/l10n/app_localizations.dart';
 
 class ScoreCardWidget extends StatelessWidget {
   static const _cardWidth = 280.0;
@@ -33,13 +33,10 @@ class _ScoreCardBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dateStr = DateFormat('MMM d, yyyy  HH:mm').format(score.date);
-    final firstPlayer = score.displayedFirstPlayer(
-      fallback: ScoresStrings.player1,
-    );
-    final secondPlayer = score.displayedSecondPlayer(
-      fallback: ScoresStrings.player2,
-    );
+    final firstPlayer = score.displayedFirstPlayer(fallback: l10n.player1);
+    final secondPlayer = score.displayedSecondPlayer(fallback: l10n.player2);
     return Padding(
       padding: const EdgeInsets.all(14),
       child: Column(
@@ -69,9 +66,9 @@ class _ScoreCardBody extends StatelessWidget {
                   ],
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 4),
-                child: Text(ScoresStrings.vs),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Text(l10n.scoresVs),
               ),
               Expanded(
                 child: Row(
@@ -99,7 +96,13 @@ class _ScoreCardBody extends StatelessWidget {
           const SizedBox(height: 10),
           Center(
             child: Text(
-              '${ScoresStrings.winner}${score.displayedWinner(tieLabel: ScoresStrings.tie, firstPlayerFallback: ScoresStrings.player1, secondPlayerFallback: ScoresStrings.player2)}',
+              l10n.winner(
+                score.displayedWinner(
+                  tieLabel: l10n.scoresTie,
+                  firstPlayerFallback: l10n.player1,
+                  secondPlayerFallback: l10n.player2,
+                ),
+              ),
               textAlign: TextAlign.center,
               style: Theme.of(
                 context,
@@ -115,28 +118,30 @@ class _ScoreCardBody extends StatelessWidget {
             children: [
               TableRow(
                 children: [
-                  _HeaderCell(ScoresStrings.round),
+                  _HeaderCell(l10n.round),
                   _HeaderCell(firstPlayer),
                   _HeaderCell(secondPlayer),
                 ],
               ),
               TableRow(
                 children: [
-                  const _Cell(ScoresStrings.round1),
+                  // Round numbers are plain numerals — universal across every
+                  // supported language, no translation needed.
+                  const _Cell('1'),
                   _Cell(_pts(score.firstRoundFirstPlayerPoints)),
                   _Cell(_pts(score.firstRoundSecondPlayerPoints)),
                 ],
               ),
               TableRow(
                 children: [
-                  const _Cell(ScoresStrings.round2),
+                  const _Cell('2'),
                   _Cell(_pts(score.secondRoundFirstPlayerPoints)),
                   _Cell(_pts(score.secondRoundSecondPlayerPoints)),
                 ],
               ),
               TableRow(
                 children: [
-                  const _Cell(ScoresStrings.round3),
+                  const _Cell('3'),
                   _Cell(_pts(score.thirdRoundFirstPlayerPoints)),
                   _Cell(_pts(score.thirdRoundSecondPlayerPoints)),
                 ],

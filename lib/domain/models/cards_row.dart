@@ -32,14 +32,18 @@ class CardsRow {
 
     if (card.abilities.contains(Ability.tightBond)) {
       final bondCount = cards
-          .where((c) =>
-              c.points == card.points && c.abilities.contains(Ability.tightBond))
+          .where(
+            (c) =>
+                c.points == card.points &&
+                c.abilities.contains(Ability.tightBond),
+          )
           .length;
       points *= bondCount;
     }
 
-    final moraleCount =
-        cards.where((c) => c.abilities.contains(Ability.moraleBoost)).length;
+    final moraleCount = cards
+        .where((c) => c.abilities.contains(Ability.moraleBoost))
+        .length;
     points += moraleCount;
     if (card.abilities.contains(Ability.moraleBoost)) {
       points--;
@@ -60,11 +64,7 @@ class CardsRow {
     return points;
   }
 
-  CardsRow copyWith({
-    List<Card>? cards,
-    bool? horn,
-    bool? badWeather,
-  }) {
+  CardsRow copyWith({List<Card>? cards, bool? horn, bool? badWeather}) {
     return CardsRow(
       type: type,
       cards: cards ?? this.cards,

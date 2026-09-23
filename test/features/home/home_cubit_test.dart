@@ -100,7 +100,10 @@ void main() {
           final cubit = buildCubitWithHandler();
 
           // When
-          cubit.onPlayTapped();
+          cubit.onPlayTapped(
+            player1Fallback: 'Player 1',
+            player2Fallback: 'Player 2',
+          );
           await Future<void>.delayed(Duration.zero);
 
           // Then
@@ -130,7 +133,10 @@ void main() {
             ..onPlayer2PhotoPicked('/p2.jpg');
 
           // When
-          cubit.onPlayTapped();
+          cubit.onPlayTapped(
+            player1Fallback: 'Player 1',
+            player2Fallback: 'Player 2',
+          );
           await Future<void>.delayed(Duration.zero);
 
           // Then

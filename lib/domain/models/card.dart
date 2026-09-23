@@ -6,11 +6,8 @@ class Card {
   final int points;
   final List<Ability> abilities;
 
-  Card({
-    String? cardId,
-    required this.points,
-    required this.abilities,
-  }) : cardId = cardId ?? const Uuid().v4();
+  Card({String? cardId, required this.points, required this.abilities})
+    : cardId = cardId ?? const Uuid().v4();
 
   Card copyWith({int? points, List<Ability>? abilities}) {
     return Card(

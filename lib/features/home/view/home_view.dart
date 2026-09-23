@@ -3,12 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:gwent_helper_flutter/l10n/app_localizations.dart';
 import '../../../app_theme.dart';
 import '../../../arch/bloc_side_effect_handler.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/home_side_effect.dart';
 import '../cubit/home_state.dart';
-import '../resources/home_strings.dart';
 import '../widgets/background_touch_button.dart';
 import '../widgets/player_input_widget.dart';
 
@@ -42,20 +42,21 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Future<void> _showPhotoSourceDialog(bool isPlayer1) async {
+    final l10n = AppLocalizations.of(context)!;
     final source = await showDialog<ImageSource>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(HomeStrings.choosePhotoSource),
+        title: Text(l10n.choosePhotoSource),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             SimpleDialogOption(
               onPressed: () => Navigator.of(context).pop(ImageSource.camera),
-              child: const Text(HomeStrings.camera),
+              child: Text(l10n.camera),
             ),
             SimpleDialogOption(
               onPressed: () => Navigator.of(context).pop(ImageSource.gallery),
-              child: const Text(HomeStrings.gallery),
+              child: Text(l10n.gallery),
             ),
           ],
         ),
@@ -128,58 +129,65 @@ class _HomeViewState extends State<HomeView> {
           }
         },
         child: BlocBuilder<HomeCubit, HomeState>(
-          builder: (context, state) => Scaffold(
-            body: SafeArea(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  BackgroundTouchButton(
-                    label: HomeStrings.scoresTooltip,
-                    side: ChevronSide.right,
-                    onTap: context.read<HomeCubit>().onScoresTapped,
-                  ),
-                  Expanded(
-                    child: Center(
-                      // The screen is locked to landscape, but the first frames
-                      // can still be portrait, where the inputs do not fit.
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            PlayerInputWidget(
-                              hint: HomeStrings.player1,
-                              controller: _p1Controller,
-                              photoPath: state.player1PhotoPath,
-                              onPhotoTap: () => _showPhotoSourceDialog(true),
-                            ),
-                            const SizedBox(width: 32),
-                            Text(
-                              HomeStrings.vs,
-                              style: Theme.of(context).textTheme.displayLarge,
-                            ),
-                            const SizedBox(width: 32),
-                            PlayerInputWidget(
-                              hint: HomeStrings.player2,
-                              controller: _p2Controller,
-                              photoPath: state.player2PhotoPath,
-                              onPhotoTap: () => _showPhotoSourceDialog(false),
-                            ),
-                          ],
+          builder: (context, state) {
+            final l10n = AppLocalizations.of(context)!;
+            return Scaffold(
+              body: SafeArea(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    BackgroundTouchButton(
+                      label: l10n.scoresTooltip,
+                      side: ChevronSide.right,
+                      onTap: context.read<HomeCubit>().onScoresTapped,
+                    ),
+                    Expanded(
+                      child: Center(
+                        // The screen is locked to landscape, but the first
+                        // frames can still be portrait, where the inputs do
+                        // not fit.
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              PlayerInputWidget(
+                                hint: l10n.player1,
+                                controller: _p1Controller,
+                                photoPath: state.player1PhotoPath,
+                                onPhotoTap: () => _showPhotoSourceDialog(true),
+                              ),
+                              const SizedBox(width: 32),
+                              Text(
+                                l10n.homeVs,
+                                style: Theme.of(context).textTheme.displayLarge,
+                              ),
+                              const SizedBox(width: 32),
+                              PlayerInputWidget(
+                                hint: l10n.player2,
+                                controller: _p2Controller,
+                                photoPath: state.player2PhotoPath,
+                                onPhotoTap: () => _showPhotoSourceDialog(false),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  BackgroundTouchButton(
-                    label: HomeStrings.play,
-                    side: ChevronSide.left,
-                    filled: true,
-                    onTap: context.read<HomeCubit>().onPlayTapped,
-                  ),
-                ],
+                    BackgroundTouchButton(
+                      label: l10n.play,
+                      side: ChevronSide.left,
+                      filled: true,
+                      onTap: () => context.read<HomeCubit>().onPlayTapped(
+                        player1Fallback: l10n.player1,
+                        player2Fallback: l10n.player2,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       );
 }

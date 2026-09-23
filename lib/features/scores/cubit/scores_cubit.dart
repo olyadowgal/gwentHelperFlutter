@@ -7,8 +7,8 @@ class ScoresCubit extends Cubit<ScoresState> {
   final GwentRepository _repository;
 
   ScoresCubit({required GwentRepository repository})
-      : _repository = repository,
-        super(const ScoresState()) {
+    : _repository = repository,
+      super(const ScoresState()) {
     onScreenOpened();
   }
 

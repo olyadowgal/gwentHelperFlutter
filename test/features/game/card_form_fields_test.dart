@@ -2,6 +2,8 @@ import 'package:flutter/material.dart' hide Card;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gwent_helper_flutter/domain/models/ability.dart';
 import 'package:gwent_helper_flutter/features/game/widgets/card_form_fields.dart';
+import 'package:gwent_helper_flutter/l10n/app_localizations.dart';
+import 'package:gwent_helper_flutter/l10n/domain_localizations.dart';
 
 void main() {
   Future<void> pumpFields(
@@ -10,6 +12,8 @@ void main() {
     required ValueChanged<Ability> onAbilityToggled,
   }) => tester.pumpWidget(
     MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: SizedBox(
           width: 700,
@@ -38,10 +42,14 @@ void main() {
           selectedAbilities: const [],
           onAbilityToggled: (_) {},
         );
+        final context = tester.element(find.byType(CardFormFields));
 
         // Then
         for (final ability in Ability.values) {
-          expect(find.text(ability.displayName), findsOneWidget);
+          expect(
+            find.text(localizedAbilityName(context, ability)),
+            findsOneWidget,
+          );
         }
         expect(tester.takeException(), isNull);
       },
@@ -60,13 +68,18 @@ void main() {
           selectedAbilities: const [],
           onAbilityToggled: (_) {},
         );
+        final context = tester.element(find.byType(CardFormFields));
 
         // Then
         final firstTop = tester
-            .getTopLeft(find.text(Ability.values[0].displayName))
+            .getTopLeft(
+              find.text(localizedAbilityName(context, Ability.values[0])),
+            )
             .dy;
         final secondTop = tester
-            .getTopLeft(find.text(Ability.values[1].displayName))
+            .getTopLeft(
+              find.text(localizedAbilityName(context, Ability.values[1])),
+            )
             .dy;
         expect(secondTop, closeTo(firstTop, 15));
       },
@@ -86,9 +99,12 @@ void main() {
           selectedAbilities: const [],
           onAbilityToggled: (ability) => toggled = ability,
         );
+        final context = tester.element(find.byType(CardFormFields));
 
         // When
-        await tester.tap(find.text(Ability.hero.displayName));
+        await tester.tap(
+          find.text(localizedAbilityName(context, Ability.hero)),
+        );
         await tester.pump();
 
         // Then

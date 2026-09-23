@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gwent_helper_flutter/app_theme.dart';
 import 'package:gwent_helper_flutter/features/home/cubit/home_cubit.dart';
-import 'package:gwent_helper_flutter/features/home/resources/home_strings.dart';
 import 'package:gwent_helper_flutter/features/home/view/home_view.dart';
 import 'package:gwent_helper_flutter/features/home/widgets/player_input_widget.dart';
+import 'package:gwent_helper_flutter/l10n/app_localizations.dart';
 
 void main() {
   late HomeCubit cubit;
@@ -22,7 +22,12 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.data,
-        home: BlocProvider<HomeCubit>.value(value: cubit, child: const HomeView()),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: BlocProvider<HomeCubit>.value(
+          value: cubit,
+          child: const HomeView(),
+        ),
       ),
     );
     await tester.pump();
@@ -44,9 +49,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // Then
-        expect(find.text(HomeStrings.choosePhotoSource), findsOneWidget);
-        expect(find.text(HomeStrings.camera), findsOneWidget);
-        expect(find.text(HomeStrings.gallery), findsOneWidget);
+        expect(find.text('Choose Photo'), findsOneWidget);
+        expect(find.text('Camera'), findsOneWidget);
+        expect(find.text('Gallery'), findsOneWidget);
       },
     );
 
@@ -67,7 +72,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Then
-        expect(find.text(HomeStrings.choosePhotoSource), findsNothing);
+        expect(find.text('Choose Photo'), findsNothing);
         expect(cubit.state.player1PhotoPath, isNull);
         expect(cubit.state.player2PhotoPath, isNull);
       },
