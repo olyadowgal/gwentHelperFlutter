@@ -21,8 +21,8 @@ void main() {
       ''',
       () {
         // Then
-        expect(AppTheme.background, const Color(0xFF0D0F0C));
-        expect(AppTheme.panel, const Color(0xFF141811));
+        expect(AppTheme.background, const Color(0xFF14170F));
+        expect(AppTheme.panel, const Color(0xFF1E2417));
         expect(AppTheme.olive, const Color(0xFF6B7C3A));
         expect(AppTheme.gold, const Color(0xFFC8A84B));
         expect(AppTheme.cream, const Color(0xFFD4C48A));

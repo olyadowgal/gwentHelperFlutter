@@ -8,7 +8,7 @@
     <path
         android:pathData="M6,0L250,0A6,6 0,0 1,256 6L256,250A6,6 0,0 1,250 256L6,256A6,6 0,0 1,0 250L0,6A6,6 0,0 1,6 0z"
         android:strokeWidth="1"
-        android:fillColor="#0D0F0C"
+        android:fillColor="#14170F"
         android:fillType="evenOdd"
         android:strokeColor="#00000000"/>
   </group>

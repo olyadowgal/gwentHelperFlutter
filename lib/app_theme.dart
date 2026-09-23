@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 abstract class AppTheme {
   /// Scaffold behind the HUD.
-  static const background = Color(0xFF0D0F0C);
+  static const background = Color(0xFF14170F);
 
   /// Sidebar, score rows, chips and dialog surfaces.
-  static const panel = Color(0xFF141811);
+  static const panel = Color(0xFF1E2417);
 
   /// Hairlines and idle borders.
   static const olive = Color(0xFF6B7C3A);
