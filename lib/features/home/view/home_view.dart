@@ -11,6 +11,7 @@ import '../cubit/home_side_effect.dart';
 import '../cubit/home_state.dart';
 import '../widgets/background_touch_button.dart';
 import '../widgets/player_input_widget.dart';
+import '../../../widgets/support_developer_button.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -142,36 +143,49 @@ class _HomeViewState extends State<HomeView> {
                       onTap: context.read<HomeCubit>().onScoresTapped,
                     ),
                     Expanded(
-                      child: Center(
-                        // The screen is locked to landscape, but the first
-                        // frames can still be portrait, where the inputs do
-                        // not fit.
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              PlayerInputWidget(
-                                hint: l10n.player1,
-                                controller: _p1Controller,
-                                photoPath: state.player1PhotoPath,
-                                onPhotoTap: () => _showPhotoSourceDialog(true),
+                      child: Stack(
+                        children: [
+                          Center(
+                            // The screen is locked to landscape, but the
+                            // first frames can still be portrait, where the
+                            // inputs do not fit.
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  PlayerInputWidget(
+                                    hint: l10n.player1,
+                                    controller: _p1Controller,
+                                    photoPath: state.player1PhotoPath,
+                                    onPhotoTap: () =>
+                                        _showPhotoSourceDialog(true),
+                                  ),
+                                  const SizedBox(width: 32),
+                                  Text(
+                                    l10n.homeVs,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.displayLarge,
+                                  ),
+                                  const SizedBox(width: 32),
+                                  PlayerInputWidget(
+                                    hint: l10n.player2,
+                                    controller: _p2Controller,
+                                    photoPath: state.player2PhotoPath,
+                                    onPhotoTap: () =>
+                                        _showPhotoSourceDialog(false),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 32),
-                              Text(
-                                l10n.homeVs,
-                                style: Theme.of(context).textTheme.displayLarge,
-                              ),
-                              const SizedBox(width: 32),
-                              PlayerInputWidget(
-                                hint: l10n.player2,
-                                controller: _p2Controller,
-                                photoPath: state.player2PhotoPath,
-                                onPhotoTap: () => _showPhotoSourceDialog(false),
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
+                          SupportDeveloperBanner(
+                            // TODO: open the support/donate link(s) once
+                            // they're decided.
+                            onTap: () {},
+                          ),
+                        ],
                       ),
                     ),
                     BackgroundTouchButton(
