@@ -13,8 +13,14 @@ abstract class AppTheme {
   /// Titles, selected state and primary actions.
   static const gold = Color(0xFFC8A84B);
 
-  /// Body text and icons on dark surfaces.
+  /// Body text and icons on dark surfaces; also the hero card face, so a
+  /// hero reads as gilt-edged parchment rather than plain stock.
   static const cream = Color(0xFFD4C48A);
+
+  /// The face of an ordinary (non-hero) card on the board — a plain, cooler
+  /// parchment distinct from [cream] so a card's fill and its text never
+  /// share one token.
+  static const cardFace = Color(0xFFEDE6D0);
 
   /// Scorch highlights and destructive actions.
   static const _error = Color(0xFFE31829);

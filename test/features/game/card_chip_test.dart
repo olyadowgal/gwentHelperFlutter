@@ -108,15 +108,16 @@ void main() {
       '''
       Given an ordinary unit chip
       When it is rendered
-      Then it is a dark panel with an olive border
+      Then it is a plain parchment card face with an olive border
       ''',
       (tester) async {
         // When
         await pumpChip(tester, isScorchTarget: false);
 
         // Then
-        expect(paintedCard(tester).color, AppTheme.panel);
+        expect(paintedCard(tester).color, AppTheme.cardFace);
         expect(paintedShape(tester).side.color, AppTheme.olive);
+        expect(paintedShape(tester).side.width, 1.5);
       },
     );
 
@@ -124,7 +125,7 @@ void main() {
       '''
       Given a hero chip
       When it is rendered
-      Then it keeps the dark panel and takes a gold border
+      Then it takes the warmer cream card face and a gold border
       ''',
       (tester) async {
         // When
@@ -135,8 +136,9 @@ void main() {
         );
 
         // Then
-        expect(paintedCard(tester).color, AppTheme.panel);
+        expect(paintedCard(tester).color, AppTheme.cream);
         expect(paintedShape(tester).side.color, AppTheme.gold);
+        expect(paintedShape(tester).side.width, 1.5);
       },
     );
 
@@ -175,7 +177,7 @@ void main() {
       '''
       Given any chip
       When its point total is rendered
-      Then it stays bold, large enough to read, and cream
+      Then it stays bold, large enough to read, and dark ink on the cream face
       ''',
       (tester) async {
         // When
@@ -185,7 +187,7 @@ void main() {
         final style = tester.widget<Text>(find.text('7')).style!;
         expect(style.fontWeight, FontWeight.bold);
         expect(style.fontSize, greaterThanOrEqualTo(13));
-        expect(style.color, AppTheme.cream);
+        expect(style.color, AppTheme.background);
       },
     );
   });

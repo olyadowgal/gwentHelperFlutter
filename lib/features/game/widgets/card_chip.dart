@@ -3,12 +3,14 @@ import 'package:flutter/material.dart' as material show Card;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gwent_helper_flutter/domain/models/ability.dart';
 import 'package:gwent_helper_flutter/domain/models/card.dart';
+import 'package:gwent_helper_flutter/app_theme.dart';
 
 class CardChip extends StatelessWidget {
   /// Only used when a host theme leaves the card shape unset; the app theme
   /// always supplies one.
   static const _fallbackRadius = BorderRadius.all(Radius.circular(4));
 
+  static const _borderWidth = 1.5;
   static const _scorchBorderWidth = 3.0;
 
   static const _chipWidth = 44.0;
@@ -81,19 +83,23 @@ class CardChip extends StatelessWidget {
         : isHero
         ? colorScheme.primary
         : colorScheme.outline;
-    final contentColor = colorScheme.onSurface;
+    // A bright card face reads as a physical piece on the dark board, unlike
+    // the dark panel used for chrome (dialogs, sidebar) elsewhere. Hero
+    // cards get the warmer cream, so they stand out from the rest of the
+    // hand even before you spot the gold edge.
+    final contentColor = AppTheme.background;
     return GestureDetector(
       onTap: onTap,
       onLongPress: onLongPress,
       child: material.Card(
-        color: colorScheme.surface,
+        color: isHero ? AppTheme.cream : AppTheme.cardFace,
         elevation: 0,
         margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
         shape: RoundedRectangleBorder(
           borderRadius: _cornerRadius(theme),
           side: BorderSide(
             color: borderColor,
-            width: isScorchTarget ? _scorchBorderWidth : 1,
+            width: isScorchTarget ? _scorchBorderWidth : _borderWidth,
           ),
         ),
         child: SizedBox(
