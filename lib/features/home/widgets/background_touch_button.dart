@@ -140,7 +140,10 @@ class BackgroundTouchButton extends StatelessWidget {
                     child: RotatedBox(
                       quarterTurns: side == ChevronSide.left ? 1 : 3,
                       child: Text(
-                        label,
+                        // Uppercased here rather than relying on every ARB
+                        // string to already be shouting, so PLAY and Scores
+                        // (and any future chevron) always match.
+                        label.toUpperCase(),
                         style: Theme.of(context).textTheme.headlineMedium
                             ?.copyWith(
                               fontSize: 20,

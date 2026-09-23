@@ -203,12 +203,12 @@ void main() {
         );
         expect(chevronOutline(tester, 'PLAY'), isNull);
 
-        expect(chevronFill(tester, 'Scores'), AppTheme.sidebarSurface);
+        expect(chevronFill(tester, 'SCORES'), AppTheme.sidebarSurface);
         expect(
-          tester.widget<Text>(find.text('Scores')).style!.color,
+          tester.widget<Text>(find.text('SCORES')).style!.color,
           AppTheme.cream,
         );
-        expect(chevronOutline(tester, 'Scores'), isNull);
+        expect(chevronOutline(tester, 'SCORES'), isNull);
       },
     );
 
