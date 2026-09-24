@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:gwent_helper_flutter/app_theme.dart';
 import 'package:gwent_helper_flutter/domain/models/cards_row_type.dart';
 import 'package:gwent_helper_flutter/l10n/app_localizations.dart';
 
@@ -61,9 +62,12 @@ class _WeatherToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Idle olive clashed against the sidebar's warm brown, so idle weather
+    // icons instead match the playing field's own near-black background —
+    // they read as recessed into the board, not just dim on the sidebar.
     final color = active
         ? Theme.of(context).colorScheme.primary
-        : Theme.of(context).colorScheme.outline;
+        : AppTheme.background;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,

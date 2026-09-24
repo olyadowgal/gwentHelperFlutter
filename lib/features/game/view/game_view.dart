@@ -232,7 +232,7 @@ class _GameViewState extends State<GameView> {
                     color: AppTheme.sidebarSurface,
                     border: Border(
                       right: BorderSide(
-                        color: colorScheme.outline,
+                        color: AppTheme.sidebarTrim,
                         width: GameView._dividerWidth,
                       ),
                     ),

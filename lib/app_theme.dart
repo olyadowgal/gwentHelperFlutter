@@ -28,6 +28,11 @@ abstract class AppTheme {
   /// true walnut, which read too dark and too warm against this palette.
   static const sidebarSurface = Color(0xFF5C3D24);
 
+  /// The sidebar's own edge, a darker espresso brown so the border reads as
+  /// a wood trim on [sidebarSurface] rather than [olive]'s unrelated green.
+  static const sidebarTrim = Color(0xFF2E1B0F);
+
+
   /// Scorch highlights and destructive actions.
   static const _error = Color(0xFFE31829);
   static const _onError = Color(0xFFFFFFFF);

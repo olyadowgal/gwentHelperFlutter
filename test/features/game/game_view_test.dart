@@ -242,7 +242,7 @@ void main() {
       '''
       Given the game board is rendered
       When the sidebar is inspected
-      Then it is a saddle panel with an olive edge at its full width
+      Then it is a saddle panel with a wood-trim edge at its full width
       ''',
       (tester) async {
         // When
@@ -254,7 +254,10 @@ void main() {
         );
         final decoration = sidebar.decoration! as BoxDecoration;
         expect(decoration.color, AppTheme.sidebarSurface);
-        expect((decoration.border! as Border).right.color, AppTheme.olive);
+        expect(
+          (decoration.border! as Border).right.color,
+          AppTheme.sidebarTrim,
+        );
         expect(tester.getSize(find.byKey(GameView.sidebarKey)).width, 90);
       },
     );
