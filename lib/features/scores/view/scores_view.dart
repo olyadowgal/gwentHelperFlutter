@@ -8,6 +8,7 @@ import '../cubit/scores_cubit.dart';
 import '../cubit/scores_side_effect.dart';
 import '../cubit/scores_state.dart';
 import '../widgets/score_card_widget.dart';
+import '../../../widgets/support_developer_button.dart';
 
 class ScoresView extends StatelessWidget {
   const ScoresView({super.key});
@@ -63,6 +64,11 @@ class ScoresView extends StatelessWidget {
                   onPressed: () => context.pop(),
                 ),
                 actions: [
+                  SupportDeveloperAction(
+                    // TODO: open the support/donate link(s) once they're
+                    // decided.
+                    onTap: () {},
+                  ),
                   Builder(
                     builder: (context) {
                       void clearAll() =>
