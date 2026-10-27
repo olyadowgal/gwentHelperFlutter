@@ -9,6 +9,8 @@
   "choosePhotoSource": "Choose Photo",
   "camera": "Camera",
   "gallery": "Gallery",
+  "savedPlayers": "Saved players",
+  "newPlayer": "New player",
 
   "endRound": "END ROUND",
   "gameOverTitle": "Game Over",

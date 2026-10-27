@@ -315,6 +315,7 @@ void main() {
     Future<void> pumpEditor(
       WidgetTester tester, {
       required VoidCallback onPhotoTap,
+      VoidCallback onChooseSaved = _noop,
     }) async {
       final controller = TextEditingController();
       addTearDown(controller.dispose);
@@ -327,6 +328,8 @@ void main() {
                 hint: 'Player 1',
                 controller: controller,
                 onPhotoTap: onPhotoTap,
+                savedPlayersLabel: 'Saved players',
+                onChooseSaved: onChooseSaved,
               ),
             ),
           ),
@@ -362,6 +365,31 @@ void main() {
 
     testWidgets(
       '''
+      Given the player card
+      When its "Saved players" chip is tapped
+      Then `onChooseSaved` fires and the photo picker does not
+      ''',
+      (WidgetTester tester) async {
+        // Given
+        var chooseTaps = 0;
+        var photoTaps = 0;
+        await pumpEditor(
+          tester,
+          onPhotoTap: () => photoTaps++,
+          onChooseSaved: () => chooseTaps++,
+        );
+
+        // When
+        await tester.tap(find.text('Saved players'));
+
+        // Then
+        expect(chooseTaps, 1);
+        expect(photoTaps, 0);
+      },
+    );
+
+    testWidgets(
+      '''
       Given the avatar photo picker
       When its semantics are read
       Then it is one tappable button that names the player it belongs to
@@ -391,6 +419,8 @@ void main() {
     );
   });
 }
+
+void _noop() {}
 
 /// WCAG contrast ratio between two opaque colors.
 double _contrastRatio(Color a, Color b) {

@@ -9,6 +9,8 @@
   "choosePhotoSource": "Choisir une photo",
   "camera": "Appareil photo",
   "gallery": "Galerie",
+  "savedPlayers": "Joueurs enregistrés",
+  "newPlayer": "Nouveau joueur",
 
   "endRound": "TERMINER LA MANCHE",
   "gameOverTitle": "Partie terminée",

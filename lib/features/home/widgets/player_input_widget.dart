@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import '../../../app_theme.dart';
 import '../../../widgets/hud/hud_avatar.dart';
 
 class PlayerInputWidget extends StatelessWidget {
@@ -9,6 +10,8 @@ class PlayerInputWidget extends StatelessWidget {
   final TextEditingController controller;
   final String? photoPath;
   final VoidCallback onPhotoTap;
+  final String savedPlayersLabel;
+  final VoidCallback onChooseSaved;
 
   const PlayerInputWidget({
     super.key,
@@ -16,6 +19,8 @@ class PlayerInputWidget extends StatelessWidget {
     required this.controller,
     this.photoPath,
     required this.onPhotoTap,
+    required this.savedPlayersLabel,
+    required this.onChooseSaved,
   });
 
   @override
@@ -30,6 +35,20 @@ class PlayerInputWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            ActionChip(
+              label: Text(savedPlayersLabel),
+              avatar: const Icon(Icons.people_alt_outlined, size: 18),
+              onPressed: onChooseSaved,
+              visualDensity: VisualDensity.compact,
+              backgroundColor: Colors.transparent,
+              labelStyle: TextStyle(color: onSurface),
+              iconTheme: IconThemeData(color: onSurface),
+              side: const BorderSide(color: AppTheme.olive),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(4)),
+              ),
+            ),
+            const SizedBox(height: 8),
             Semantics(
               button: true,
               label: 'Change photo for $hint',
