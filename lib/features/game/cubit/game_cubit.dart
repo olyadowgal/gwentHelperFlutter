@@ -15,13 +15,19 @@ import 'game_state.dart';
 
 class GameCubit extends Cubit<GameState> {
   final GwentRepository _repository;
+  final String? _player1Id;
+  final String? _player2Id;
   bool _saved = false;
 
   GameCubit({
     required String player1Name,
     required String player2Name,
+    String? player1Id,
+    String? player2Id,
     required GwentRepository repository,
   }) : _repository = repository,
+       _player1Id = player1Id,
+       _player2Id = player2Id,
        super(
          GameState(
            gameData: GameData(
@@ -259,6 +265,8 @@ class GameCubit extends Cubit<GameState> {
       date: DateTime.now(),
       firstPlayer: data.firstPlayerData.name,
       secondPlayer: data.secondPlayerData.name,
+      firstPlayerId: _player1Id,
+      secondPlayerId: _player2Id,
       winner: gameOver.name,
       firstRoundFirstPlayerPoints: rounds.firstRoundFirst,
       secondRoundFirstPlayerPoints: rounds.secondRoundFirst,

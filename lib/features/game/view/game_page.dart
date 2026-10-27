@@ -7,6 +7,8 @@ import 'game_view.dart';
 class GamePage extends StatelessWidget {
   final String player1Name;
   final String player2Name;
+  final String? player1Id;
+  final String? player2Id;
   final String? player1PhotoPath;
   final String? player2PhotoPath;
 
@@ -14,6 +16,8 @@ class GamePage extends StatelessWidget {
     super.key,
     required this.player1Name,
     required this.player2Name,
+    this.player1Id,
+    this.player2Id,
     this.player1PhotoPath,
     this.player2PhotoPath,
   });
@@ -23,6 +27,8 @@ class GamePage extends StatelessWidget {
     create: (_) => GameCubit(
       player1Name: player1Name,
       player2Name: player2Name,
+      player1Id: player1Id,
+      player2Id: player2Id,
       repository: context.read<GwentRepository>(),
     ),
     child: GameView(

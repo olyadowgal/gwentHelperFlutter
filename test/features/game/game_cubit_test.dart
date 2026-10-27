@@ -1222,6 +1222,60 @@ void main() {
 
       test(
         '''
+      Given a cubit built with player ids `p1` and `p2` and the game is over
+      When `onGameOverConfirmed` is called
+      Then the saved score carries both player ids
+      ''',
+        () async {
+          // Given
+          await subscription.cancel();
+          await cubit.close();
+          cubit = GameCubit(
+            player1Name: 'Alice',
+            player2Name: 'Bob',
+            player1Id: 'p1',
+            player2Id: 'p2',
+            repository: repository,
+          );
+          subscription = attachSideEffectHandler(cubit, sideEffectHandler);
+          await playToGameOver();
+
+          // When
+          await cubit.onGameOverConfirmed();
+
+          // Then
+          final score =
+              verify(() => repository.addGame(captureAny())).captured.single
+                  as GameScore;
+          expect(score.firstPlayerId, 'p1');
+          expect(score.secondPlayerId, 'p2');
+        },
+      );
+
+      test(
+        '''
+      Given a cubit built without player ids and the game is over
+      When `onGameOverConfirmed` is called
+      Then the saved score has no player ids
+      ''',
+        () async {
+          // Given
+          await playToGameOver();
+
+          // When
+          await cubit.onGameOverConfirmed();
+
+          // Then
+          final score =
+              verify(() => repository.addGame(captureAny())).captured.single
+                  as GameScore;
+          expect(score.firstPlayerId, isNull);
+          expect(score.secondPlayerId, isNull);
+        },
+      );
+
+      test(
+        '''
       Given the score was already saved
       When `onGameOverConfirmed` is called again
       Then it does not save again

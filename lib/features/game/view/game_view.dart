@@ -169,7 +169,11 @@ class _GameViewState extends State<GameView> {
           );
 
         case NavigateBack():
-          context.go('/');
+          // The game-over dialog sits on top of this page; close it first, or
+          // pop() would only dismiss the dialog and leave the finished game.
+          final gameRoute = ModalRoute.of(context)!;
+          Navigator.of(context).popUntil((route) => route == gameRoute);
+          context.pop();
         case ShowSaveFailed():
           ScaffoldMessenger.of(
             context,

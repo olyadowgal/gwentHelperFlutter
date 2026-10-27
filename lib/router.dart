@@ -13,6 +13,8 @@ final appRouter = GoRouter(
         return GamePage(
           player1Name: extra['player1Name'] as String,
           player2Name: extra['player2Name'] as String,
+          player1Id: extra['player1Id'] as String?,
+          player2Id: extra['player2Id'] as String?,
           player1PhotoPath: extra['player1PhotoPath'] as String?,
           player2PhotoPath: extra['player2PhotoPath'] as String?,
         );
