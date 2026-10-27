@@ -27,11 +27,13 @@ lib/
 ├── domain/models/              # Plain Dart entities and scoring logic
 │   ├── card.dart, ability.dart, cards_row.dart, cards_row_type.dart
 │   ├── game_data.dart, player_data.dart, rounds_data.dart, winner.dart
-│   └── game_score.dart         # DB-facing DTO (toMap/fromMap)
+│   ├── game_score.dart         # DB-facing DTO (toMap/fromMap), links to saved players by id
+│   └── player.dart             # Saved player (name + optional photo file), DB-facing (toMap/fromMap)
 │
 ├── data/                       # Persistence
 │   ├── database.dart           # AppDatabase — sqflite singleton, schema + migrations
 │   ├── game_score_dao.dart     # GameScoreDao — CRUD against the `game_score` table
+│   ├── player_dao.dart         # PlayerDao — insert/update/getAll/findByName on the `player` table
 │   └── gwent_repository.dart   # GwentRepository — the one dependency Cubits see
 │
 ├── arch/                       # Side-effect plumbing shared by every Cubit
@@ -84,9 +86,14 @@ See [state-management.md](state-management.md) for a full walkthrough with code 
 
 ## Persistence
 
-`AppDatabase` (`lib/data/database.dart`) is a static singleton wrapping a single `sqflite` database (`gwent_helper.db`) with one table, `game_score`. It owns schema creation (`onCreate`) and upgrades (`onUpgrade`); the current schema is version 2, adding a primary-key `id` column that earlier installs didn't have — see the `onUpgrade` block and `test/data/database_migration_test.dart` for how that migration is verified.
+`AppDatabase` (`lib/data/database.dart`) is a static singleton wrapping a single `sqflite` database (`gwent_helper.db`) with two tables: `game_score` and `player`. It owns schema creation (`onCreate`) and upgrades (`onUpgrade`). The current schema is version 3:
 
-`GameScoreDao` is the only class that talks to `AppDatabase` directly. `GwentRepository` wraps the DAO and is the only dependency Cubits are constructed with — no Cubit imports `sqflite` or `AppDatabase` directly.
+- v2 added a primary-key `id` column to `game_score` that earlier installs didn't have.
+- v3 added the `player` table (`id`, `name`, `photo_file`, `created_at`) for saved players, and two nullable columns on `game_score`, `first_player_id` and `second_player_id`, linking a game to saved players. There are no foreign-key constraints, and games played with typed-in names keep these null.
+
+`onCreate` and the upgrade path produce the same final schema. See the `onUpgrade` blocks and `test/data/database_migration_test.dart` for how the migrations are verified.
+
+`GameScoreDao` and `PlayerDao` are the only classes that talk to `AppDatabase` directly. `GwentRepository` wraps the DAO and is the only dependency Cubits are constructed with — no Cubit imports `sqflite` or `AppDatabase` directly.
 
 ## Key Shared Dependency
 

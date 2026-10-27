@@ -14,6 +14,10 @@ class GameScore {
   final int? secondRoundSecondPlayerPoints;
   final int? thirdRoundSecondPlayerPoints;
 
+  /// Links to saved `Player`s; null for games played with typed-in names.
+  final String? firstPlayerId;
+  final String? secondPlayerId;
+
   GameScore({
     String? id,
     required this.date,
@@ -26,6 +30,8 @@ class GameScore {
     this.firstRoundSecondPlayerPoints,
     this.secondRoundSecondPlayerPoints,
     this.thirdRoundSecondPlayerPoints,
+    this.firstPlayerId,
+    this.secondPlayerId,
   }) : id = id ?? const Uuid().v4();
 
   Winner? get _parsedWinner {
@@ -82,6 +88,8 @@ class GameScore {
     'first_round_second_player': firstRoundSecondPlayerPoints,
     'second_round_second_player': secondRoundSecondPlayerPoints,
     'third_round_second_player': thirdRoundSecondPlayerPoints,
+    'first_player_id': firstPlayerId,
+    'second_player_id': secondPlayerId,
   };
 
   factory GameScore.fromMap(Map<String, dynamic> map) {
@@ -98,6 +106,8 @@ class GameScore {
       firstRoundSecondPlayerPoints: map['first_round_second_player'] as int?,
       secondRoundSecondPlayerPoints: map['second_round_second_player'] as int?,
       thirdRoundSecondPlayerPoints: map['third_round_second_player'] as int?,
+      firstPlayerId: map['first_player_id'] as String?,
+      secondPlayerId: map['second_player_id'] as String?,
     );
   }
 }

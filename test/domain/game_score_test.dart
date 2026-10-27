@@ -95,6 +95,60 @@ void main() {
 
       test(
         '''
+      Given a `GameScore` linked to saved players
+      When `toMap` then `fromMap` are called
+      Then `firstPlayerId` and `secondPlayerId` survive
+      ''',
+        () {
+          // Given
+          final score = GameScore(
+            date: date,
+            firstPlayer: 'Alice',
+            secondPlayer: 'Bob',
+            winner: 'first',
+            firstPlayerId: 'player-1',
+            secondPlayerId: 'player-2',
+          );
+
+          // When
+          final map = score.toMap();
+          final restored = GameScore.fromMap(map);
+
+          // Then
+          expect(map['first_player_id'], 'player-1');
+          expect(map['second_player_id'], 'player-2');
+          expect(restored.firstPlayerId, 'player-1');
+          expect(restored.secondPlayerId, 'player-2');
+        },
+      );
+
+      test(
+        '''
+      Given a map without the `first_player_id` and `second_player_id` keys
+      When `fromMap` is called
+      Then `firstPlayerId` and `secondPlayerId` are null
+      ''',
+        () {
+          // Given
+          final map = {
+            'id': 'game-1',
+            'date': date.millisecondsSinceEpoch,
+            'first_player': 'Alice',
+            'second_player': 'Bob',
+            'winner': 'first',
+          };
+
+          // When
+          final restored = GameScore.fromMap(map);
+
+          // Then
+          expect(restored.firstPlayerId, isNull);
+          expect(restored.secondPlayerId, isNull);
+        },
+      );
+
+      test(
+        '''
       Given a `GameScore`
       When `toMap` is called
       Then `date` is stored as `millisecondsSinceEpoch`
