@@ -1276,6 +1276,33 @@ void main() {
 
       test(
         '''
+      Given the game is over and the save is still in flight
+      When `onGameOverConfirmed` is called twice without awaiting the first
+      Then the score is saved once and `NavigateBack` is emitted once
+      ''',
+        () async {
+          // Given
+          await playToGameOver();
+          final saveCompleter = Completer<void>();
+          when(
+            () => repository.addGame(any()),
+          ).thenAnswer((_) => saveCompleter.future);
+
+          // When
+          final first = cubit.onGameOverConfirmed();
+          final second = cubit.onGameOverConfirmed();
+          saveCompleter.complete();
+          await Future.wait([first, second]);
+          await Future<void>.delayed(Duration.zero);
+
+          // Then
+          verify(() => repository.addGame(any())).called(1);
+          verify(() => sideEffectHandler.call(const NavigateBack())).called(1);
+        },
+      );
+
+      test(
+        '''
       Given the score was already saved
       When `onGameOverConfirmed` is called again
       Then it does not save again

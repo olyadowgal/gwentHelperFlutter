@@ -18,6 +18,7 @@ class GameCubit extends Cubit<GameState> {
   final String? _player1Id;
   final String? _player2Id;
   bool _saved = false;
+  bool _saving = false;
 
   GameCubit({
     required String player1Name,
@@ -259,7 +260,8 @@ class GameCubit extends Cubit<GameState> {
     final data = state.gameData;
     final rounds = state.roundsData;
     final gameOver = state.gameOver;
-    if (gameOver == null || _saved) return;
+    if (gameOver == null || _saved || _saving) return;
+    _saving = true;
 
     final score = GameScore(
       date: DateTime.now(),
@@ -281,6 +283,8 @@ class GameCubit extends Cubit<GameState> {
       emit(state + const NavigateBack());
     } catch (e) {
       emit(state + ShowSaveFailed(e.toString()));
+    } finally {
+      _saving = false;
     }
   }
 
