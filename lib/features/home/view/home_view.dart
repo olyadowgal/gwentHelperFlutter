@@ -126,6 +126,9 @@ class _HomeViewState extends State<HomeView> {
               );
             case NavigateToScores():
               context.push('/scores');
+            case ShowSavedPlayers():
+              // Task 6 shows the saved-player picker here.
+              break;
           }
         },
         child: BlocBuilder<HomeCubit, HomeState>(

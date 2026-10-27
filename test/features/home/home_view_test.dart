@@ -2,15 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gwent_helper_flutter/app_theme.dart';
+import 'package:gwent_helper_flutter/data/gwent_repository.dart';
 import 'package:gwent_helper_flutter/features/home/cubit/home_cubit.dart';
 import 'package:gwent_helper_flutter/features/home/view/home_view.dart';
 import 'package:gwent_helper_flutter/features/home/widgets/player_input_widget.dart';
 import 'package:gwent_helper_flutter/l10n/app_localizations.dart';
+import 'package:mocktail/mocktail.dart';
+
+class MockGwentRepository extends Mock implements GwentRepository {}
 
 void main() {
   late HomeCubit cubit;
 
-  setUp(() => cubit = HomeCubit());
+  setUp(() => cubit = HomeCubit(repository: MockGwentRepository()));
   tearDown(() => cubit.close());
 
   Future<void> pumpHomeView(WidgetTester tester) async {
