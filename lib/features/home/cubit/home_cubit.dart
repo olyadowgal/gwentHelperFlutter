@@ -75,77 +75,108 @@ class HomeCubit extends Cubit<HomeState> {
         : state.copyWith(clearPlayer2: true, player2Name: ''),
   );
 
+  // True while an `onPlayTapped` is resolving; a second tap in that window is
+  // ignored so it cannot create the same player twice or navigate twice.
+  bool _isPlaying = false;
+
   // Fallback names are passed in rather than read from a Strings class here,
   // since Cubits don't depend on Flutter's localization APIs (no BuildContext).
   Future<void> onPlayTapped({
     required String player1Fallback,
     required String player2Fallback,
   }) async {
-    final snapshot = state;
-    final side1 = await _resolveSide(
-      name: snapshot.player1Name.trim(),
-      id: snapshot.player1Id,
-      photoPath: snapshot.player1PhotoPath,
-      photoChanged: snapshot.player1PhotoChanged,
-    );
-    final side2 = await _resolveSide(
-      name: snapshot.player2Name.trim(),
-      id: snapshot.player2Id,
-      photoPath: snapshot.player2PhotoPath,
-      photoChanged: snapshot.player2PhotoChanged,
-      excludedId: side1?.id,
-    );
+    if (_isPlaying) return;
+    _isPlaying = true;
+    try {
+      final snapshot = state;
+      final side1 = await _resolveSide(
+        name: snapshot.player1Name.trim(),
+        id: snapshot.player1Id,
+        photoPath: snapshot.player1PhotoPath,
+        photoChanged: snapshot.player1PhotoChanged,
+      );
+      final side2 = await _resolveSide(
+        name: snapshot.player2Name.trim(),
+        id: snapshot.player2Id,
+        photoPath: snapshot.player2PhotoPath,
+        photoChanged: snapshot.player2PhotoChanged,
+        excludedId: side1.id,
+      );
 
-    // A side that stays a guest is left as it was in state; a saved side gets
-    // its id, permanent photo path and a reset changed flag.
-    var resolved = state;
-    if (side1 != null) {
-      resolved = resolved.copyWith(
-        clearPlayer1: true,
-        player1Id: side1.id,
-        player1PhotoPath: side1.photoPath,
+      // A saved side gets its id, exact name, permanent photo path and a reset
+      // changed flag. A guest side drops its id but keeps its typed name, photo
+      // path and changed flag. A failed side is left as it was (next Play
+      // retries).
+      var resolved = state;
+      if (side1.kind == _SideKind.saved) {
+        resolved = resolved.copyWith(
+          clearPlayer1: true,
+          player1Id: side1.id,
+          player1Name: side1.name,
+          player1PhotoPath: side1.photoPath,
+        );
+      } else if (side1.kind == _SideKind.guest) {
+        resolved = resolved.copyWith(
+          clearPlayer1: true,
+          player1PhotoPath: snapshot.player1PhotoPath,
+          player1PhotoChanged: snapshot.player1PhotoChanged,
+        );
+      }
+      if (side2.kind == _SideKind.saved) {
+        resolved = resolved.copyWith(
+          clearPlayer2: true,
+          player2Id: side2.id,
+          player2Name: side2.name,
+          player2PhotoPath: side2.photoPath,
+        );
+      } else if (side2.kind == _SideKind.guest) {
+        resolved = resolved.copyWith(
+          clearPlayer2: true,
+          player2PhotoPath: snapshot.player2PhotoPath,
+          player2PhotoChanged: snapshot.player2PhotoChanged,
+        );
+      }
+      emit(
+        resolved +
+            NavigateToGame(
+              player1Name: side1.kind == _SideKind.saved
+                  ? side1.name!
+                  : _nameOr(snapshot.player1Name, player1Fallback),
+              player2Name: side2.kind == _SideKind.saved
+                  ? side2.name!
+                  : _nameOr(snapshot.player2Name, player2Fallback),
+              player1PhotoPath: side1.kind == _SideKind.saved
+                  ? side1.photoPath
+                  : snapshot.player1PhotoPath,
+              player2PhotoPath: side2.kind == _SideKind.saved
+                  ? side2.photoPath
+                  : snapshot.player2PhotoPath,
+              player1Id: side1.id,
+              player2Id: side2.id,
+            ),
       );
+    } finally {
+      _isPlaying = false;
     }
-    if (side2 != null) {
-      resolved = resolved.copyWith(
-        clearPlayer2: true,
-        player2Id: side2.id,
-        player2PhotoPath: side2.photoPath,
-      );
-    }
-    emit(
-      resolved +
-          NavigateToGame(
-            player1Name: _nameOr(snapshot.player1Name, player1Fallback),
-            player2Name: _nameOr(snapshot.player2Name, player2Fallback),
-            player1PhotoPath: side1 == null
-                ? snapshot.player1PhotoPath
-                : side1.photoPath,
-            player2PhotoPath: side2 == null
-                ? snapshot.player2PhotoPath
-                : side2.photoPath,
-            player1Id: side1?.id,
-            player2Id: side2?.id,
-          ),
-    );
   }
 
   void onScoresTapped() => emit(state + const NavigateToScores());
 
-  /// Saves or links one side. Returns null when the side stays a guest: blank
-  /// name, the same saved player as the other side ([excludedId]), or any
-  /// repository failure (a match must always be able to start).
-  Future<_SavedSide?> _resolveSide({
+  /// Saves or links one side. The side is a guest when the name is blank or it
+  /// is the same saved player as the other side ([excludedId]); it is failed on
+  /// any repository exception (a match must always be able to start).
+  Future<_SideResult> _resolveSide({
     required String name,
     required String? id,
     required String? photoPath,
     required bool photoChanged,
     String? excludedId,
   }) async {
-    if (name.isEmpty) return null;
+    if (name.isEmpty) return const _SideResult.guest();
     final tempPath = photoChanged ? photoPath : null;
     try {
       var player = id == null ? null : _knownPlayers[id];
+      var resolvedName = name;
       if (player == null) {
         player = await _repository.findPlayerByName(name);
         if (player == null) {
@@ -154,19 +185,22 @@ class HomeCubit extends Cubit<HomeState> {
             photoTempPath: tempPath,
           );
         } else if (player.id == excludedId) {
-          return null;
-        } else if (tempPath != null) {
-          player = await _repository.updatePlayer(
-            player,
-            photoTempPath: tempPath,
-          );
+          return const _SideResult.guest();
+        } else {
+          // Linked by name: the saved player's exact spelling wins, so a
+          // rematch compares equal names and does not rename.
+          resolvedName = player.name;
+          if (tempPath != null) {
+            player = await _repository.updatePlayer(
+              player,
+              photoTempPath: tempPath,
+            );
+          }
         }
       } else if (player.id == excludedId) {
-        return null;
+        return const _SideResult.guest();
       } else {
-        // Same name in a different case is the same player (lookup by name is
-        // case-insensitive), so it is not a rename.
-        final renamed = player.name.toLowerCase() != name.toLowerCase();
+        final renamed = player.name != name;
         if (renamed || tempPath != null) {
           player = await _repository.updatePlayer(
             player,
@@ -176,9 +210,13 @@ class HomeCubit extends Cubit<HomeState> {
         }
       }
       _knownPlayers[player.id] = player;
-      return _SavedSide(player.id, await _repository.photoPathOf(player));
+      return _SideResult.saved(
+        player.id,
+        resolvedName,
+        await _repository.photoPathOf(player),
+      );
     } catch (_) {
-      return null;
+      return const _SideResult.failed();
     }
   }
 
@@ -188,9 +226,24 @@ class HomeCubit extends Cubit<HomeState> {
   }
 }
 
-class _SavedSide {
-  const _SavedSide(this.id, this.photoPath);
+enum _SideKind { saved, guest, failed }
 
-  final String id;
+class _SideResult {
+  const _SideResult.saved(String this.id, String this.name, this.photoPath)
+    : kind = _SideKind.saved;
+  const _SideResult.guest()
+    : kind = _SideKind.guest,
+      id = null,
+      name = null,
+      photoPath = null;
+  const _SideResult.failed()
+    : kind = _SideKind.failed,
+      id = null,
+      name = null,
+      photoPath = null;
+
+  final _SideKind kind;
+  final String? id;
+  final String? name;
   final String? photoPath;
 }

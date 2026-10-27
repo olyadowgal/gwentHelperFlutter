@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gwent_helper_flutter/data/gwent_repository.dart';
@@ -490,6 +492,7 @@ void main() {
       Given typed `олег` and a saved player `Олег`
       When `onPlayTapped` is called
       Then no player is created or updated and the side is linked to the saved id
+      And the saved player's exact name is written to the state
       ''',
         () async {
           // Given
@@ -507,13 +510,14 @@ void main() {
           verify(
             () => sideEffectHandler.call(
               const NavigateToGame(
-                player1Name: 'олег',
+                player1Name: 'Олег',
                 player2Name: 'Player 2',
                 player1Id: 'o1',
               ),
             ),
           ).called(1);
           expect(cubit.state.player1Id, 'o1');
+          expect(cubit.state.player1Name, 'Олег');
         },
       );
 
@@ -802,6 +806,207 @@ void main() {
               ),
             ),
           ).called(2);
+        },
+      );
+
+      test(
+        '''
+      Given a linked `олег` / `Олег` side after the first `onPlayTapped`
+      When `onPlayTapped` is called again for a rematch
+      Then no `createPlayer` or `updatePlayer` call is made
+      ''',
+        () async {
+          // Given
+          when(
+            () => repository.findPlayerByName('олег'),
+          ).thenAnswer((_) async => oleh);
+          final cubit = buildCubit()..onPlayer1NameChanged('олег');
+          await play(cubit);
+          clearInteractions(repository);
+
+          // When
+          await play(cubit);
+
+          // Then
+          verifyNothingSaved();
+          expect(cubit.state.player1Id, 'o1');
+        },
+      );
+
+      test(
+        '''
+      Given a selected saved player `олег` whose name is edited case-only to `Олег`
+      When `onPlayTapped` is called
+      Then `updatePlayer` is called with the new name
+      ''',
+        () async {
+          // Given
+          final lower = Player(
+            id: 'l1',
+            name: 'олег',
+            createdAt: DateTime(2026),
+          );
+          when(
+            () => repository.updatePlayer(lower, name: 'Олег'),
+          ).thenAnswer((_) async => lower.copyWith(name: 'Олег'));
+          final cubit = buildCubit();
+          await cubit.onSavedPlayerSelected(isPlayer1: true, player: lower);
+          cubit.onPlayer1NameChanged('Олег');
+
+          // When
+          await play(cubit);
+
+          // Then
+          verify(() => repository.updatePlayer(lower, name: 'Олег')).called(1);
+          expect(cubit.state.player1Id, 'l1');
+          expect(cubit.state.player1Name, 'Олег');
+        },
+      );
+
+      test(
+        '''
+      Given a selected saved player whose name was cleared and a first `onPlayTapped`
+      When a new name `Bob` is typed and `onPlayTapped` is called again
+      Then `updatePlayer` is never called and `createPlayer` is called for `Bob`
+      And after the first Play the side showed as a guest with its other fields kept
+      ''',
+        () async {
+          // Given
+          final newBob = Player(id: 'n2', name: 'Bob');
+          when(
+            () => repository.photoPathOf(anna),
+          ).thenAnswer((_) async => '/photos/anna.jpg');
+          when(
+            () => repository.findPlayerByName('Bob'),
+          ).thenAnswer((_) async => null);
+          when(
+            () => repository.createPlayer(name: 'Bob'),
+          ).thenAnswer((_) async => newBob);
+          final cubit = buildCubit();
+          await cubit.onSavedPlayerSelected(isPlayer1: true, player: anna);
+          cubit.onPlayer1NameChanged('');
+          await play(cubit);
+
+          // Then (after first Play)
+          expect(cubit.state.player1Id, isNull);
+          expect(cubit.state.player1Name, '');
+          expect(cubit.state.player1PhotoPath, '/photos/anna.jpg');
+          expect(cubit.state.player1PhotoChanged, isFalse);
+
+          // When
+          cubit.onPlayer1NameChanged('Bob');
+          await play(cubit);
+
+          // Then
+          verifyNever(
+            () => repository.updatePlayer(
+              any(),
+              name: any(named: 'name'),
+              photoTempPath: any(named: 'photoTempPath'),
+            ),
+          );
+          verify(() => repository.createPlayer(name: 'Bob')).called(1);
+          expect(cubit.state.player1Id, 'n2');
+        },
+      );
+
+      test(
+        '''
+      Given player 1 links to saved `Anna` while player 2 had `Anna` selected
+      When `onPlayTapped` is called
+      Then player 2 shows as a guest with a null id and its name kept
+      And later editing player 2 to `Bob` creates `Bob` instead of renaming `Anna`
+      ''',
+        () async {
+          // Given
+          final newBob = Player(id: 'n2', name: 'Bob');
+          when(
+            () => repository.findPlayerByName('Anna'),
+          ).thenAnswer((_) async => anna);
+          when(
+            () => repository.findPlayerByName('Bob'),
+          ).thenAnswer((_) async => null);
+          when(
+            () => repository.createPlayer(name: 'Bob'),
+          ).thenAnswer((_) async => newBob);
+          final cubit = buildCubit()..onPlayer1NameChanged('Anna');
+          await cubit.onSavedPlayerSelected(isPlayer1: false, player: anna);
+
+          // When
+          await play(cubit);
+
+          // Then (after first Play)
+          expect(cubit.state.player1Id, 'a1');
+          expect(cubit.state.player2Id, isNull);
+          expect(cubit.state.player2Name, 'Anna');
+
+          // When
+          cubit
+            ..onPlayer1NameChanged('')
+            ..onPlayer2NameChanged('Bob');
+          await play(cubit);
+
+          // Then
+          verifyNever(
+            () => repository.updatePlayer(
+              any(),
+              name: any(named: 'name'),
+              photoTempPath: any(named: 'photoTempPath'),
+            ),
+          );
+          verify(() => repository.createPlayer(name: 'Bob')).called(1);
+          expect(cubit.state.player2Id, 'n2');
+        },
+      );
+
+      test(
+        '''
+      Given `createPlayer` is still running from a first `onPlayTapped`
+      When `onPlayTapped` is called a second time without awaiting
+      Then `createPlayer` is called once and one `NavigateToGame` is emitted
+      And a later `onPlayTapped` works normally
+      ''',
+        () async {
+          // Given
+          final completer = Completer<Player>();
+          final newAnna = Player(id: 'n1', name: 'Anna');
+          when(
+            () => repository.findPlayerByName(any()),
+          ).thenAnswer((_) async => null);
+          when(
+            () => repository.createPlayer(name: 'Anna'),
+          ).thenAnswer((_) => completer.future);
+          final cubit = buildCubitWithHandler()..onPlayer1NameChanged('Anna');
+
+          // When
+          final first = play(cubit);
+          final second = play(cubit);
+          await Future<void>.delayed(Duration.zero);
+          completer.complete(newAnna);
+          await Future.wait([first, second]);
+          await Future<void>.delayed(Duration.zero);
+
+          // Then
+          verify(() => repository.createPlayer(name: 'Anna')).called(1);
+          const expected = NavigateToGame(
+            player1Name: 'Anna',
+            player2Name: 'Player 2',
+            player1Id: 'n1',
+          );
+          verify(() => sideEffectHandler.call(expected)).called(1);
+
+          // When
+          await play(cubit);
+          await Future<void>.delayed(Duration.zero);
+
+          // Then (verified calls are not counted again)
+          verifyNever(
+            () => repository.createPlayer(
+              name: any(named: 'name'),
+              photoTempPath: any(named: 'photoTempPath'),
+            ),
+          );
+          verify(() => sideEffectHandler.call(expected)).called(1);
         },
       );
     });
