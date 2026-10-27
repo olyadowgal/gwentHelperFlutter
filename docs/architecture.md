@@ -34,6 +34,7 @@ lib/
 │   ├── database.dart           # AppDatabase — sqflite singleton, schema + migrations
 │   ├── game_score_dao.dart     # GameScoreDao — CRUD against the `game_score` table
 │   ├── player_dao.dart         # PlayerDao — insert/update/getAll/findByName on the `player` table
+│   ├── player_photo_store.dart # PlayerPhotoStore — copies, resolves and deletes saved players' photo files
 │   └── gwent_repository.dart   # GwentRepository — the one dependency Cubits see
 │
 ├── arch/                       # Side-effect plumbing shared by every Cubit
@@ -93,7 +94,7 @@ See [state-management.md](state-management.md) for a full walkthrough with code 
 
 `onCreate` and the upgrade path produce the same final schema. See the `onUpgrade` blocks and `test/data/database_migration_test.dart` for how the migrations are verified.
 
-`GameScoreDao` and `PlayerDao` are the only classes that talk to `AppDatabase` directly. `GwentRepository` wraps the DAO and is the only dependency Cubits are constructed with — no Cubit imports `sqflite` or `AppDatabase` directly.
+`GameScoreDao` and `PlayerDao` are the only classes that talk to `AppDatabase` directly. `GwentRepository` wraps `GameScoreDao`, `PlayerDao` and `PlayerPhotoStore` (the files behind saved players' photos) and is the only dependency Cubits are constructed with — no Cubit imports `sqflite` or `AppDatabase` directly.
 
 ## Key Shared Dependency
 

@@ -87,6 +87,10 @@ class HudAvatar extends StatelessWidget {
     required this.iconSize,
   });
 
+  Widget _placeholder() => Center(
+    child: Icon(Icons.person, size: iconSize, color: AppTheme.cream),
+  );
+
   @override
   Widget build(BuildContext context) => SizedBox(
     width: size,
@@ -99,14 +103,14 @@ class HudAvatar extends StatelessWidget {
           child: ColoredBox(
             color: AppTheme.panel,
             child: image == null
-                ? Center(
-                    child: Icon(
-                      Icons.person,
-                      size: iconSize,
-                      color: AppTheme.cream,
-                    ),
-                  )
-                : Image(image: image!, fit: BoxFit.cover),
+                ? _placeholder()
+                : Image(
+                    image: image!,
+                    fit: BoxFit.cover,
+                    // A photo that cannot be read looks like no photo.
+                    errorBuilder: (context, error, stackTrace) =>
+                        _placeholder(),
+                  ),
           ),
         ),
         CustomPaint(

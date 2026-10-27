@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -115,6 +116,30 @@ void main() {
         final image = tester.widget<Image>(find.byType(Image));
         expect(image.image, _transparentPng);
         expect(image.fit, BoxFit.cover);
+      },
+    );
+
+    testWidgets(
+      '''
+      Given an avatar whose photo file does not exist
+      When the image fails to load
+      Then the person placeholder is shown and no error is thrown
+      ''',
+      (tester) async {
+        // Given
+        final missing = FileImage(File('/no/such/dir/missing-photo.png'));
+
+        // When
+        await pumpAvatar(tester, image: missing, iconSize: 40);
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 200)),
+        );
+        await tester.pump();
+        await tester.pump();
+
+        // Then
+        expect(tester.takeException(), isNull);
+        expect(tester.widget<Icon>(find.byIcon(Icons.person)).size, 40);
       },
     );
 
