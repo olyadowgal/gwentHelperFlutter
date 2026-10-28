@@ -33,7 +33,7 @@ lib/
 ├── data/                       # Persistence
 │   ├── database.dart           # AppDatabase — sqflite singleton, schema + migrations
 │   ├── game_score_dao.dart     # GameScoreDao — CRUD against the `game_score` table
-│   ├── player_dao.dart         # PlayerDao — insert/update/getAll/findByName on the `player` table
+│   ├── player_dao.dart         # PlayerDao — insert/update/markDeleted/getAll/findByName on the `player` table
 │   ├── player_photo_store.dart # PlayerPhotoStore — copies, resolves and deletes saved players' photo files
 │   └── gwent_repository.dart   # GwentRepository — the one dependency Cubits see
 │
@@ -87,10 +87,11 @@ See [state-management.md](state-management.md) for a full walkthrough with code 
 
 ## Persistence
 
-`AppDatabase` (`lib/data/database.dart`) is a static singleton wrapping a single `sqflite` database (`gwent_helper.db`) with two tables: `game_score` and `player`. It owns schema creation (`onCreate`) and upgrades (`onUpgrade`). The current schema is version 3:
+`AppDatabase` (`lib/data/database.dart`) is a static singleton wrapping a single `sqflite` database (`gwent_helper.db`) with two tables: `game_score` and `player`. It owns schema creation (`onCreate`) and upgrades (`onUpgrade`). The current schema is version 4:
 
 - v2 added a primary-key `id` column to `game_score` that earlier installs didn't have.
 - v3 added the `player` table (`id`, `name`, `photo_file`, `created_at`) for saved players, and two nullable columns on `game_score`, `first_player_id` and `second_player_id`, linking a game to saved players. There are no foreign-key constraints, and games played with typed-in names keep these null.
+- v4 added a nullable `deleted_at` (epoch millis) to `player` for soft delete: a deleted player is hidden from the saved-players list and never matched by name, while their games, links and photo stay untouched.
 
 `onCreate` and the upgrade path produce the same final schema. See the `onUpgrade` blocks and `test/data/database_migration_test.dart` for how the migrations are verified.
 

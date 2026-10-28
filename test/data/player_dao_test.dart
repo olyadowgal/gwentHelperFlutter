@@ -164,5 +164,79 @@ void main() {
         expect(found, isNull);
       },
     );
+
+    test(
+      '''
+      Given a stored `Player`
+      When `markDeleted` is called
+      Then `getAll` hides it but `getAll(includeDeleted: true)` returns it with `deletedAt` set
+      ''',
+      () async {
+        // Given
+        final player = Player(name: 'Geralt', createdAt: createdAt);
+        final other = Player(name: 'Ciri', createdAt: createdAt);
+        await dao.insert(player);
+        await dao.insert(other);
+        final deletedAt = DateTime.fromMillisecondsSinceEpoch(1800000000000);
+
+        // When
+        await dao.markDeleted(player.id, deletedAt);
+        final active = await dao.getAll();
+        final all = await dao.getAll(includeDeleted: true);
+
+        // Then
+        expect(active, [other]);
+        expect(all, [other, player.copyWith(deletedAt: deletedAt)]);
+        expect(all.last.deletedAt, deletedAt);
+        expect(all.last.isDeleted, isTrue);
+      },
+    );
+
+    test(
+      '''
+      Given a deleted `Player` and an active player added afterwards with the same name
+      When `findByName` is called
+      Then only the active player is returned
+      ''',
+      () async {
+        // Given
+        final old = Player(name: 'Geralt', createdAt: createdAt);
+        await dao.insert(old);
+        await dao.markDeleted(
+          old.id,
+          DateTime.fromMillisecondsSinceEpoch(1800000000000),
+        );
+        final deletedOnly = await dao.findByName('geralt');
+        final fresh = Player(name: 'Geralt', createdAt: createdAt);
+        await dao.insert(fresh);
+
+        // When
+        final found = await dao.findByName(' geralt ');
+
+        // Then
+        expect(deletedOnly, isNull);
+        expect(found, fresh);
+        expect(found!.id, isNot(old.id));
+      },
+    );
+
+    test(
+      '''
+      Given no player with the id
+      When `markDeleted` is called with an unknown id
+      Then nothing throws and other players are untouched
+      ''',
+      () async {
+        // Given
+        final player = Player(name: 'Geralt', createdAt: createdAt);
+        await dao.insert(player);
+
+        // When
+        await dao.markDeleted('missing', createdAt);
+
+        // Then
+        expect(await dao.getAll(), [player]);
+      },
+    );
   });
 }

@@ -24,11 +24,27 @@ class PlayerDao {
     );
   }
 
-  /// Sorted case-insensitively in Dart: SQLite's `LOWER`/`NOCASE` only fold
-  /// ASCII, so they would misorder Ukrainian and Polish names.
-  Future<List<Player>> getAll() async {
+  /// Soft-deletes a player: sets `deleted_at` and touches nothing else. An
+  /// unknown [id] matches no row and is a no-op.
+  Future<void> markDeleted(String id, DateTime deletedAt) async {
     final db = await _db;
-    final maps = await db.query('player');
+    await db.update(
+      'player',
+      {'deleted_at': deletedAt.millisecondsSinceEpoch},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  /// Excludes soft-deleted players unless [includeDeleted] is set. Sorted
+  /// case-insensitively in Dart: SQLite's `LOWER`/`NOCASE` only fold ASCII, so
+  /// they would misorder Ukrainian and Polish names.
+  Future<List<Player>> getAll({bool includeDeleted = false}) async {
+    final db = await _db;
+    final maps = await db.query(
+      'player',
+      where: includeDeleted ? null : 'deleted_at IS NULL',
+    );
     final players = maps.map(Player.fromMap).toList();
     players.sort(
       (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
@@ -37,7 +53,8 @@ class PlayerDao {
   }
 
   /// Matches ignoring case and surrounding spaces, done in Dart for the same
-  /// reason as [getAll]. Returns the first match, or null.
+  /// reason as [getAll]. Ignores deleted players. Returns the first match, or
+  /// null.
   Future<Player?> findByName(String name) async {
     final wanted = _normalize(name);
     final players = await getAll();

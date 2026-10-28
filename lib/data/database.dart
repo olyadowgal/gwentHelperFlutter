@@ -33,6 +33,9 @@ class AppDatabase {
             third_round_second_player INTEGER
   ''';
 
+  /// The v3 `player` columns. Deliberately without `deleted_at`: the v3 step
+  /// creates the table from this list and the v4 step then adds that column
+  /// with `ALTER TABLE`, so a v1/v2 database never gets it twice.
   static const _playerColumns = '''
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
@@ -44,7 +47,7 @@ class AppDatabase {
     final path = join(await getDatabasesPath(), 'gwent_helper.db');
     return openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE game_score (
@@ -55,7 +58,8 @@ class AppDatabase {
         ''');
         await db.execute('''
           CREATE TABLE player (
-            $_playerColumns
+            $_playerColumns,
+            deleted_at INTEGER
           )
         ''');
       },
@@ -95,6 +99,9 @@ class AppDatabase {
           await db.execute(
             'ALTER TABLE game_score ADD COLUMN second_player_id TEXT',
           );
+        }
+        if (oldVersion < 4) {
+          await db.execute('ALTER TABLE player ADD COLUMN deleted_at INTEGER');
         }
       },
     );

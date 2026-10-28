@@ -76,7 +76,35 @@ void main() {
             'name': 'Alice',
             'photo_file': 'alice.jpg',
             'created_at': createdAt.millisecondsSinceEpoch,
+            'deleted_at': null,
           });
+        },
+      );
+
+      test(
+        '''
+      Given a deleted `Player`
+      When `toMap` then `fromMap` are called
+      Then `deleted_at` is epoch millis and the restored `Player` equals the original
+      ''',
+        () {
+          // Given
+          final deletedAt = DateTime.fromMillisecondsSinceEpoch(1783350000000);
+          final player = Player(
+            id: 'player-1',
+            name: 'Alice',
+            createdAt: createdAt,
+            deletedAt: deletedAt,
+          );
+
+          // When
+          final map = player.toMap();
+          final restored = Player.fromMap(map);
+
+          // Then
+          expect(map['deleted_at'], deletedAt.millisecondsSinceEpoch);
+          expect(restored, player);
+          expect(restored.deletedAt, deletedAt);
         },
       );
     });
@@ -105,6 +133,29 @@ void main() {
           expect(renamed.id, 'player-1');
           expect(renamed.createdAt, createdAt);
           expect(renamed.photoFile, 'alice.jpg');
+        },
+      );
+    });
+
+    group('`isDeleted`', () {
+      test(
+        '''
+      Given a `Player` with and without `deletedAt`
+      When `isDeleted` is read
+      Then it is true only when `deletedAt` is set
+      ''',
+        () {
+          // Given
+          final active = Player(name: 'Alice');
+          final deleted = Player(name: 'Bob', deletedAt: DateTime(2026, 7, 6));
+
+          // When / Then
+          expect(active.isDeleted, isFalse);
+          expect(deleted.isDeleted, isTrue);
+          expect(
+            active.copyWith(deletedAt: DateTime(2026, 7, 6)).isDeleted,
+            isTrue,
+          );
         },
       );
     });
