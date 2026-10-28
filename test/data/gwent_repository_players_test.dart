@@ -5,6 +5,7 @@ import 'package:gwent_helper_flutter/data/database.dart';
 import 'package:gwent_helper_flutter/data/gwent_repository.dart';
 import 'package:gwent_helper_flutter/data/player_dao.dart';
 import 'package:gwent_helper_flutter/data/player_photo_store.dart';
+import 'package:gwent_helper_flutter/domain/models/game_score.dart';
 import 'package:gwent_helper_flutter/domain/models/player.dart';
 import 'package:path/path.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -248,6 +249,95 @@ void main() {
 
         // Then
         expect(found, created);
+      },
+    );
+
+    test(
+      '''
+      Given a stored player with a photo
+      When `deletePlayer` is called
+      Then `getPlayers` no longer returns it
+      And `getPlayersIncludingDeleted` still returns it, marked deleted
+      And the photo file exists and `photoPathOf` still resolves
+      ''',
+      () async {
+        // Given
+        final created = await repository.createPlayer(
+          name: 'Geralt',
+          photoTempPath: source.path,
+        );
+
+        // When
+        await repository.deletePlayer(created);
+        final active = await repository.getPlayers();
+        final all = await repository.getPlayersIncludingDeleted();
+        final path = await repository.photoPathOf(all.single);
+
+        // Then
+        expect(active, isEmpty);
+        expect(all.single.id, created.id);
+        expect(all.single.name, 'Geralt');
+        expect(all.single.isDeleted, isTrue);
+        expect(
+          File('${photosDir.path}/${created.photoFile}').existsSync(),
+          isTrue,
+        );
+        expect(path, '${photosDir.path}/${created.photoFile}');
+      },
+    );
+
+    test(
+      '''
+      Given a stored player linked to a saved game
+      When `deletePlayer` is called
+      Then the game row is unchanged
+      ''',
+      () async {
+        // Given
+        final created = await repository.createPlayer(name: 'Geralt');
+        final game = GameScore(
+          date: DateTime.fromMillisecondsSinceEpoch(1700000000000),
+          firstPlayer: 'Geralt',
+          secondPlayer: 'Yennefer',
+          winner: 'first',
+          firstPlayerId: created.id,
+        );
+        await repository.addGame(game);
+
+        // When
+        await repository.deletePlayer(created);
+        final games = await repository.getGames();
+
+        // Then
+        expect(games.single.id, game.id);
+        expect(games.single.firstPlayerId, created.id);
+        expect(games.single.firstPlayer, 'Geralt');
+        expect(games.single.secondPlayer, 'Yennefer');
+        expect(games.single.winner, 'first');
+        expect(games.single.date, game.date);
+      },
+    );
+
+    test(
+      '''
+      Given a deleted player named `Geralt`
+      When `createPlayer` is called with the exact same name
+      Then a player with a different id is created
+      And `findPlayerByName` returns the new player
+      ''',
+      () async {
+        // Given
+        final old = await repository.createPlayer(name: 'Geralt');
+        await repository.deletePlayer(old);
+
+        // When
+        final created = await repository.createPlayer(name: 'Geralt');
+        final found = await repository.findPlayerByName('Geralt');
+
+        // Then
+        expect(created.id, isNot(old.id));
+        expect(found, created);
+        expect(await repository.getPlayers(), [created]);
       },
     );
 

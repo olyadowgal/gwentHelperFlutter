@@ -28,7 +28,9 @@ void main() {
   setUp(() {
     repository = _MockGwentRepository();
     when(() => repository.getGames()).thenAnswer((_) async => []);
-    when(() => repository.getPlayers()).thenAnswer((_) async => []);
+    when(
+      () => repository.getPlayersIncludingDeleted(),
+    ).thenAnswer((_) async => []);
     cubit = ScoresCubit(repository: repository);
   });
 
@@ -224,7 +226,9 @@ void main() {
             ),
           ],
         );
-        when(() => repo.getPlayers()).thenAnswer((_) async => [annie]);
+        when(
+          () => repo.getPlayersIncludingDeleted(),
+        ).thenAnswer((_) async => [annie]);
         when(() => repo.photoPathOf(annie)).thenAnswer((_) async => null);
         final scoresCubit = ScoresCubit(repository: repo);
         addTearDown(scoresCubit.close);
@@ -287,7 +291,9 @@ void main() {
             ),
           ],
         );
-        when(() => repo.getPlayers()).thenAnswer((_) async => [annie, bea]);
+        when(
+          () => repo.getPlayersIncludingDeleted(),
+        ).thenAnswer((_) async => [annie, bea]);
         when(() => repo.photoPathOf(any())).thenAnswer((_) async => null);
         final scoresCubit = ScoresCubit(repository: repo);
         addTearDown(scoresCubit.close);

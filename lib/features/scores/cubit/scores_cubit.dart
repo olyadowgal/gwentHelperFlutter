@@ -24,12 +24,13 @@ class ScoresCubit extends Cubit<ScoresState> {
     }
   }
 
+  /// Includes deleted players: past games keep their name and photo.
   /// Photos are a nicety: the scoreboard must still open when the saved
   /// players, or any one photo, cannot be read.
   Future<Map<String, ScorePlayer>> _loadPlayers() async {
     try {
       final players = <String, ScorePlayer>{};
-      for (final player in await _repository.getPlayers()) {
+      for (final player in await _repository.getPlayersIncludingDeleted()) {
         String? photoPath;
         try {
           photoPath = await _repository.photoPathOf(player);

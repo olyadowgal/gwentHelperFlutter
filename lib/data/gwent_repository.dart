@@ -21,7 +21,13 @@ class GwentRepository {
   Future<List<GameScore>> getGames() => _dao.getAll();
   Future<void> clearGames() => _dao.deleteAll();
 
+  /// Active players only; soft-deleted ones are left out.
   Future<List<Player>> getPlayers() => _playerDao.getAll();
+
+  /// For screens showing past games, which must keep a deleted player's name
+  /// and photo.
+  Future<List<Player>> getPlayersIncludingDeleted() =>
+      _playerDao.getAll(includeDeleted: true);
 
   Future<Player?> findPlayerByName(String name) => _playerDao.findByName(name);
 
@@ -77,6 +83,13 @@ class GwentRepository {
     }
     return updated;
   }
+
+  /// Soft-deletes [player]: only `deleted_at` is set, so the photo file and
+  /// the games linked to the player stay as they are. Going through
+  /// `markDeleted` rather than `update` means a stale [player] cannot
+  /// overwrite a newer name or photo.
+  Future<void> deletePlayer(Player player) =>
+      _playerDao.markDeleted(player.id, DateTime.now());
 
   /// Absolute path of the player's photo, or null if there is none or the
   /// file is missing.

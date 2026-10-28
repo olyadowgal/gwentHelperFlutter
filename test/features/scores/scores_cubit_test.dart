@@ -26,7 +26,9 @@ void main() {
 
   setUp(() {
     repository = MockGwentRepository();
-    when(() => repository.getPlayers()).thenAnswer((_) async => []);
+    when(
+      () => repository.getPlayersIncludingDeleted(),
+    ).thenAnswer((_) async => []);
   });
 
   setUp(() => sideEffectHandler = MockSideEffectHandler<ScoresSideEffect>());
@@ -56,7 +58,7 @@ void main() {
           final bea = Player(id: 'p2', name: 'Bea');
           when(() => repository.getGames()).thenAnswer((_) async => [score]);
           when(
-            () => repository.getPlayers(),
+            () => repository.getPlayersIncludingDeleted(),
           ).thenAnswer((_) async => [annie, bea]);
           when(
             () => repository.photoPathOf(annie),
@@ -76,6 +78,41 @@ void main() {
 
       test(
         '''
+      Given a soft-deleted player linked to a past game
+      When the cubit is constructed
+      Then `players` still holds that player's name and photo path
+      And the players are loaded through `getPlayersIncludingDeleted`
+      ''',
+        () async {
+          // Given
+          final gone = Player(
+            id: 'p1',
+            name: 'Annie',
+            photoFile: 'a.jpg',
+            deletedAt: DateTime(2026, 10, 28),
+          );
+          when(() => repository.getGames()).thenAnswer((_) async => [score]);
+          when(
+            () => repository.getPlayersIncludingDeleted(),
+          ).thenAnswer((_) async => [gone]);
+          when(
+            () => repository.photoPathOf(gone),
+          ).thenAnswer((_) async => '/photos/a.jpg');
+
+          // When
+          final cubit = await buildCubitWithHandler();
+
+          // Then
+          expect(cubit.state.players, {
+            'p1': const ScorePlayer(name: 'Annie', photoPath: '/photos/a.jpg'),
+          });
+          verify(() => repository.getPlayersIncludingDeleted()).called(1);
+          verifyNever(() => repository.getPlayers());
+        },
+      );
+
+      test(
+        '''
       Given loading the saved players throws
       When the cubit is constructed
       Then the scores still load, `players` is empty and there is no error
@@ -83,7 +120,9 @@ void main() {
         () async {
           // Given
           when(() => repository.getGames()).thenAnswer((_) async => [score]);
-          when(() => repository.getPlayers()).thenThrow(Exception('db fail'));
+          when(
+            () => repository.getPlayersIncludingDeleted(),
+          ).thenThrow(Exception('db fail'));
 
           // When
           final cubit = await buildCubitWithHandler();
@@ -107,7 +146,7 @@ void main() {
           final bea = Player(id: 'p2', name: 'Bea', photoFile: 'b.jpg');
           when(() => repository.getGames()).thenAnswer((_) async => [score]);
           when(
-            () => repository.getPlayers(),
+            () => repository.getPlayersIncludingDeleted(),
           ).thenAnswer((_) async => [annie, bea]);
           when(
             () => repository.photoPathOf(annie),
