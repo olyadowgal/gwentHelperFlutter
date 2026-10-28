@@ -28,17 +28,15 @@ class HomeCubit extends Cubit<HomeState> {
       emit(state.copyWith(player2PhotoPath: path, player2PhotoChanged: true));
 
   Future<void> onSavedPlayersRequested({required bool isPlayer1}) async {
-    final excludedId = isPlayer1 ? state.player2Id : state.player1Id;
     var options = <SavedPlayerOption>[];
     try {
       final players = await _repository.getPlayers();
       options = [
         for (final player in players)
-          if (player.id != excludedId)
-            SavedPlayerOption(
-              player: player,
-              photoPath: await _repository.photoPathOf(player),
-            ),
+          SavedPlayerOption(
+            player: player,
+            photoPath: await _repository.photoPathOf(player),
+          ),
       ];
     } catch (_) {
       options = [];
@@ -52,21 +50,62 @@ class HomeCubit extends Cubit<HomeState> {
   }) async {
     final photoPath = await _repository.photoPathOf(player);
     _knownPlayers[player.id] = player;
+    // One list serves both sides, so picking a player who is already on the
+    // other side moves them here and empties that side.
     emit(
       isPlayer1
-          ? state.copyWith(
+          ? _withSideCleared(
+              state,
+              isPlayer1: false,
+              onlyIfId: player.id,
+            ).copyWith(
               clearPlayer1: true,
               player1Id: player.id,
               player1Name: player.name,
               player1PhotoPath: photoPath,
             )
-          : state.copyWith(
+          : _withSideCleared(
+              state,
+              isPlayer1: true,
+              onlyIfId: player.id,
+            ).copyWith(
               clearPlayer2: true,
               player2Id: player.id,
               player2Name: player.name,
               player2PhotoPath: photoPath,
             ),
     );
+  }
+
+  /// Soft-deletes [player] from the saved list. Returns false (and changes
+  /// nothing) if the repository fails. On success the player is forgotten and
+  /// any side holding them is cleared, so Play can never update a deleted row
+  /// (`updatePlayer` would write `deleted_at` back from a stale object).
+  Future<bool> onSavedPlayerDeleted({required Player player}) async {
+    try {
+      await _repository.deletePlayer(player);
+    } catch (_) {
+      return false;
+    }
+    _knownPlayers.remove(player.id);
+    var next = state;
+    next = _withSideCleared(next, isPlayer1: true, onlyIfId: player.id);
+    next = _withSideCleared(next, isPlayer1: false, onlyIfId: player.id);
+    emit(next);
+    return true;
+  }
+
+  /// Empties one side (id, name, photo path, changed flag) when it holds
+  /// [onlyIfId]; otherwise returns [from] unchanged.
+  static HomeState _withSideCleared(
+    HomeState from, {
+    required bool isPlayer1,
+    required String onlyIfId,
+  }) {
+    if ((isPlayer1 ? from.player1Id : from.player2Id) != onlyIfId) return from;
+    return isPlayer1
+        ? from.copyWith(clearPlayer1: true, player1Name: '')
+        : from.copyWith(clearPlayer2: true, player2Name: '');
   }
 
   void onNewPlayerSelected({required bool isPlayer1}) => emit(

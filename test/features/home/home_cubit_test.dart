@@ -159,13 +159,16 @@ void main() {
         '''
       Given a saved player is selected for player 2
       When `onSavedPlayersRequested` is called for player 1
-      Then that player is excluded from the options
+      Then the options still include that player (one list for both sides)
       ''',
         () async {
           // Given
           when(
             () => repository.getPlayers(),
           ).thenAnswer((_) async => [anna, oleh]);
+          when(
+            () => repository.photoPathOf(anna),
+          ).thenAnswer((_) async => '/photos/anna.jpg');
           final cubit = buildCubitWithHandler();
           await cubit.onSavedPlayerSelected(isPlayer1: false, player: anna);
 
@@ -176,7 +179,10 @@ void main() {
           // Then
           verify(
             () => sideEffectHandler.call(
-              ShowSavedPlayers(true, [SavedPlayerOption(player: oleh)]),
+              ShowSavedPlayers(true, [
+                SavedPlayerOption(player: anna, photoPath: '/photos/anna.jpg'),
+                SavedPlayerOption(player: oleh),
+              ]),
             ),
           ).called(1);
         },
@@ -255,6 +261,260 @@ void main() {
             cubit.state,
             const HomeState(player2Id: 'a1', player2Name: 'Anna'),
           );
+        },
+      );
+
+      test(
+        '''
+      Given a saved player is selected for player 2 with a changed photo
+      When the same player is selected for player 1
+      Then player 2 is cleared completely and player 1 holds the player
+      ''',
+        () async {
+          // Given
+          when(
+            () => repository.photoPathOf(anna),
+          ).thenAnswer((_) async => '/photos/anna.jpg');
+          final cubit = buildCubit();
+          await cubit.onSavedPlayerSelected(isPlayer1: false, player: anna);
+          cubit.onPlayer2PhotoPicked('/p2.jpg');
+
+          // When
+          await cubit.onSavedPlayerSelected(isPlayer1: true, player: anna);
+
+          // Then
+          expect(
+            cubit.state,
+            const HomeState(
+              player1Id: 'a1',
+              player1Name: 'Anna',
+              player1PhotoPath: '/photos/anna.jpg',
+            ),
+          );
+        },
+      );
+
+      test(
+        '''
+      Given a saved player is selected for player 1 with a changed photo
+      When the same player is selected for player 2
+      Then player 1 is cleared completely and player 2 holds the player
+      ''',
+        () async {
+          // Given
+          when(
+            () => repository.photoPathOf(anna),
+          ).thenAnswer((_) async => '/photos/anna.jpg');
+          final cubit = buildCubit();
+          await cubit.onSavedPlayerSelected(isPlayer1: true, player: anna);
+          cubit.onPlayer1PhotoPicked('/p1.jpg');
+
+          // When
+          await cubit.onSavedPlayerSelected(isPlayer1: false, player: anna);
+
+          // Then
+          expect(
+            cubit.state,
+            const HomeState(
+              player2Id: 'a1',
+              player2Name: 'Anna',
+              player2PhotoPath: '/photos/anna.jpg',
+            ),
+          );
+        },
+      );
+
+      test(
+        '''
+      Given a different saved player is selected for player 2
+      When another saved player is selected for player 1
+      Then player 2 is left untouched
+      ''',
+        () async {
+          // Given
+          final cubit = buildCubit();
+          await cubit.onSavedPlayerSelected(isPlayer1: false, player: oleh);
+          cubit.onPlayer2PhotoPicked('/p2.jpg');
+
+          // When
+          await cubit.onSavedPlayerSelected(isPlayer1: true, player: anna);
+
+          // Then
+          expect(
+            cubit.state,
+            const HomeState(
+              player1Id: 'a1',
+              player1Name: 'Anna',
+              player2Id: 'o1',
+              player2Name: 'Олег',
+              player2PhotoPath: '/p2.jpg',
+              player2PhotoChanged: true,
+            ),
+          );
+        },
+      );
+    });
+
+    group('`onSavedPlayerDeleted`', () {
+      test(
+        '''
+      Given a saved player is selected for player 1 with a changed photo
+      And another player is selected for player 2
+      When `onSavedPlayerDeleted` is called for the player 1 player
+      Then `deletePlayer` is called once and true is returned
+      And player 1 is cleared completely and player 2 is left alone
+      ''',
+        () async {
+          // Given
+          when(() => repository.deletePlayer(anna)).thenAnswer((_) async {});
+          final cubit = buildCubit();
+          await cubit.onSavedPlayerSelected(isPlayer1: true, player: anna);
+          cubit.onPlayer1PhotoPicked('/p1.jpg');
+          await cubit.onSavedPlayerSelected(isPlayer1: false, player: oleh);
+
+          // When
+          final deleted = await cubit.onSavedPlayerDeleted(player: anna);
+
+          // Then
+          expect(deleted, isTrue);
+          verify(() => repository.deletePlayer(anna)).called(1);
+          expect(
+            cubit.state,
+            const HomeState(player2Id: 'o1', player2Name: 'Олег'),
+          );
+        },
+      );
+
+      test(
+        '''
+      Given a saved player is selected for player 2
+      When `onSavedPlayerDeleted` is called for the player 2 player
+      Then player 2 is cleared completely and player 1 is left alone
+      ''',
+        () async {
+          // Given
+          when(() => repository.deletePlayer(oleh)).thenAnswer((_) async {});
+          final cubit = buildCubit()..onPlayer1NameChanged('Typed');
+          await cubit.onSavedPlayerSelected(isPlayer1: false, player: oleh);
+          cubit.onPlayer2PhotoPicked('/p2.jpg');
+
+          // When
+          final deleted = await cubit.onSavedPlayerDeleted(player: oleh);
+
+          // Then
+          expect(deleted, isTrue);
+          expect(cubit.state, const HomeState(player1Name: 'Typed'));
+        },
+      );
+
+      test(
+        '''
+      Given a saved player that is not selected on either side
+      When `onSavedPlayerDeleted` is called
+      Then `deletePlayer` is called and no side changes
+      ''',
+        () async {
+          // Given
+          when(() => repository.deletePlayer(anna)).thenAnswer((_) async {});
+          final cubit = buildCubit();
+          await cubit.onSavedPlayerSelected(isPlayer1: true, player: oleh);
+          final before = cubit.state;
+
+          // When
+          final deleted = await cubit.onSavedPlayerDeleted(player: anna);
+
+          // Then
+          expect(deleted, isTrue);
+          verify(() => repository.deletePlayer(anna)).called(1);
+          expect(cubit.state, before);
+        },
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        '''
+      Given both sides somehow hold the same saved player id
+      When `onSavedPlayerDeleted` is called for that player
+      Then both sides are cleared completely
+      ''',
+        setUp: () =>
+            when(() => repository.deletePlayer(anna)).thenAnswer((_) async {}),
+        build: buildCubit,
+        seed: () => const HomeState(
+          player1Id: 'a1',
+          player1Name: 'Anna',
+          player1PhotoPath: '/p1.jpg',
+          player1PhotoChanged: true,
+          player2Id: 'a1',
+          player2Name: 'Anna',
+          player2PhotoPath: '/photos/anna.jpg',
+        ),
+        act: (c) => c.onSavedPlayerDeleted(player: anna),
+        expect: () => [const HomeState()],
+      );
+
+      test(
+        '''
+      Given deleting the player fails in the repository
+      When `onSavedPlayerDeleted` is called
+      Then false is returned and the state is unchanged
+      ''',
+        () async {
+          // Given
+          when(() => repository.deletePlayer(anna)).thenThrow(Exception('db'));
+          final cubit = buildCubit();
+          await cubit.onSavedPlayerSelected(isPlayer1: true, player: anna);
+          cubit.onPlayer1PhotoPicked('/p1.jpg');
+          final before = cubit.state;
+
+          // When
+          final deleted = await cubit.onSavedPlayerDeleted(player: anna);
+
+          // Then
+          expect(deleted, isFalse);
+          expect(cubit.state, before);
+        },
+      );
+
+      test(
+        '''
+      Given a selected saved player was deleted and the same name is typed
+      When `onPlayTapped` is called
+      Then the name is looked up among active players and `createPlayer` runs
+      And the deleted player is never updated
+      ''',
+        () async {
+          // Given
+          final newAnna = Player(id: 'n1', name: 'Anna');
+          when(() => repository.deletePlayer(anna)).thenAnswer((_) async {});
+          when(
+            () => repository.findPlayerByName('Anna'),
+          ).thenAnswer((_) async => null);
+          when(
+            () => repository.createPlayer(name: 'Anna'),
+          ).thenAnswer((_) async => newAnna);
+          final cubit = buildCubitWithHandler();
+          await cubit.onSavedPlayerSelected(isPlayer1: true, player: anna);
+          await cubit.onSavedPlayerDeleted(player: anna);
+          cubit.onPlayer1NameChanged('Anna');
+
+          // When
+          await cubit.onPlayTapped(
+            player1Fallback: 'Player 1',
+            player2Fallback: 'Player 2',
+          );
+          await Future<void>.delayed(Duration.zero);
+
+          // Then
+          verify(() => repository.findPlayerByName('Anna')).called(1);
+          verify(() => repository.createPlayer(name: 'Anna')).called(1);
+          verifyNever(
+            () => repository.updatePlayer(
+              any(),
+              name: any(named: 'name'),
+              photoTempPath: any(named: 'photoTempPath'),
+            ),
+          );
+          expect(cubit.state.player1Id, 'n1');
         },
       );
     });
