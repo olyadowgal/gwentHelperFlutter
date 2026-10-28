@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gwent_helper_flutter/app_theme.dart';
 import 'package:gwent_helper_flutter/data/gwent_repository.dart';
 import 'package:gwent_helper_flutter/domain/models/game_score.dart';
+import 'package:gwent_helper_flutter/domain/models/player.dart';
 import 'package:gwent_helper_flutter/domain/models/winner.dart';
 import 'package:gwent_helper_flutter/features/scores/cubit/scores_cubit.dart';
 import 'package:gwent_helper_flutter/features/scores/view/scores_view.dart';
@@ -16,13 +17,18 @@ import 'package:mocktail/mocktail.dart';
 
 class _MockGwentRepository extends Mock implements GwentRepository {}
 
+class _FakePlayer extends Fake implements Player {}
+
 void main() {
+  setUpAll(() => registerFallbackValue(_FakePlayer()));
+
   late _MockGwentRepository repository;
   late ScoresCubit cubit;
 
   setUp(() {
     repository = _MockGwentRepository();
     when(() => repository.getGames()).thenAnswer((_) async => []);
+    when(() => repository.getPlayers()).thenAnswer((_) async => []);
     cubit = ScoresCubit(repository: repository);
   });
 
@@ -194,6 +200,115 @@ void main() {
               .first,
         );
         expect(cardMaterial.height, closeTo(listHeight - 32, 1));
+      },
+    );
+
+    testWidgets(
+      '''
+      Given a saved game linked to a saved player who was renamed since
+      When the scores screen is rendered
+      Then the card shows the player's current name, not the stored one
+      ''',
+      (tester) async {
+        // Given
+        final annie = Player(id: 'p1', name: 'Annie');
+        final repo = _MockGwentRepository();
+        when(() => repo.getGames()).thenAnswer(
+          (_) async => [
+            GameScore(
+              date: DateTime(2026, 9, 1),
+              firstPlayer: 'Anan',
+              secondPlayer: 'Bob',
+              winner: Winner.first.name,
+              firstPlayerId: 'p1',
+            ),
+          ],
+        );
+        when(() => repo.getPlayers()).thenAnswer((_) async => [annie]);
+        when(() => repo.photoPathOf(annie)).thenAnswer((_) async => null);
+        final scoresCubit = ScoresCubit(repository: repo);
+        addTearDown(scoresCubit.close);
+
+        // When
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.data,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: BlocProvider.value(
+              value: scoresCubit,
+              child: const ScoresView(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Then
+        expect(find.text('Annie'), findsWidgets);
+        expect(find.text('Anan'), findsNothing);
+        expect(find.text('Bob'), findsWidgets);
+      },
+    );
+
+    testWidgets(
+      '''
+      Given a phone in landscape and a game linked to saved players with photos
+      When the scores screen is rendered
+      Then the cards, with their avatars, fit without overflowing
+      ''',
+      (tester) async {
+        // Given
+        const physicalSize = Size(2400, 1080);
+        const viewPadding = FakeViewPadding(top: 74, right: 126);
+        tester.view
+          ..physicalSize = physicalSize
+          ..devicePixelRatio = 2.625
+          ..padding = viewPadding
+          ..viewPadding = viewPadding;
+        addTearDown(tester.view.reset);
+        final annie = Player(id: 'p1', name: 'Annie-Marie Longname');
+        final bea = Player(id: 'p2', name: 'Bea');
+        final repo = _MockGwentRepository();
+        when(() => repo.getGames()).thenAnswer(
+          (_) async => [
+            GameScore(
+              date: DateTime(2026, 9, 1),
+              firstPlayer: 'Annie-Marie Longname',
+              secondPlayer: 'Bea',
+              winner: Winner.first.name,
+              firstPlayerId: 'p1',
+              secondPlayerId: 'p2',
+              firstRoundFirstPlayerPoints: 33,
+              firstRoundSecondPlayerPoints: 12,
+              secondRoundFirstPlayerPoints: 21,
+              secondRoundSecondPlayerPoints: 40,
+              thirdRoundFirstPlayerPoints: 18,
+              thirdRoundSecondPlayerPoints: 9,
+            ),
+          ],
+        );
+        when(() => repo.getPlayers()).thenAnswer((_) async => [annie, bea]);
+        when(() => repo.photoPathOf(any())).thenAnswer((_) async => null);
+        final scoresCubit = ScoresCubit(repository: repo);
+        addTearDown(scoresCubit.close);
+
+        // When
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.data,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: BlocProvider.value(
+              value: scoresCubit,
+              child: const ScoresView(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Then
+        expect(tester.takeException(), isNull);
+        expect(find.byType(ScoreCardWidget), findsOneWidget);
       },
     );
   });

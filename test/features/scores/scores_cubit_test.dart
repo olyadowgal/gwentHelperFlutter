@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gwent_helper_flutter/data/gwent_repository.dart';
 import 'package:gwent_helper_flutter/domain/models/game_score.dart';
+import 'package:gwent_helper_flutter/domain/models/player.dart';
+import 'package:gwent_helper_flutter/features/scores/cubit/score_player.dart';
 import 'package:gwent_helper_flutter/features/scores/cubit/scores_cubit.dart';
 import 'package:gwent_helper_flutter/features/scores/cubit/scores_side_effect.dart';
 import 'package:mocktail/mocktail.dart';
@@ -22,7 +24,10 @@ void main() {
     winner: 'first',
   );
 
-  setUp(() => repository = MockGwentRepository());
+  setUp(() {
+    repository = MockGwentRepository();
+    when(() => repository.getPlayers()).thenAnswer((_) async => []);
+  });
 
   setUp(() => sideEffectHandler = MockSideEffectHandler<ScoresSideEffect>());
 
@@ -39,6 +44,89 @@ void main() {
 
   group('ScoresCubit', () {
     group('`onScreenOpened`', () {
+      test(
+        '''
+      Given games and saved players, one with a photo and one without
+      When the cubit is constructed
+      Then `players` maps each player id to its name and resolved photo path
+      ''',
+        () async {
+          // Given
+          final annie = Player(id: 'p1', name: 'Annie', photoFile: 'a.jpg');
+          final bea = Player(id: 'p2', name: 'Bea');
+          when(() => repository.getGames()).thenAnswer((_) async => [score]);
+          when(
+            () => repository.getPlayers(),
+          ).thenAnswer((_) async => [annie, bea]);
+          when(
+            () => repository.photoPathOf(annie),
+          ).thenAnswer((_) async => '/photos/a.jpg');
+          when(() => repository.photoPathOf(bea)).thenAnswer((_) async => null);
+
+          // When
+          final cubit = await buildCubitWithHandler();
+
+          // Then
+          expect(cubit.state.players, {
+            'p1': const ScorePlayer(name: 'Annie', photoPath: '/photos/a.jpg'),
+            'p2': const ScorePlayer(name: 'Bea'),
+          });
+        },
+      );
+
+      test(
+        '''
+      Given loading the saved players throws
+      When the cubit is constructed
+      Then the scores still load, `players` is empty and there is no error
+      ''',
+        () async {
+          // Given
+          when(() => repository.getGames()).thenAnswer((_) async => [score]);
+          when(() => repository.getPlayers()).thenThrow(Exception('db fail'));
+
+          // When
+          final cubit = await buildCubitWithHandler();
+
+          // Then
+          expect(cubit.state.scores, [score]);
+          expect(cubit.state.players, isEmpty);
+          expect(cubit.state.errorMessage, isNull);
+        },
+      );
+
+      test(
+        '''
+      Given resolving one player's photo throws
+      When the cubit is constructed
+      Then that player has no photo and the other player keeps theirs
+      ''',
+        () async {
+          // Given
+          final annie = Player(id: 'p1', name: 'Annie', photoFile: 'a.jpg');
+          final bea = Player(id: 'p2', name: 'Bea', photoFile: 'b.jpg');
+          when(() => repository.getGames()).thenAnswer((_) async => [score]);
+          when(
+            () => repository.getPlayers(),
+          ).thenAnswer((_) async => [annie, bea]);
+          when(
+            () => repository.photoPathOf(annie),
+          ).thenThrow(Exception('io fail'));
+          when(
+            () => repository.photoPathOf(bea),
+          ).thenAnswer((_) async => '/photos/b.jpg');
+
+          // When
+          final cubit = await buildCubitWithHandler();
+
+          // Then
+          expect(cubit.state.players, {
+            'p1': const ScorePlayer(name: 'Annie'),
+            'p2': const ScorePlayer(name: 'Bea', photoPath: '/photos/b.jpg'),
+          });
+        },
+      );
+
       test(
         '''
       Given the repository returns scores

@@ -7,6 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gwent_helper_flutter/app_theme.dart';
 import 'package:gwent_helper_flutter/domain/models/game_score.dart';
 import 'package:gwent_helper_flutter/domain/models/winner.dart';
+import 'package:gwent_helper_flutter/features/scores/cubit/score_player.dart';
+import 'package:gwent_helper_flutter/widgets/hud/hud_avatar.dart';
 import 'package:gwent_helper_flutter/l10n/app_localizations.dart';
 import 'package:gwent_helper_flutter/features/scores/widgets/score_card_widget.dart';
 
@@ -33,13 +35,24 @@ GameScore buildScore({
 );
 
 void main() {
-  Future<void> pumpCard(WidgetTester tester, GameScore score) async {
+  Future<void> pumpCard(
+    WidgetTester tester,
+    GameScore score, {
+    ScorePlayer? firstPlayer,
+    ScorePlayer? secondPlayer,
+  }) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.data,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(body: ScoreCardWidget(score: score)),
+        home: Scaffold(
+          body: ScoreCardWidget(
+            score: score,
+            firstPlayer: firstPlayer,
+            secondPlayer: secondPlayer,
+          ),
+        ),
       ),
     );
     await tester.pump();
@@ -63,6 +76,103 @@ void main() {
       .colorFilter!;
 
   group('ScoreCardWidget', () {
+    testWidgets(
+      '''
+      Given both sides are linked to saved players and the first has a photo
+      When a score card is rendered
+      Then each side shows its saved name and avatar instead of the stored name
+      ''',
+      (tester) async {
+        // Given
+        const first = ScorePlayer(name: 'Annie', photoPath: '/photos/a.jpg');
+        const second = ScorePlayer(name: 'Bea');
+
+        // When
+        await pumpCard(
+          tester,
+          buildScore(),
+          firstPlayer: first,
+          secondPlayer: second,
+        );
+
+        // Then
+        expect(find.text('Annie'), findsNWidgets(2)); // name row + table header
+        expect(find.text('Bea'), findsNWidgets(2));
+        expect(find.text('Alice'), findsNothing);
+        expect(find.text('Bob'), findsNothing);
+        final avatars = tester
+            .widgetList<HudAvatar>(find.byType(HudAvatar))
+            .toList();
+        expect(avatars, hasLength(2));
+        expect((avatars[0].image! as FileImage).file.path, '/photos/a.jpg');
+        expect(avatars[1].image, isNull);
+      },
+    );
+
+    testWidgets(
+      '''
+      Given a first-player win and a saved name that differs from the stored one
+      When a score card is rendered
+      Then the winner line uses the saved name
+      ''',
+      (tester) async {
+        // Given
+        const first = ScorePlayer(name: 'Annie');
+
+        // When
+        await pumpCard(
+          tester,
+          buildScore(winner: Winner.first.name),
+          firstPlayer: first,
+        );
+
+        // Then
+        expect(find.text('Winner: Annie'), findsOneWidget);
+        expect(find.text('Winner: Alice'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      '''
+      Given a tie
+      When a score card is rendered with saved players
+      Then the winner line shows the tie label
+      ''',
+      (tester) async {
+        // When
+        await pumpCard(
+          tester,
+          buildScore(winner: Winner.tie.name),
+          firstPlayer: const ScorePlayer(name: 'Annie'),
+          secondPlayer: const ScorePlayer(name: 'Bea'),
+        );
+
+        // Then
+        expect(find.text('Winner: Tie'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      '''
+      Given a game that is not linked to any saved player
+      When a score card is rendered
+      Then it shows the stored names with a placeholder avatar on each side
+      ''',
+      (tester) async {
+        // When
+        await pumpCard(tester, buildScore());
+
+        // Then
+        expect(find.text('Alice'), findsNWidgets(2));
+        expect(find.text('Bob'), findsNWidgets(2));
+        final avatars = tester
+            .widgetList<HudAvatar>(find.byType(HudAvatar))
+            .toList();
+        expect(avatars, hasLength(2));
+        expect(avatars.map((avatar) => avatar.image), everyElement(isNull));
+      },
+    );
+
     testWidgets(
       '''
       Given the app theme

@@ -108,12 +108,16 @@ class ScoresView extends StatelessWidget {
                 ScoresState(scores: final scores) when scores.isEmpty => Center(
                   child: Text(l10n.scoresEmpty),
                 ),
-                ScoresState(scores: final scores) => ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: scores.length,
-                  itemBuilder: (context, index) =>
-                      ScoreCardWidget(score: scores[index]),
-                ),
+                ScoresState(scores: final scores, players: final players) =>
+                  ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: scores.length,
+                    itemBuilder: (context, index) => ScoreCardWidget(
+                      score: scores[index],
+                      firstPlayer: players[scores[index].firstPlayerId],
+                      secondPlayer: players[scores[index].secondPlayerId],
+                    ),
+                  ),
               },
             );
           },
