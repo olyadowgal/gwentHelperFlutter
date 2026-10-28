@@ -180,7 +180,7 @@ void main() {
         '''
       Given winner stored as `Winner.first` name
       When display helpers are read
-      Then first player won and the label is Alice
+      Then first player won
       ''',
         () {
           // Given
@@ -189,14 +189,6 @@ void main() {
           // Then
           expect(score.firstPlayerWon, isTrue);
           expect(score.secondPlayerWon, isFalse);
-          expect(
-            score.displayedWinner(
-              tieLabel: 'Tie',
-              firstPlayerFallback: 'Player 1',
-              secondPlayerFallback: 'Player 2',
-            ),
-            'Alice',
-          );
         },
       );
 
@@ -204,7 +196,7 @@ void main() {
         '''
       Given winner stored as `Winner.second` name
       When display helpers are read
-      Then second player won and the label is Bob
+      Then second player won
       ''',
         () {
           // Given
@@ -213,14 +205,6 @@ void main() {
           // Then
           expect(score.firstPlayerWon, isFalse);
           expect(score.secondPlayerWon, isTrue);
-          expect(
-            score.displayedWinner(
-              tieLabel: 'Tie',
-              firstPlayerFallback: 'Player 1',
-              secondPlayerFallback: 'Player 2',
-            ),
-            'Bob',
-          );
         },
       );
 
@@ -228,7 +212,7 @@ void main() {
         '''
       Given winner stored as `Winner.tie` name
       When display helpers are read
-      Then neither player won and the label is the tie label
+      Then neither player won
       ''',
         () {
           // Given
@@ -237,14 +221,6 @@ void main() {
           // Then
           expect(score.firstPlayerWon, isFalse);
           expect(score.secondPlayerWon, isFalse);
-          expect(
-            score.displayedWinner(
-              tieLabel: 'Tie',
-              firstPlayerFallback: 'Player 1',
-              secondPlayerFallback: 'Player 2',
-            ),
-            'Tie',
-          );
         },
       );
 
@@ -261,14 +237,6 @@ void main() {
           // Then
           expect(score.firstPlayerWon, isTrue);
           expect(score.secondPlayerWon, isFalse);
-          expect(
-            score.displayedWinner(
-              tieLabel: 'Tie',
-              firstPlayerFallback: 'Player 1',
-              secondPlayerFallback: 'Player 2',
-            ),
-            'Alice',
-          );
         },
       );
 
@@ -290,14 +258,6 @@ void main() {
           // Then
           expect(score.firstPlayerWon, isFalse);
           expect(score.secondPlayerWon, isTrue);
-          expect(
-            score.displayedWinner(
-              tieLabel: 'Tie',
-              firstPlayerFallback: 'Player 1',
-              secondPlayerFallback: 'Player 2',
-            ),
-            'Bob',
-          );
         },
       );
     });
@@ -346,32 +306,6 @@ void main() {
           // Then
           expect(score.displayedFirstPlayer(fallback: 'Player 1'), 'Alice');
           expect(score.displayedSecondPlayer(fallback: 'Player 2'), 'Bob');
-        },
-      );
-
-      test(
-        '''
-      Given the winning player has no name
-      When the displayed winner is read
-      Then the fallback is returned
-      ''',
-        () {
-          // Given
-          final score = scoreWith(
-            firstPlayer: '',
-            secondPlayer: 'Bob',
-            winner: Winner.first.name,
-          );
-
-          // Then
-          expect(
-            score.displayedWinner(
-              tieLabel: 'Tie',
-              firstPlayerFallback: 'Player 1',
-              secondPlayerFallback: 'Player 2',
-            ),
-            'Player 1',
-          );
         },
       );
     });

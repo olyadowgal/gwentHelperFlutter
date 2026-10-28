@@ -16,12 +16,10 @@ class PlayerDao {
 
   Future<void> update(Player player) async {
     final db = await _db;
-    await db.update(
-      'player',
-      player.toMap(),
-      where: 'id = ?',
-      whereArgs: [player.id],
-    );
+    // `deleted_at` is owned by `markDeleted`, so a stale `Player` cannot
+    // un-delete.
+    final values = player.toMap()..remove('deleted_at');
+    await db.update('player', values, where: 'id = ?', whereArgs: [player.id]);
   }
 
   /// Soft-deletes a player: sets `deleted_at` and touches nothing else. An

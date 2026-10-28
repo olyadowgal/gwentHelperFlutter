@@ -45,7 +45,7 @@ game_score + second_player_id TEXT   -- nullable
 ```
 
 - The upgrade is `CREATE TABLE player` plus two `ALTER TABLE game_score ADD COLUMN`. Existing rows are untouched (both ids NULL).
-- No foreign-key constraints: sqflite has them off by default, and SQLite cannot add one via `ALTER`. Integrity is handled in code (see Delete).
+- No foreign-key constraints: sqflite has them off by default, and SQLite cannot add one via `ALTER`. Integrity is handled in code (players are soft-deleted, so game links never dangle).
 - `first_player` / `second_player` keep being written when a game ends, as the player's name at that moment.
 
 ### Photo storage
@@ -60,8 +60,8 @@ New `PlayerPhotoStore` (in `lib/data/`):
 ### Domain and data layer
 
 - New `Player` model (`id`, `name`, `photoFile`, `createdAt`) with `toMap`/`fromMap`, in `lib/domain/models/`.
-- New `PlayerDao`: insert, update, getAll (ordered by name, case-insensitive), findByName, delete.
-- `GameScore` gains `firstPlayerId` / `secondPlayerId` (nullable), included in `toMap`/`fromMap`. `GameScoreDao` gains per-player queries for stats and clears player links when a player is deleted.
+- New `PlayerDao`: insert, update, getAll (ordered by name, case-insensitive), findByName, markDeleted.
+- `GameScore` gains `firstPlayerId` / `secondPlayerId` (nullable), included in `toMap`/`fromMap`. `GameScoreDao` gains per-player queries for stats. Deleting a player never touches game links (see Users page).
 - `GwentRepository` exposes players: `getPlayers`, `savePlayer`, `updatePlayer`, `deletePlayer`, `getPlayerStats`. Cubits never touch `sqflite` or the file system directly (existing architecture rule).
 
 ### Player stats
@@ -93,14 +93,14 @@ Stats are always computed, never stored, so there are no counters to drift.
 ### Scores screen
 
 - `ScoresCubit` loads games plus a `Map<String, Player>` once.
-- `ScoreCardWidget` shows a small `HudAvatar` next to each name. For a linked game whose player still exists it shows the **live** name and photo, so a rename also updates past games. Otherwise it shows the snapshot name and the placeholder avatar.
+- `ScoreCardWidget` shows a small `HudAvatar` next to each name. For a linked game it shows the **live** name and photo, so a rename also updates past games; this includes deleted players, so a deleted player's past games keep their name and photo. For a guest or an unknown id it shows the snapshot name and the placeholder avatar.
 
 ### Users page (Stage 2)
 
 - New route `/players`, opened from the home screen.
 - A list of saved players: photo, name, and games played / wins / losses.
 - Per player: rename, change photo (reusing the existing camera/gallery + crop flow), delete with a confirmation dialog.
-- **Delete:** within one transaction, the player's id is set to NULL on all linked games and the player row is deleted; the photo file is deleted afterwards. Games and results are never deleted; they fall back to the stored name snapshot and a placeholder avatar.
+- **Delete is a soft delete:** schema v4 adds a nullable `player.deleted_at`, and `PlayerDao.markDeleted` is its only writer (`update` never touches it). A deleted player disappears from the saved list and from name lookup, but the row, the photo file and the game links stay, so past games keep the name and photo on the scoreboard. Retyping the name creates a new player. Stage-2 stats must group by player id, not name, and must decide whether deleted players are listed.
 
 ## Stages
 
@@ -126,11 +126,11 @@ Stats are always computed, never stored, so there are no counters to drift.
 Follows the project test conventions (Given/When/Then in descriptions; bloc_test + mocktail for cubits; `sqflite_common_ffi` for DB).
 
 - **Migration** (`database_migration_test.dart` pattern): seed a v2 DB with games, open at v3; the `player` table exists, old games are intact with NULL ids, and new games round-trip with ids.
-- **`PlayerDao` / repository:** insert, update, name lookup (case-insensitive), delete clears links on games while keeping the games.
+- **`PlayerDao` / repository:** insert, update, name lookup (case-insensitive), markDeleted hides a player from getAll and name lookup but keeps the row and game links; update never un-deletes.
 - **Stats:** wins, losses and draws for the first and second slot; a player with no games shows zeros.
 - **`PlayerPhotoStore`:** save copies the file and returns a file name only; replacing deletes the old file; a missing file degrades to the placeholder.
 - **`HomeCubit`:** select a saved player; "New player" clears the side; the other side's player is excluded; Play creates, reuses by name, or treats a blank name as a guest.
 - **`GameCubit`:** ids and the name snapshot are written on game over.
 - **Rematch flow:** after game over the home screen still shows both players' names, photos and saved-player selection, and pressing Play again does not create duplicate players.
-- **Widget tests:** the home picker sheet; the score card shows avatar and live name for a linked game, and snapshot name plus placeholder for an unlinked or deleted one; the users page lists stats and deletes with confirmation.
+- **Widget tests:** the home picker sheet; the score card shows avatar and live name for a linked game, and a deleted player's games keep the name and photo, and snapshot name plus placeholder show for a guest or unknown id; the users page lists stats and deletes with confirmation.
 - **Manual device check** (picker, camera and file storage are platform concerns not covered by `flutter test`): photos survive an app restart; behaviour after an app update on both platforms.

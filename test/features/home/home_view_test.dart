@@ -468,6 +468,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Then
+        verify(() => repository.deletePlayer(anna)).called(1);
         expect(sheetRow('Anna'), findsOneWidget);
         expect(find.text('New player'), findsOneWidget);
         expect(tester.takeException(), isNull);

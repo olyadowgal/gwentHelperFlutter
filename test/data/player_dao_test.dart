@@ -194,6 +194,33 @@ void main() {
 
     test(
       '''
+      Given a deleted `Player` and a stale pre-delete copy renamed
+      When `update` is called with the stale copy
+      Then the player stays deleted but takes the new name
+      ''',
+      () async {
+        // Given
+        final player = Player(name: 'Geralt', createdAt: createdAt);
+        await dao.insert(player);
+        await dao.markDeleted(
+          player.id,
+          DateTime.fromMillisecondsSinceEpoch(1800000000000),
+        );
+        final stale = player.copyWith(name: 'Ciri');
+
+        // When
+        await dao.update(stale);
+        final all = await dao.getAll(includeDeleted: true);
+
+        // Then
+        expect(all.single.name, 'Ciri');
+        expect(all.single.isDeleted, isTrue);
+        expect(await dao.getAll(), isEmpty);
+      },
+    );
+
+    test(
+      '''
       Given a deleted `Player` and an active player added afterwards with the same name
       When `findByName` is called
       Then only the active player is returned

@@ -13,9 +13,9 @@ class ScoreCardWidget extends StatelessWidget {
 
   final GameScore score;
 
-  /// The saved player each side is linked to, or null for a guest or a player
-  /// who has since been deleted; the card then falls back to the name stored
-  /// with the game and a placeholder avatar.
+  /// The saved player each side is linked to (deleted players included), or
+  /// null for a guest or an unknown id; the card then falls back to the name
+  /// stored with the game and a placeholder avatar.
   final ScorePlayer? firstPlayer;
   final ScorePlayer? secondPlayer;
 

@@ -57,20 +57,6 @@ class GameScore {
   String displayedSecondPlayer({required String fallback}) =>
       _nameOr(secondPlayer, fallback);
 
-  String displayedWinner({
-    required String tieLabel,
-    required String firstPlayerFallback,
-    required String secondPlayerFallback,
-  }) {
-    if (firstPlayerWon) {
-      return displayedFirstPlayer(fallback: firstPlayerFallback);
-    }
-    if (secondPlayerWon) {
-      return displayedSecondPlayer(fallback: secondPlayerFallback);
-    }
-    return tieLabel;
-  }
-
   static String _nameOr(String name, String fallback) {
     final trimmed = name.trim();
     return trimmed.isEmpty ? fallback : trimmed;

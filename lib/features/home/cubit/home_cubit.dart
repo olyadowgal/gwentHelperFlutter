@@ -79,8 +79,8 @@ class HomeCubit extends Cubit<HomeState> {
 
   /// Soft-deletes [player] from the saved list. Returns false (and changes
   /// nothing) if the repository fails. On success the player is forgotten and
-  /// any side holding them is cleared, so Play can never update a deleted row
-  /// (`updatePlayer` would write `deleted_at` back from a stale object).
+  /// any side holding them is cleared, so a deleted player is never offered
+  /// or linked to a new game.
   Future<bool> onSavedPlayerDeleted({required Player player}) async {
     try {
       await _repository.deletePlayer(player);
