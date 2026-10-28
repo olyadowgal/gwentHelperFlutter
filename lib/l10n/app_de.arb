@@ -11,6 +11,8 @@
   "gallery": "Galerie",
   "savedPlayers": "Gespeicherte Spieler",
   "newPlayer": "Neuer Spieler",
+  "deleteSavedPlayerTitle": "{name} löschen?",
+  "deleteSavedPlayerMessage": "Der Spieler wird aus den gespeicherten Spielern entfernt. Bisherige Spiele und Ergebnisse bleiben erhalten.",
 
   "endRound": "RUNDE BEENDEN",
   "gameOverTitle": "Spiel vorbei",

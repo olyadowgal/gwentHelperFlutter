@@ -11,6 +11,8 @@
   "gallery": "Galleria",
   "savedPlayers": "Giocatori salvati",
   "newPlayer": "Nuovo giocatore",
+  "deleteSavedPlayerTitle": "Eliminare {name}?",
+  "deleteSavedPlayerMessage": "Il giocatore verrà rimosso dai giocatori salvati. Le partite e i punteggi passati restano invariati.",
 
   "endRound": "TERMINA MANO",
   "gameOverTitle": "Partita conclusa",

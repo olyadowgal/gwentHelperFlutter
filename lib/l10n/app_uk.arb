@@ -11,6 +11,8 @@
   "gallery": "Галерея",
   "savedPlayers": "Збережені гравці",
   "newPlayer": "Новий гравець",
+  "deleteSavedPlayerTitle": "Видалити {name}?",
+  "deleteSavedPlayerMessage": "Гравця буде видалено зі збережених гравців. Попередні ігри та результати залишаться.",
 
   "endRound": "ЗАВЕРШИТИ РАУНД",
   "gameOverTitle": "Гру закінчено",

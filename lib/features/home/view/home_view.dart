@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -8,12 +6,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:gwent_helper_flutter/l10n/app_localizations.dart';
 import '../../../app_theme.dart';
 import '../../../arch/bloc_side_effect_handler.dart';
-import '../../../widgets/hud/hud_avatar.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/home_side_effect.dart';
 import '../cubit/home_state.dart';
 import '../widgets/background_touch_button.dart';
 import '../widgets/player_input_widget.dart';
+import '../widgets/saved_players_sheet.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -60,8 +58,7 @@ class _HomeViewState extends State<HomeView> {
     List<SavedPlayerOption> options,
   ) async {
     final cubit = context.read<HomeCubit>();
-    final l10n = AppLocalizations.of(context)!;
-    final choice = await showModalBottomSheet<_SheetChoice>(
+    final choice = await showModalBottomSheet<SavedPlayersChoice>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -70,31 +67,9 @@ class _HomeViewState extends State<HomeView> {
         side: BorderSide(color: AppTheme.olive),
         borderRadius: BorderRadius.vertical(top: Radius.circular(4)),
       ),
-      builder: (context) => ListView(
-        shrinkWrap: true,
-        children: [
-          for (final option in options)
-            ListTile(
-              leading: HudAvatar(
-                size: 44,
-                iconSize: 22,
-                image: option.photoPath == null
-                    ? null
-                    : FileImage(File(option.photoPath!)),
-              ),
-              title: Text(option.player.name),
-              onTap: () => Navigator.of(context).pop(_SheetChoice(option)),
-            ),
-          ListTile(
-            leading: const SizedBox(
-              width: 44,
-              height: 44,
-              child: Icon(Icons.person_add_alt_1, color: AppTheme.gold),
-            ),
-            title: Text(l10n.newPlayer),
-            onTap: () => Navigator.of(context).pop(const _SheetChoice(null)),
-          ),
-        ],
+      builder: (context) => SavedPlayersSheet(
+        options: options,
+        onDelete: (player) => cubit.onSavedPlayerDeleted(player: player),
       ),
     );
     // Dismissing the sheet returns null and changes nothing. The fields follow
@@ -290,12 +265,4 @@ class _HomeViewState extends State<HomeView> {
       ),
     ),
   );
-}
-
-/// What the saved-players sheet returns: a saved player, or `null` option for
-/// the "New player" row (a bare `null` result means the sheet was dismissed).
-class _SheetChoice {
-  const _SheetChoice(this.option);
-
-  final SavedPlayerOption? option;
 }

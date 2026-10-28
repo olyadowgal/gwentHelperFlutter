@@ -11,6 +11,11 @@
   "gallery": "Gallery",
   "savedPlayers": "Saved players",
   "newPlayer": "New player",
+  "deleteSavedPlayerTitle": "Delete {name}?",
+  "@deleteSavedPlayerTitle": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "deleteSavedPlayerMessage": "This removes the player from your saved players. Past games and scores stay as they are.",
 
   "endRound": "END ROUND",
   "gameOverTitle": "Game Over",

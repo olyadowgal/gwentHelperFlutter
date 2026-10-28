@@ -11,6 +11,8 @@
   "gallery": "Galerij",
   "savedPlayers": "Opgeslagen spelers",
   "newPlayer": "Nieuwe speler",
+  "deleteSavedPlayerTitle": "{name} verwijderen?",
+  "deleteSavedPlayerMessage": "De speler wordt uit de opgeslagen spelers verwijderd. Eerdere partijen en scores blijven bewaard.",
 
   "endRound": "RONDE BEËINDIGEN",
   "gameOverTitle": "Spel voorbij",

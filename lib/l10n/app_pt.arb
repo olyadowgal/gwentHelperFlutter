@@ -11,6 +11,8 @@
   "gallery": "Galeria",
   "savedPlayers": "Jogadores guardados",
   "newPlayer": "Novo jogador",
+  "deleteSavedPlayerTitle": "Eliminar {name}?",
+  "deleteSavedPlayerMessage": "O jogador será removido dos jogadores guardados. Os jogos e as pontuações anteriores mantêm-se.",
 
   "endRound": "ENCERRAR RODADA",
   "gameOverTitle": "Fim de jogo",

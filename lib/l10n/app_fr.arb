@@ -11,6 +11,8 @@
   "gallery": "Galerie",
   "savedPlayers": "Joueurs enregistrés",
   "newPlayer": "Nouveau joueur",
+  "deleteSavedPlayerTitle": "Supprimer {name} ?",
+  "deleteSavedPlayerMessage": "Le joueur sera retiré des joueurs enregistrés. Les parties et scores passés restent inchangés.",
 
   "endRound": "TERMINER LA MANCHE",
   "gameOverTitle": "Partie terminée",

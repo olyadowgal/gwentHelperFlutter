@@ -89,6 +89,19 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// A saved-player row inside the open sheet (the name can also be showing in
+  /// a card's text field behind it).
+  Finder sheetRow(String name) =>
+      find.descendant(of: find.byType(BottomSheet), matching: find.text(name));
+
+  Future<void> swipeRow(WidgetTester tester, String name) async {
+    await tester.drag(sheetRow(name), const Offset(-300, 0));
+    await tester.pumpAndSettle();
+  }
+
+  Finder dialogButton(String label) =>
+      find.descendant(of: find.byType(AlertDialog), matching: find.text(label));
+
   group('HomeView photo source dialog', () {
     testWidgets(
       '''
@@ -271,7 +284,7 @@ void main() {
       '''
       Given the first card has the saved player selected
       When the second card's chip is tapped
-      Then the sheet does not offer that player again
+      Then its sheet lists the same players, including the one on the first card
       ''',
       (tester) async {
         // Given
@@ -284,15 +297,230 @@ void main() {
         await openSheet(tester, 'Player 2');
 
         // Then
-        expect(find.text('Anna'), findsOneWidget);
+        expect(sheetRow('Anna'), findsOneWidget);
+        expect(sheetRow('Олег'), findsOneWidget);
         expect(find.text('New player'), findsOneWidget);
+      },
+    );
+  });
+
+  group('HomeView saved players sheet deletion', () {
+    setUp(() {
+      when(() => repository.deletePlayer(any())).thenAnswer((_) async {});
+    });
+
+    testWidgets(
+      '''
+      Given the sheet is open
+      When a row is swiped left
+      Then a Delete action is revealed
+      And nothing is deleted and no dialog is shown
+      ''',
+      (tester) async {
+        // Given
+        await pumpHomeView(tester);
+        await openSheet(tester, 'Player 1');
+        expect(find.text('DELETE'), findsNothing);
+
+        // When
+        await swipeRow(tester, 'Anna');
+
+        // Then
+        expect(find.text('DELETE'), findsOneWidget);
+        expect(find.byType(AlertDialog), findsNothing);
+        verifyNever(() => repository.deletePlayer(any()));
+        expect(sheetRow('Anna'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      '''
+      Given a row is swiped open
+      When the Delete action is tapped
+      Then a dialog names the player and explains that scores stay
+      And nothing is deleted yet
+      ''',
+      (tester) async {
+        // Given
+        await pumpHomeView(tester);
+        await openSheet(tester, 'Player 1');
+        await swipeRow(tester, 'Anna');
+
+        // When
+        await tester.tap(find.text('DELETE'));
+        await tester.pumpAndSettle();
+
+        // Then
+        expect(find.byType(AlertDialog), findsOneWidget);
+        expect(find.text('Delete Anna?'), findsOneWidget);
         expect(
-          find.descendant(
-            of: find.byType(BottomSheet),
-            matching: find.text('Олег'),
+          find.text(
+            'This removes the player from your saved players. '
+            'Past games and scores stay as they are.',
           ),
-          findsNothing,
+          findsOneWidget,
         );
+        expect(dialogButton('CANCEL'), findsOneWidget);
+        expect(dialogButton('DELETE'), findsOneWidget);
+        verifyNever(() => repository.deletePlayer(any()));
+      },
+    );
+
+    testWidgets(
+      '''
+      Given the delete confirmation dialog is open
+      When Cancel is tapped
+      Then the dialog closes and the player is not deleted
+      And the row stays in the open sheet
+      ''',
+      (tester) async {
+        // Given
+        await pumpHomeView(tester);
+        await openSheet(tester, 'Player 1');
+        await swipeRow(tester, 'Anna');
+        await tester.tap(find.text('DELETE'));
+        await tester.pumpAndSettle();
+
+        // When
+        await tester.tap(dialogButton('CANCEL'));
+        await tester.pumpAndSettle();
+
+        // Then
+        expect(find.byType(AlertDialog), findsNothing);
+        verifyNever(() => repository.deletePlayer(any()));
+        expect(sheetRow('Anna'), findsOneWidget);
+        expect(find.text('New player'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      '''
+      Given the delete confirmation dialog is open
+      When the barrier is tapped
+      Then the dialog closes and the player is not deleted
+      ''',
+      (tester) async {
+        // Given
+        await pumpHomeView(tester);
+        await openSheet(tester, 'Player 1');
+        await swipeRow(tester, 'Anna');
+        await tester.tap(find.text('DELETE'));
+        await tester.pumpAndSettle();
+
+        // When
+        await tester.tapAt(const Offset(10, 10));
+        await tester.pumpAndSettle();
+
+        // Then
+        expect(find.byType(AlertDialog), findsNothing);
+        verifyNever(() => repository.deletePlayer(any()));
+        expect(sheetRow('Anna'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      '''
+      Given the delete confirmation dialog is open
+      When Delete is confirmed
+      Then the player is deleted once and the row disappears
+      And the sheet stays open with the other rows and "New player"
+      ''',
+      (tester) async {
+        // Given
+        await pumpHomeView(tester);
+        await openSheet(tester, 'Player 1');
+        await swipeRow(tester, 'Anna');
+        await tester.tap(find.text('DELETE'));
+        await tester.pumpAndSettle();
+
+        // When
+        await tester.tap(dialogButton('DELETE'));
+        await tester.pumpAndSettle();
+
+        // Then
+        verify(() => repository.deletePlayer(anna)).called(1);
+        expect(find.byType(AlertDialog), findsNothing);
+        expect(sheetRow('Anna'), findsNothing);
+        expect(sheetRow('Олег'), findsOneWidget);
+        expect(find.text('New player'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      '''
+      Given the repository fails to delete the player
+      When Delete is confirmed
+      Then the row stays in the sheet and nothing throws
+      ''',
+      (tester) async {
+        // Given
+        when(
+          () => repository.deletePlayer(any()),
+        ).thenAnswer((_) async => throw Exception('db'));
+        await pumpHomeView(tester);
+        await openSheet(tester, 'Player 1');
+        await swipeRow(tester, 'Anna');
+        await tester.tap(find.text('DELETE'));
+        await tester.pumpAndSettle();
+
+        // When
+        await tester.tap(dialogButton('DELETE'));
+        await tester.pumpAndSettle();
+
+        // Then
+        expect(sheetRow('Anna'), findsOneWidget);
+        expect(find.text('New player'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      '''
+      Given a saved player is selected on the first card
+      When that player is deleted from the sheet
+      Then the first card's field is emptied
+      ''',
+      (tester) async {
+        // Given
+        await pumpHomeView(tester);
+        await openSheet(tester, 'Player 1');
+        await tester.tap(find.text('Олег'));
+        await tester.pumpAndSettle();
+        expect(fieldText(tester, 'Player 1'), 'Олег');
+        await openSheet(tester, 'Player 2');
+        await swipeRow(tester, 'Олег');
+        await tester.tap(find.text('DELETE'));
+        await tester.pumpAndSettle();
+
+        // When
+        await tester.tap(dialogButton('DELETE'));
+        await tester.pumpAndSettle();
+
+        // Then
+        expect(fieldText(tester, 'Player 1'), '');
+        expect(cubit.state.player1Id, isNull);
+      },
+    );
+
+    testWidgets(
+      '''
+      Given the sheet is open
+      When a row is tapped
+      Then the player is still selected as before
+      ''',
+      (tester) async {
+        // Given
+        await pumpHomeView(tester);
+        await openSheet(tester, 'Player 2');
+
+        // When
+        await tester.tap(find.text('Anna'));
+        await tester.pumpAndSettle();
+
+        // Then
+        expect(fieldText(tester, 'Player 2'), 'Anna');
+        expect(cubit.state.player2Id, 'anna-id');
+        verifyNever(() => repository.deletePlayer(any()));
       },
     );
   });
